@@ -363,7 +363,8 @@ static int ParseStandardProperty(Scanner &scanner, MapEntry *mape)
 	{
 		scanner.MustGetToken(TK_BoolConst);
 		if (scanner.boolean) strcpy(mape->endpic, "!");
-		else strcpy(mape->endpic, "-");
+        /* Null endpic will prevent triggering endgame state during gameplay */
+		else mape->endpic[0] = '\0';
 	}
 	else if (!stricmp(pname, "exitpic"))
 	{
