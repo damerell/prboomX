@@ -212,6 +212,7 @@ int     key_map_grid;
 int     key_map_overlay; // cph - map overlay
 int     key_map_rotate;  // cph - map rotation
 int     key_map_textured;  // e6y - textured automap
+int     key_map_magicsector;
 int     key_help = KEYD_F1;                                 // phares 4/13/98
 int     key_soundvolume;
 int     key_hud;
@@ -548,7 +549,7 @@ void G_BuildTiccmd(ticcmd_t* cmd)
 
   // Make Boom insert only a single weapon change command on autoswitch.
   if ((!demo_compatibility && players[consoleplayer].attackdown && // killough
-       !P_CheckAmmo(&players[consoleplayer])) && !done_autoswitch && boom_autoswitch ||
+       !P_CheckAmmo(&players[consoleplayer])) ||
        gamekeydown[key_weapontoggle])
   {
     newweapon = P_SwitchWeapon(&players[consoleplayer]);           // phares
@@ -619,6 +620,7 @@ void G_BuildTiccmd(ticcmd_t* cmd)
       // killough 2/8/98, 3/22/98 -- end of weapon selection changes
       //}
     }
+
 
   if (newweapon != wp_nochange)
     {

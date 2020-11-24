@@ -916,6 +916,46 @@ void P_DamageMobj(mobj_t *target,mobj_t *inflictor, mobj_t *source, int damage)
       if (player->health < 0)
         player->health = 0;
 
+      if (player->health == 0 && is_buddha()) {
+          player->health = 1;
+          switch( rand() % 10 ) {
+              case 9:
+                  player->message = "You shrug off mortal damage.";
+                  break;
+              case 8:
+                  player->message = "Your life force is drained, but returns!";
+                  break;
+              case 7:
+                  player->message = "You roll a natural 20 and escape death!";
+                  break;
+              case 6:
+                  player->message = "Your death is avoided.";
+                  break;
+              case 5:
+                  player->message = "You will pay for your sins, but not today!";
+                  break;
+              case 4:
+                  player->message = "A calm wind wafts the fatal damage away.";
+                  break;
+              case 3:
+                  player->message = "A distant bell awakens you. You live!";
+                  break;
+              case 2:
+                  player->message = "Death has not won this day!";
+                  break;
+              case 1:
+                  player->message = "Your mortality is a distant memory.";
+                  break;
+              case 0:
+                  player->message = "You escape punishment. Your enemies fume!";
+                  break;
+              default:
+                  player->message = "A programming error saves you!";
+                  break;
+          }
+          return;
+      }
+          
       player->attacker = source;
       player->damagecount += damage;  // add damage after armor / invuln
 

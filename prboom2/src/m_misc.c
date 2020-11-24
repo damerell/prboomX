@@ -641,6 +641,9 @@ default_t defaults[] =
   {"key_map_textured", {&key_map_textured},   {0}             ,
    0,MAX_KEY,def_key,ss_keys}, // key to toggle textured automap
 #endif
+  {"key_map_magicsector", {&key_map_magicsector},   {'x'}             ,
+   0,MAX_KEY,def_key,ss_keys}, // key to toggle textured automap
+
   {"key_reverse",     {&key_reverse},         {'/'}           ,
    0,MAX_KEY,def_key,ss_keys}, // key to spin 180 instantly
   {"key_zoomin",      {&key_zoomin},          {'='}           ,
@@ -770,6 +773,10 @@ default_t defaults[] =
    def_colour,ss_auto}, // color used for counted items
   {"mapcolor_hair", {&mapcolor_hair}, {208},0,255,  // white
    def_colour,ss_auto}, // color used for dot crosshair denoting center of map
+
+  {"mapcolor_hai2", {&mapcolor_hair}, {248},0,255,  // peach
+   def_colour,ss_auto}, // color used for dot crosshair denoting center of map
+
   {"mapcolor_sngl", {&mapcolor_sngl}, {208},0,255,  // white
    def_colour,ss_auto}, // color used for the single player arrow
   {"mapcolor_me",   {&mapcolor_me}, {112},0,255, // green
@@ -778,6 +785,15 @@ default_t defaults[] =
    def_colour,ss_auto},
   {"mapcolor_frnd",   {&mapcolor_frnd}, {112},0,255,
    def_colour,ss_auto},
+   // secret exit
+  {"mapcolor_exis",   {&mapcolor_exis,NULL}, {197,NULL},0,255,
+   def_colour,ss_auto,NULL,NULL},
+   // automap secret line
+  {"mapcolor_asec",   {&mapcolor_asec,NULL}, {249,NULL},0,255,
+   def_colour,ss_auto,NULL,NULL},
+    // found secret line
+  {"mapcolor_secf",   {&mapcolor_secf,NULL}, {254,NULL},0,255,
+        def_colour,ss_auto,NULL,NULL},
   //jff 3/9/98 add option to not show secrets til after found
   {"map_secret_after", {&map_secret_after}, {0},0,1, // show secret after gotten
    def_bool,ss_auto}, // prevents showing secret sectors till after entered

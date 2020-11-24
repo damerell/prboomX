@@ -184,7 +184,7 @@ int P_SwitchWeapon(player_t *player)
 
   // killough 2/8/98: follow preferences and fix BFG/SSG bugs
 
-  do
+  do {
     switch (*prefer++)
       {
       case 1:
@@ -230,7 +230,7 @@ int P_SwitchWeapon(player_t *player)
           newweapon = wp_supershotgun;
         break;
       }
-  while (newweapon==currentweapon && --i);          // killough 5/2/98
+  } while (newweapon==currentweapon && --i);          // killough 5/2/98
   return newweapon;
 }
 
@@ -297,7 +297,6 @@ dboolean P_CheckAmmo(player_t *player)
 static void P_FireWeapon(player_t *player)
 {
   statenum_t newstate;
-
   if (!P_CheckAmmo(player))
     return;
 
