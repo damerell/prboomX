@@ -91,6 +91,8 @@ static void cheat_megaarmour();
 static void cheat_health();
 static void cheat_notarget();
 static void cheat_fly();
+static void cheat_buddha();
+static void cheat_resurrect();
 
 //-----------------------------------------------------------------------------
 //
@@ -185,6 +187,8 @@ cheatseq_t cheat[] = {
   CHEAT("notarget",   NULL,               cht_never, cheat_notarget, 0),
   // fly mode is active
   CHEAT("fly",        NULL,               cht_never, cheat_fly, 0),
+  CHEAT("buddha",     NULL,               cht_never, cheat_buddha, 0),
+  CHEAT("liveagain",  NULL,               cht_never, cheat_resurrect, 0),
   // end-of-list marker
   {NULL}
 };
@@ -640,6 +644,37 @@ static void cheat_fly()
     }
   }
 }
+
+dboolean buddha = false;
+static void cheat_buddha()
+{
+  plyr->message = (buddha = !buddha) ?
+    "Buddha Mode Enabled" : "Buddha Mode Disabled";
+}
+
+dboolean is_buddha()
+{
+    return buddha;
+}
+
+static void cheat_resurrect()
+{
+  if (plyr->playerstate == PST_DEAD) {
+      plyr->message = "You live...again!";
+      plyr->playerstate = PST_LIVE;
+      plyr->health = initial_health;
+      plyr->mo->health = initial_health;
+      plyr->readyweapon = wp_fist;
+      plyr->pendingweapon = wp_fist;
+      plyr->mo->flags = MF_SOLID|MF_SHOOTABLE|MF_DROPOFF|MF_PICKUP|MF_NOTDMATCH;
+      plyr->mo->radius = 16*FRACUNIT;
+      plyr->mo->height = 56*FRACUNIT;
+  } else {
+      plyr->message = "Your life force throbs on...";
+  }
+}
+
+
 
 //-----------------------------------------------------------------------------
 // 2/7/98: Cheat detection rewritten by Lee Killough, to avoid

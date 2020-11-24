@@ -2433,6 +2433,7 @@ setup_menu_t keys_settings4[] =  // Key Binding screen strings
 #ifdef GL_DOOM
   {"TEXTURED"   ,S_KEY       ,m_map ,KB_X,KB_Y+14*8,{&key_map_textured}},
 #endif
+  {"MAGIC SECTOR"   ,S_KEY       ,m_map ,KB_X,KB_Y+15*8,{&key_map_magicsector}},
 
   {"<- PREV" ,S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8, {keys_settings3}},
   {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {keys_settings5}},
