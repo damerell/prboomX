@@ -365,7 +365,7 @@ default_t defaults[] =
    def_int,ss_none}, // select music driver (DOS), -1 is autodetect, 0 is none"; in Linux, non-zero enables music
   {"pitched_sounds",{&pitched_sounds},{0},0,1, // killough 2/21/98
    def_bool,ss_none}, // enables variable pitch in sound effects (from id's original code)
-  {"samplerate",{&snd_samplerate},{22050},11025,48000, def_int,ss_none},
+  {"samplerate",{&snd_samplerate},{44100},11025,48000, def_int,ss_none},
   {"sfx_volume",{&snd_SfxVolume},{8},0,15, def_int,ss_none},
   {"music_volume",{&snd_MusicVolume},{8},0,15, def_int,ss_none},
   {"mus_pause_opt",{&mus_pause_opt},{1},0,2, // CPhipps - music pausing
@@ -385,8 +385,8 @@ default_t defaults[] =
   {"mus_extend_volume",{&mus_extend_volume},{0},0,1,
    def_bool,ss_none}, // e6y: apply midi volume to all midi devices
 #endif
-  {"mus_fluidsynth_chorus",{&mus_fluidsynth_chorus},{1},0,1,def_bool,ss_none},
-  {"mus_fluidsynth_reverb",{&mus_fluidsynth_reverb},{1},0,1,def_bool,ss_none},
+  {"mus_fluidsynth_chorus",{&mus_fluidsynth_chorus},{0},0,1,def_bool,ss_none},
+  {"mus_fluidsynth_reverb",{&mus_fluidsynth_reverb},{0},0,1,def_bool,ss_none},
   {"mus_fluidsynth_gain",{&mus_fluidsynth_gain},{50},0,1000,def_int,ss_none}, // NSM  fine tune fluidsynth output level
   {"mus_opl_gain",{&mus_opl_gain},{50},0,1000,def_int,ss_none}, // NSM  fine tune opl output level
 
@@ -786,7 +786,7 @@ default_t defaults[] =
   {"map_level_stat", {&map_level_stat}, {1},0,1,
    def_bool,ss_auto},
   //jff 1/7/98 end additions for automap
-  {"automapmode", {(int*)&automapmode}, {0}, 0, 31, // CPhipps - remember automap mode
+  {"automapmode", {(int*)&automapmode}, {am_follow}, 0, 31, // CPhipps - remember automap mode
    def_hex,ss_none}, // automap mode
   {"map_always_updates", {&map_always_updates}, {1},0,1,
    def_bool,ss_auto},
@@ -1341,10 +1341,23 @@ void M_SaveDefaults (void)
 {
   int   i;
   FILE* f;
+  int maxlen = 0;
 
   f = fopen (defaultfile, "w");
   if (!f)
     return; // can't write the file, but don't complain
+
+  // get maximum config key string length
+  for (i = 0 ; i < numdefaults ; i++) {
+    int len;
+    if (defaults[i].type == def_none) {
+      continue;
+    }
+    len = strlen(defaults[i].name);
+    if (len > maxlen && len < 80) {
+      maxlen = len;
+    }
+  }
 
   // 3/3/98 explain format of file
 
@@ -1361,7 +1374,7 @@ void M_SaveDefaults (void)
       if (defaults[i].type == def_arr)
       {
         int k;
-        fprintf (f,"%-25s \"%s\"\n",defaults[i].name,*(defaults[i].location.ppsz));
+        fprintf (f,"%-*s \"%s\"\n",maxlen,defaults[i].name,*(defaults[i].location.ppsz));
         for (k = 0; k < *(defaults[i].location.array_size); k++)
         {
           char ***arr = defaults[i].location.array_data;
@@ -1369,7 +1382,7 @@ void M_SaveDefaults (void)
           {
             char def[80];
             sprintf(def, "%s%d", *(defaults[i].location.ppsz), k);
-            fprintf (f,"%-25s \"%s\"\n",def, (*arr)[k]);
+            fprintf (f,"%-*s \"%s\"\n",maxlen,def, (*arr)[k]);
           }
         }
         i += defaults[i].defaultvalue.array_size;
@@ -1382,13 +1395,13 @@ void M_SaveDefaults (void)
       // CPhipps - remove keycode hack
       // killough 3/6/98: use spaces instead of tabs for uniform justification
       if (defaults[i].type == def_hex)
-  fprintf (f,"%-25s 0x%x\n",defaults[i].name,*(defaults[i].location.pi));
+  fprintf (f,"%-*s 0x%x\n",maxlen,defaults[i].name,*(defaults[i].location.pi));
       else
-  fprintf (f,"%-25s %5i\n",defaults[i].name,*(defaults[i].location.pi));
+  fprintf (f,"%-*s %i\n",maxlen,defaults[i].name,*(defaults[i].location.pi));
       }
     else
       {
-      fprintf (f,"%-25s \"%s\"\n",defaults[i].name,*(defaults[i].location.ppsz));
+      fprintf (f,"%-*s \"%s\"\n",maxlen,defaults[i].name,*(defaults[i].location.ppsz));
       }
     }
 
