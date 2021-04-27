@@ -1682,19 +1682,17 @@ static void AM_drawWalls(void)
               
           /* draw */
           AM_drawMline(&l, magic_sector_color_pos);
-
+          
             if( magic_sector_color_pos == MAGIC_SECTOR_COLOR_TAGGED_MIN ) {
                 AM_drawLineCharacter(cross_mark, NUMCROSSMARKLINES,
                     128<<MAPBITS, 0, 229, l.a.x, l.a.y );
             }
-          
           }
           
           if( lines[i].tag > 0 && (lines[i].tag == magic_tag || (magic_sector && (lines[i].tag == magic_sector->tag) ) ) ) {
               
               /* draw */
               AM_drawMline(&l, magic_line_color_pos);
-              /* add highlight icon */
 
             if( magic_line_color_pos == MAGIC_LINE_COLOR_MIN ) {
                 AM_drawLineCharacter(cross_mark, NUMCROSSMARKLINES,
@@ -2417,8 +2415,6 @@ void AM_Drawer (void)
   AM_drawWalls();
   AM_drawPlayers();
   AM_drawThings(); //jff 1/5/98 default double IDDT sprite
-
-  AM_drawCrosshair(mapcolor_hair);
   if( selecting_magic_sector && (players+consoleplayer)->powers[pw_allmap] ) {
       AM_drawCrosshair(mapcolor_hai2);
 
@@ -2460,6 +2456,7 @@ void AM_Drawer (void)
       }
   }
   
+  AM_drawCrosshair(mapcolor_hair);
   
 #if defined(HAVE_LIBSDL2_IMAGE) && defined(GL_DOOM)
   if (V_GetMode() == VID_MODEGL)

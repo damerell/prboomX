@@ -549,7 +549,7 @@ void G_BuildTiccmd(ticcmd_t* cmd)
 
   // Make Boom insert only a single weapon change command on autoswitch.
   if ((!demo_compatibility && players[consoleplayer].attackdown && // killough
-       !P_CheckAmmo(&players[consoleplayer])) ||
+       !P_CheckAmmo(&players[consoleplayer])) && !done_autoswitch && boom_autoswitch ||
        gamekeydown[key_weapontoggle])
   {
     newweapon = P_SwitchWeapon(&players[consoleplayer]);           // phares
@@ -1574,7 +1574,7 @@ void G_DoCompleted (void)
   if (gamemapinfo)
   {
 	  const char *next = "";
-	  if (gamemapinfo->endpic[0] && gamemapinfo->endpic[0] != '-' && gamemapinfo->nointermission)
+	  if (gamemapinfo->endpic[0] && (strcmp(gamemapinfo->endpic, "-") != 0) && gamemapinfo->nointermission)
 	  {
 		  gameaction = ga_victory;
 		  return;
@@ -1777,7 +1777,7 @@ void G_WorldDone (void)
 
 		  return;
 	  }
-	  else if (gamemapinfo->endpic[0] && gamemapinfo->endpic[0] != '-')
+	  else if (gamemapinfo->endpic[0] && (strcmp(gamemapinfo->endpic, "-") != 0))
 	  {
 		  // game ends without a status screen.
 		  gameaction = ga_victory;

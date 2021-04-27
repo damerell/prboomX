@@ -327,6 +327,7 @@ void P_DropWeapon(player_t *player)
 void A_WeaponReady(player_t *player, pspdef_t *psp)
 {
   CHECK_WEAPON_CODEPOINTER("A_WeaponReady", player);
+  done_autoswitch = false;
 
   // get out of attack state
   if (player->mo->state == &states[S_PLAY_ATK1]
@@ -371,7 +372,6 @@ void A_WeaponReady(player_t *player, pspdef_t *psp)
     psp->sy = WEAPONTOP + FixedMul(player->bob, finesine[angle]);
   }
 
-  done_autoswitch = false;
 }
 
 //
