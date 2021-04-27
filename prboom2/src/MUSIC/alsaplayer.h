@@ -4,12 +4,8 @@
  *
  *  PrBoom: a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
- *  Copyright (C) 1999 by
- *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
- *  Copyright (C) 1999-2000 by
- *  Jess Haas, Nicolas Kalkhof, Colin Phipps, Florian Schulze
- *  Copyright 2005, 2006 by
- *  Florian Schulze, Colin Phipps, Neil Stevens, Andrey Budko
+ *
+ *  Copyright (C) 2021 by Gustavo Rehermann
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -27,27 +23,38 @@
  *  02111-1307, USA.
  *
  * DESCRIPTION:
- *  DoomDef - basic defines for DOOM, e.g. Version, game mode
- *   and skill level, and display parameters.
  *
- *-----------------------------------------------------------------------------
+ *---------------------------------------------------------------------
  */
 
-#ifdef __GNUG__
-#pragma implementation "doomdef.h"
-#endif
+#ifndef ALSAPLAYER_H
+#define ALSAPLAYER_H
 
-#include "doomdef.h"
+#include "musicplayer.h"
 
-// Location for any defines turned variables.
-// None.
+extern const music_player_t alsa_player;
 
-// proff 08/17/98: Changed for high-res
-int SCREENWIDTH=320;
-int SCREENHEIGHT=200;
-int SCREENPITCH=320;
+#ifdef HAVE_ALSA
 
-// e6y: wide-res
-int SCREEN_320x200;
-int WIDE_SCREENWIDTH = 320;
-int WIDE_SCREENHEIGHT = 200;
+#include <alsa/asoundlib.h>
+
+// available outputs
+typedef struct {
+    int client;
+    int port;
+    char name[120]; // 120 + two 32-bit (4-byte) ints = 128, nice alignment
+} alsaplay_output_t;
+
+extern alsaplay_output_t alsaplayer_outputs[64];
+extern int alsaplayer_num_outs;
+extern int alsaplayer_err;
+
+void alsaplay_clear_outputs(void);
+void alsaplay_refresh_outputs(void);
+const char *alsaplay_get_output_name(int which);
+int alsaplay_connect_output(int which);
+int alsa_midi_set_dest (int client, int port);
+
+#endif // HAVE_ALSA
+
+#endif // ALSAPLAYER_H

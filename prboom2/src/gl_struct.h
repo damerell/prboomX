@@ -179,6 +179,7 @@ dboolean gld_SphereInFrustum(float x, float y, float z, float radius);
 //missing flats (fake floors and ceilings)
 extern dboolean gl_use_stencil;
 sector_t* GetBestFake(sector_t *sector, int ceiling, int validcount);
+sector_t* GetBestBleedSector(sector_t* source, int ceiling);
 
 //shadows
 typedef struct shadow_params_s
@@ -204,6 +205,10 @@ void gld_DrawMapLines(void);
 
 //sprites
 typedef enum { spriteclip_const, spriteclip_always, spriteclip_smart } spriteclipmode_t;
+typedef enum { fuzz_darken, fuzz_shadow, fuzz_transparent, fuzz_ghostly, fuzz_last } spritefuzzmode_t;
+extern spritefuzzmode_t gl_thingspritefuzzmode;
+extern spritefuzzmode_t gl_weaponspritefuzzmode;
+extern const char *gl_spritefuzzmodes[];
 extern spriteclipmode_t gl_spriteclip;
 extern const char *gl_spriteclipmodes[];
 extern int gl_spriteclip_threshold;

@@ -110,6 +110,7 @@ extern int  key_left;
 extern int  key_up;
 extern int  key_down;
 extern int  key_mlook;
+extern int  key_novert;
 extern int  key_menu_right;                                  // phares 3/7/98
 extern int  key_menu_left;                                   //     |
 extern int  key_menu_up;                                     //     V
@@ -165,6 +166,15 @@ extern int  key_weapon8;
 extern int  key_weapon9;
 extern int  key_nextweapon;
 extern int  key_prevweapon;
+extern int  mb_weapon1;
+extern int  mb_weapon2;
+extern int  mb_weapon3;
+extern int  mb_weapon4;
+extern int  mb_weapon5;
+extern int  mb_weapon6;
+extern int  mb_weapon7;
+extern int  mb_weapon8;
+extern int  mb_weapon9;
 extern int  destination_keys[MAXPLAYERS];
 extern int  key_map_right;
 extern int  key_map_left;
@@ -188,6 +198,8 @@ extern int  mousebfire;
 extern int  mousebstrafe;
 extern int  mousebforward;
 extern int  mousebbackward;
+extern int  mousebturnright;
+extern int  mousebturnleft;
 extern int  mousebuse;
 extern int  joybfire;
 extern int  joybstrafe;
@@ -220,6 +232,9 @@ extern const char * comp_lev_str[];
 // with the same mouse behaviour as when recording,
 // but without having to be recording every time.
 extern int shorttics;
+
+// automatic pistol start when advancing from one level to the next
+extern int pistolstart;
 
 //e6y: for r_demo.c
 extern int longtics;

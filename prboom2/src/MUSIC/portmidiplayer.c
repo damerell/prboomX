@@ -178,10 +178,15 @@ static int pm_init (int samplerate)
   return 1;
 }
 
+static void pm_stop (void);
+
 static void pm_shutdown (void)
 {
   if (pm_stream)
   {
+    // stop all sound, in case of hanging notes
+    pm_stop();
+
     /* ugly deadlock in portmidi win32 implementation:
 
     main thread gets stuck in Pm_Close
@@ -203,9 +208,7 @@ static void pm_shutdown (void)
     
     not a fix: calling Pm_Abort(); then midiStreamStop deadlocks instead of midiStreamClose. 
     */
-    #ifdef _WIN32
     Pt_Sleep (DRIVER_LATENCY * 2);
-    #endif
 
     Pm_Close (pm_stream);
     Pm_Terminate ();
@@ -394,6 +397,16 @@ static void pm_stop (void)
   {
     writeevent (when, MIDI_EVENT_CONTROLLER, i, 123, 0); // all notes off
     writeevent (when, MIDI_EVENT_CONTROLLER, i, 121, 0); // reset all parameters
+
+    // RPN sequence to adjust pitch bend range (RPN value 0x0000)
+    writeevent (when, MIDI_EVENT_CONTROLLER, i, 0x65, 0x00);
+    writeevent (when, MIDI_EVENT_CONTROLLER, i, 0x64, 0x00);
+    // reset pitch bend range to central tuning +/- 2 semitones and 0 cents
+    writeevent (when, MIDI_EVENT_CONTROLLER, i, 0x06, 0x02);
+    writeevent (when, MIDI_EVENT_CONTROLLER, i, 0x26, 0x00);
+    // end of RPN sequence
+    writeevent (when, MIDI_EVENT_CONTROLLER, i, 0x64, 0x7f);
+    writeevent (when, MIDI_EVENT_CONTROLLER, i, 0x65, 0x7f);
   }
   // abort any partial sysex
   sysexbufflen = 0;

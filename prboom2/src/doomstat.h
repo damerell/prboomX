@@ -64,6 +64,8 @@ extern GameMode_t gamemode;
 extern GameMission_t  gamemission;
 extern const char *doomverstr;
 
+extern char *MAPNAME(int e, int m);
+
 // Set if homebrew PWAD stuff has been added.
 extern  dboolean modifiedgame;
 
@@ -107,7 +109,7 @@ enum {
   comp_infcheat,
   comp_zerotags,
   comp_moveblock,
-  comp_respawn,  /* cph - this is the inverse of comp_respawnfix from eternity */
+  comp_respawn,  /* cph - alias of comp_respawnfix from eternity */
   comp_sound,
   comp_666,
   comp_soul,
@@ -136,6 +138,9 @@ enum {
 extern int comp[COMP_TOTAL], default_comp[COMP_TOTAL];
 extern int /*comperr[COMPERR_NUM], */default_comperr[COMPERR_NUM];
 
+// [FG] allow MBF sky transfers in all complevels
+extern int comp_skytransfers;
+
 // -------------------------------------------
 // Language.
 extern  Language_t   language;
@@ -156,6 +161,7 @@ extern  skill_t         gameskill;
 extern  int   gameepisode;
 extern  int   gamemap;
 extern struct MapEntry *gamemapinfo;
+extern int maplumpnum;
 
 // Nightmare mode flag, single player.
 extern  dboolean         respawnmonsters;

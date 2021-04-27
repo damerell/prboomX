@@ -87,6 +87,9 @@
 #include "e6y.h"//e6y
 #include "statdump.h"
 
+// ano - used for version 255+ demos, like EE or MBF
+static char     prdemosig[] = "PR+UM";
+
 #define SAVEGAMESIZE  0x20000
 #define SAVESTRINGSIZE  24
 
@@ -162,6 +165,9 @@ dboolean done_autoswitch;
 // but without having to be recording every time.
 int shorttics;
 
+// automatic pistol start when advancing from one level to the next
+int pistolstart;
+
 //
 // controls (have defaults)
 //
@@ -171,6 +177,7 @@ int     key_left;
 int     key_up;
 int     key_down;
 int     key_mlook;
+int     key_novert;
 int     key_menu_right;                                      // phares 3/7/98
 int     key_menu_left;                                       //     |
 int     key_menu_up;                                         //     V
@@ -239,11 +246,23 @@ int     key_weapon9;                                                // phares
 int     key_nextweapon;
 int     key_prevweapon;
 
+int     mb_weapon1;
+int     mb_weapon2;
+int     mb_weapon3;
+int     mb_weapon4;
+int     mb_weapon5;
+int     mb_weapon6;
+int     mb_weapon7;
+int     mb_weapon8;
+int     mb_weapon9;
+
 int     key_screenshot;             // killough 2/22/98: screenshot key
 int     mousebfire;
 int     mousebstrafe;
 int     mousebforward;
 int     mousebbackward;
+int     mousebturnright;
+int     mousebturnleft;
 int     mousebuse;
 int     joybfire;
 int     joybstrafe;
@@ -294,7 +313,7 @@ static const struct
   { wp_bfg,          wp_bfg }
 };
 
-static int mousearray[6];
+static int mousearray[MAX_MOUSEB + 1];
 static int *mousebuttons = &mousearray[1];    // allow [-1]
 
 // mouse values are used once
@@ -344,6 +363,17 @@ static inline signed char fudgef(signed char b)
   if (++c & 0x1f) return b;
   b |= 1; if (b>2) b-=2;*/
   return b;
+}
+
+static void SetMouseButtons(unsigned int buttons_mask)
+{
+  int i;
+
+  for (i = 0; i < MAX_MOUSEB; ++i)
+  {
+    unsigned int button_on = (buttons_mask & (1 << i)) != 0;
+    mousebuttons[i] = button_on;
+  }
 }
 
 void G_SetSpeed(void)
@@ -464,7 +494,8 @@ void G_BuildTiccmd(ticcmd_t* cmd)
     // use two stage accelerative turning
     // on the keyboard and joystick
   if (joyxmove < 0 || joyxmove > 0 ||
-      gamekeydown[key_right] || gamekeydown[key_left])
+      gamekeydown[key_right] || gamekeydown[key_left] ||
+      mousebuttons[mousebturnright] || mousebuttons[mousebturnleft])
     turnheld += ticdup;
   else
     turnheld = 0;
@@ -487,9 +518,9 @@ void G_BuildTiccmd(ticcmd_t* cmd)
 
   if (strafe)
     {
-      if (gamekeydown[key_right])
+      if (gamekeydown[key_right] || mousebuttons[mousebturnright])
         side += sidemove[speed];
-      if (gamekeydown[key_left])
+      if (gamekeydown[key_left] || mousebuttons[mousebturnleft])
         side -= sidemove[speed];
       if (joyxmove > 0)
         side += sidemove[speed];
@@ -498,9 +529,9 @@ void G_BuildTiccmd(ticcmd_t* cmd)
     }
   else
     {
-      if (gamekeydown[key_right])
+      if (gamekeydown[key_right] || mousebuttons[mousebturnright])
         cmd->angleturn -= angleturn[tspeed];
-      if (gamekeydown[key_left])
+      if (gamekeydown[key_left] || mousebuttons[mousebturnleft])
         cmd->angleturn += angleturn[tspeed];
       if (joyxmove > 0)
         cmd->angleturn -= angleturn[tspeed];
@@ -549,7 +580,7 @@ void G_BuildTiccmd(ticcmd_t* cmd)
 
   // Make Boom insert only a single weapon change command on autoswitch.
   if ((!demo_compatibility && players[consoleplayer].attackdown && // killough
-       !P_CheckAmmo(&players[consoleplayer])) && !done_autoswitch && boom_autoswitch ||
+       !P_CheckAmmo(&players[consoleplayer]) && !done_autoswitch && boom_autoswitch) ||
        gamekeydown[key_weapontoggle])
   {
     newweapon = P_SwitchWeapon(&players[consoleplayer]);           // phares
@@ -565,15 +596,15 @@ void G_BuildTiccmd(ticcmd_t* cmd)
       else
       {
       newweapon =
-        gamekeydown[key_weapon1] ? wp_fist :    // killough 5/2/98: reformatted
-        gamekeydown[key_weapon2] ? wp_pistol :
-        gamekeydown[key_weapon3] ? wp_shotgun :
-        gamekeydown[key_weapon4] ? wp_chaingun :
-        gamekeydown[key_weapon5] ? wp_missile :
-        gamekeydown[key_weapon6] && gamemode != shareware ? wp_plasma :
-        gamekeydown[key_weapon7] && gamemode != shareware ? wp_bfg :
-        gamekeydown[key_weapon8] ? wp_chainsaw :
-        (!demo_compatibility && gamekeydown[key_weapon9] && gamemode == commercial) ? wp_supershotgun :
+        (gamekeydown[key_weapon1] || mousebuttons [mb_weapon1]) ? wp_fist :    // killough 5/2/98: reformatted
+        (gamekeydown[key_weapon2] || mousebuttons [mb_weapon2]) ? wp_pistol :
+        (gamekeydown[key_weapon3] || mousebuttons [mb_weapon3]) ? wp_shotgun :
+        (gamekeydown[key_weapon4] || mousebuttons [mb_weapon4]) ? wp_chaingun :
+        (gamekeydown[key_weapon5] || mousebuttons [mb_weapon5]) ? wp_missile :
+        (gamekeydown[key_weapon6] || mousebuttons [mb_weapon6]) && gamemode != shareware ? wp_plasma :
+        (gamekeydown[key_weapon7] || mousebuttons [mb_weapon7]) && gamemode != shareware ? wp_bfg :
+        (gamekeydown[key_weapon8] || mousebuttons [mb_weapon8]) ? wp_chainsaw :
+        (!demo_compatibility && (gamekeydown[key_weapon9] || mousebuttons [mb_weapon9]) && gamemode == commercial) ? wp_supershotgun :
         wp_nochange;
       }
 
@@ -682,9 +713,15 @@ void G_BuildTiccmd(ticcmd_t* cmd)
 
   }//e6y: end if (mouse_doubleclick_as_use)
 
-  forward += mousey;
+  if(!movement_mousenovert)
+  {
+    forward += mousey;
+  }
   if (strafe)
+  {
     side += mousex / movement_mousestrafedivisor; /* mead  Don't want to strafe as fast as turns.*/
+    side = (side / 2) * 2; // only even values are possible
+  }
   else
     cmd->angleturn -= mousex; /* mead now have enough dynamic range 2-10-00 */
 
@@ -831,6 +868,28 @@ static void G_DoLoadLevel (void)
       memset (players[i].frags,0,sizeof(players[i].frags));
     }
 
+  // automatic pistol start when advancing from one level to the next
+  if (pistolstart)
+  {
+      if (singleplayer)
+      {
+          G_PlayerReborn(0);
+      }
+      else if ((demoplayback || netdemo) && !singledemo)
+      {
+          // no-op - silently ignore pistolstart when playing demo from the
+          // demo reel
+      }
+      else
+      {
+          const char message[] = "The -pistolstart option is not supported"
+                                 " for demos and\n"
+                                 " network play.";
+          if (!demo_p) demorecording = false;
+          I_Error(message);
+      }
+  }
+
   // initialize the msecnode_t freelist.                     phares 3/25/98
   // any nodes in the freelist are gone by now, cleared
   // by Z_FreeTags() when the previous level ended or player
@@ -975,11 +1034,10 @@ dboolean G_Responder (event_t* ev)
       return false;   // always let key up events filter down
 
     case ev_mouse:
-      mousebuttons[0] = ev->data1 & 1;
-      mousebuttons[1] = ev->data1 & 2;
-      mousebuttons[2] = ev->data1 & 4;
-      mousebuttons[3] = ev->data1 & 8;
-      mousebuttons[4] = ev->data1 & 16;
+      SetMouseButtons(ev->data1);
+      return true;    // eat events
+
+    case ev_mousemotion:
       /*
        * bmead@surfree.com
        * Modified by Barry Mead after adding vastly more resolution
@@ -1204,7 +1262,7 @@ void G_Ticker (void)
   // e6y
   // do nothing if a pause has been pressed during playback
   // pausing during intermission can cause desynchs without that
-  if (paused & 2 && gamestate != GS_LEVEL)
+  if ((paused & 2 || (!demoplayback && menuactive && !netgame)) && gamestate != GS_LEVEL)
     return;
 
   // do main actions
@@ -1992,6 +2050,52 @@ unsigned int GetPackageVersion(void)
   return PACKAGEVERSION;
 }
 
+// [FG] support named complevels on the command line, e.g. "-complevel boom",
+// names based on the args to Chocolate Doom's "-gameversion" parameter
+// and IWAD file names
+
+int G_GetNamedComplevel (const char *arg)
+{
+  int i;
+
+  const struct {
+    int level;
+    const char *const name;
+  } named_complevel[] = {
+    {2, "1.9"},
+    {2, "doom2"},
+    {3, "ultimate"},
+//  {3, "doom"}, // deemed too ambigious
+    {3, "udoom"},
+    {4, "final"},
+    {4, "tnt"},
+    {4, "plutonia"},
+    {9, "boom"},
+    {11, "mbf"},
+  };
+
+  // choose the complevel based on the IWAD
+  if (!strcasecmp(arg, "vanilla"))
+  {
+    if (gamemode == retail || gamemission == chex)
+      return 3;
+    else if (gamemode == commercial && (gamemission == pack_plut || gamemission == pack_tnt))
+      return 4;
+    else
+      return 2;
+  }
+
+  for (i = 0; i < sizeof(named_complevel)/sizeof(*named_complevel); i++)
+  {
+    if (!strcasecmp(arg, named_complevel[i].name))
+    {
+      return named_complevel[i].level;
+    }
+  }
+
+  return atoi(arg);
+}
+
 //==========================================================================
 //
 // RecalculateDrawnSubsectors
@@ -2416,12 +2520,51 @@ static skill_t d_skill;
 static int     d_episode;
 static int     d_map;
 
+static char *G_NewDemoName(const char *name)
+{
+  size_t demoname_size;
+  char *demoname;
+  FILE *fp = NULL;
+  static unsigned int j = 0;
+
+  demoname_size = strlen(name) + 11; // + 11 for "-00000.lmp\0"
+  demoname = malloc(demoname_size);
+  snprintf(demoname, demoname_size, "%s.lmp", name);
+
+  // prevent overriding demos by adding a file name suffix
+  for ( ; j <= 99999 && (fp = fopen(demoname, "rb")) != NULL; j++)
+  {
+    snprintf(demoname, demoname_size, "%s-%05d.lmp", name, j);
+    fclose(fp);
+  }
+
+  return demoname;
+}
+
+static const char *orig_demoname = NULL;
+
 void G_DeferedInitNew(skill_t skill, int episode, int map)
 {
   d_skill = skill;
   d_episode = episode;
   d_map = map;
   gameaction = ga_newgame;
+
+  // if a new game is started during demo recording, start a new demo
+  if (demorecording && orig_demoname)
+  {
+    extern int ddt_cheating;
+    char *demoname;
+
+    ddt_cheating = 0;
+    G_CheckDemoStatus();
+
+    demoname = G_NewDemoName(orig_demoname);
+    G_RecordDemo(demoname);
+    free(demoname);
+
+    basetic = gametic;
+  }
 }
 
 /* cph -
@@ -2598,7 +2741,7 @@ void G_ReloadDefaults(void)
   {
     int i = M_CheckParm("-complevel");
     if (i && (1+i) < myargc) {
-      int l = atoi(myargv[i+1]);;
+      int l = G_GetNamedComplevel(myargv[i+1]);;
       if (l >= -1) compatibility_level = l;
     }
   }
@@ -2625,6 +2768,12 @@ void G_DoNewGame (void)
   deathmatch = false;
   G_InitNew (d_skill, d_episode, d_map);
   gameaction = ga_nothing;
+
+  // if a new game is started during demo recording, start a new demo
+  if (demorecording && orig_demoname)
+  {
+    G_BeginRecording();
+  }
 
   //jff 4/26/98 wake up the status bar in case were coming out of a DM demo
   ST_Start();
@@ -2748,7 +2897,8 @@ void G_InitNew(skill_t skill, int episode, int map)
   if (episode < 1)
     episode = 1;
 
-  if (!EpiCustom)	// Disable all sanity checks if there are custom episode definitions. They do not make sense in this case.
+  // Disable all sanity checks if there are custom episode definitions. They do not make sense in this case.
+  if (!EpiCustom && W_CheckNumForName(MAPNAME(episode, map)) == -1)
   {
 
   //e6y: We need to remove the fourth episode for pre-ultimate complevels.
@@ -2918,6 +3068,16 @@ void G_RecordDemo (const char* name)
   AddDefaultExtension(strcpy(demoname, name), ".lmp");  // 1/18/98 killough
   demorecording = true;
   
+  // the original name chosen for the demo
+  if (!orig_demoname)
+  {
+    char *ext;
+    orig_demoname = strdup(name);
+    ext = strrchr(orig_demoname, '.');
+    if (ext)
+      *ext = '\0';
+  }
+
   /* cph - Record demos straight to file
   * If file already exists, try to continue existing demo
   */
@@ -3181,13 +3341,92 @@ void G_BeginRecording (void)
 {
   int i;
   byte *demostart, *demo_p;
+  int num_extensions = 0;
   demostart = demo_p = malloc(1000);
   longtics = 0;
 
+  // ano - jun2019 - add the extension format if needed
   if (umapinfo_loaded)
   {
-	  *demo_p++ = 255;
+    num_extensions++;
   }
+
+  if (num_extensions > 0)
+  {
+    // demover
+    *demo_p++ = 0xFF;
+    // signature
+    *demo_p++ = prdemosig[0]; // 'P'
+    *demo_p++ = prdemosig[1]; // 'R'
+    *demo_p++ = prdemosig[2]; // '+'
+    *demo_p++ = prdemosig[3]; // 'U'
+    *demo_p++ = prdemosig[4]; // 'M'
+    *demo_p++ = '\0';
+    // extension version
+    *demo_p++ = 1;
+    //
+    *demo_p++ =  num_extensions & 0xff;
+    *demo_p++ = (num_extensions >> 8) & 0xff;
+
+    if (umapinfo_loaded)
+    {
+      int mapname_len;
+      // [XA] get the map name from gamemapinfo if the
+      // starting map has a UMAPINFO definition. if not,
+      // fall back to the usual MAPxx/ExMy default.
+      char mapname[9];
+      if (gamemapinfo)
+      {
+        strncpy(mapname, gamemapinfo->mapname, 8);
+      }
+      else if(gamemode == commercial)
+      {
+        snprintf(mapname, 9, "MAP%02d", gamemap);
+      }
+      else
+      {
+        snprintf(mapname, 9, "E%dM%d", gameepisode, gamemap);
+      }
+
+      mapname_len = strnlen(gamemapinfo ? gamemapinfo->mapname : mapname, 9);
+
+      // ano - note that the format has each length by each string
+      // as opposed to a table of lengths
+      *demo_p++ = 0x08;
+      *demo_p++ = 'U';
+      *demo_p++ = 'M';
+      *demo_p++ = 'A';
+      *demo_p++ = 'P';
+      *demo_p++ = 'I';
+      *demo_p++ = 'N';
+      *demo_p++ = 'F';
+      *demo_p++ = 'O';
+
+      // ano - to properly extend this to support other extension strings
+      // we wouldn't just plop this here, but right now we only support the 1
+      // in the future, we should assume that chunks in the header should
+      // follow the order of their appearance in the extensions table.
+      if (mapname_len > 8)
+      {
+        I_Error("Unable to save map lump name %s, too large.", mapname);
+      }
+
+      for (i = 0; i < mapname_len; i++)
+      {
+        // FIXME - the toupper is a hacky workaround for the case insensitivity
+        // in the current UMAPINFO reader. lump names should probably not be
+        // lowercase ever (?)
+        *demo_p++ = toupper(mapname[i]);
+      }
+
+      // lets pad out any spare chars if the length was too short
+      for (; i < 8; i++)
+      {
+        *demo_p++ = 0;
+      }
+    }
+  }
+  // ano - done with the extension format!
 
   /* cph - 3 demo record formats supported: MBF+, BOOM, and Doom v1.9 */
   if (mbf_features) {
@@ -3311,6 +3550,9 @@ void G_BeginRecording (void)
 
   if (fwrite(demostart, 1, demo_p-demostart, demofp) != (size_t)(demo_p-demostart))
     I_Error("G_BeginRecording: Error writing demo header");
+
+  R_DemoEx_ResetMLook();
+
   free(demostart);
 }
 
@@ -3335,7 +3577,7 @@ static int G_GetOriginalDoomCompatLevel(int ver)
     int i = M_CheckParm("-complevel");
     if (i && (i+1 < myargc))
     {
-      lev = atoi(myargv[i+1]);
+      lev = G_GetNamedComplevel(myargv[i+1]);
       if (lev>=0)
         return lev;
     }
@@ -3492,7 +3734,9 @@ const byte* G_ReadDemoHeader(const byte *demo_p, size_t size)
 const byte* G_ReadDemoHeaderEx(const byte *demo_p, size_t size, unsigned int params)
 {
   skill_t skill;
-  int i, episode, map;
+  int i, episode = 1, map = 0, extension_version;
+
+  int using_umapinfo = 0;
 
   // e6y
   // The local variable should be used instead of demobuffer,
@@ -3514,21 +3758,175 @@ const byte* G_ReadDemoHeaderEx(const byte *demo_p, size_t size, unsigned int par
   demover = *demo_p++;
   longtics = 0;
 
+  // ano - jun2019 - special extensions. originally for UMAPINFO but
+  // designed to be extensible otherwise using the list of strings.
+  // note: i consulted the eternity engine implementation of this function
+  extension_version = -1;
   if (demover == 255)
   {
-	  // Uses UMAPINFO. The real version will be in the second byte.
-	  // This prepended 255 is here to prevent non-UMAPINFO ports from recognizing the demo.
-	  demover = *demo_p++;
-	  if (!umapinfo_loaded)
-	  {
-		  lprintf(LO_ERROR, "UMAPINFO not loaded but trying to play a demo recorded with it\n");
-	  }
+    int num_extensions;
+    // ano - jun2019
+    // so the format is
+    // demover byte == 255
+    // "PR+UM" signature (w/ ending null terminator)
+    // extension_version byte. for now this should always be "1"
+    // 2 bytes for num_extensions (little-endian)
+
+    // num_extensions *
+    //    1 byte string length
+    //    and length chars (up to 65535 obviously)
+    // note that the format has each length by each string
+    // as opposed to a table of lengths
+
+    // an example extensions string is "UMAPINFO".
+    // In no realistic scenario should num_extensions
+    // ever reach past 65535.
+
+    // so that's a total of 1+6+1+2 + (n * m) bytes + ?? for extensions
+    // or 10 + some ?? bytes + some more ??
+
+    // then finally the "real" demover byte is present here
+
+    if (CheckForOverrun(header_p, demo_p, size, 10, failonerror))
+      return NULL;
+
+    // we check for the PR+UM signature as mentioned.
+    // Eternity Engine also uses 255 demover, with other signatures.
+    if (strncmp((const char *)demo_p, prdemosig, 5) != 0)
+    {
+      I_Error("G_ReadDemoHeader: Extended demo format 255 found, but \"PR+UM\" string not found.");
+    }
+
+    demo_p += 6;
+    extension_version = *demo_p++;
+
+    if (extension_version != 1)
+    {
+      I_Error("G_ReadDemoHeader: Extended demo format version %d unrecognized.", extension_version);
+    }
+
+    num_extensions  =                 *demo_p++;
+    num_extensions |= ((unsigned int)(*demo_p++)) <<  8;
+
+    if (CheckForOverrun(header_p, demo_p, size, num_extensions, failonerror))
+      return NULL;
+
+    for (i = 0; i < num_extensions; i++)
+    {
+      int r_len = *demo_p++;
+
+      if (CheckForOverrun(header_p, demo_p, size, r_len, failonerror))
+        return NULL;
+
+      // ano - jun2019 - when more potential extension strings get added,
+      // this section can become more complex
+      if (r_len == 8 && strncmp((const char *)demo_p, "UMAPINFO", 8) == 0)
+      {
+        using_umapinfo = 1;
+      }
+      else
+      {
+        // ano - TODO better error handling here?
+        I_Error("G_ReadDemoHeader: Extended demo format extension unrecognized.");
+      }
+
+      demo_p += r_len;
+    }
+
+    // ano - jun2019 - load lump name if we're using umapinfo
+    // this is a bit hacky to just read in episode / map number from string
+    // currently PR+ doesn't support arbitrary mapnames, but one day it may,
+    // so this is for forward compat
+    if(using_umapinfo)
+    {
+      const byte *string_end = demo_p + 8;
+
+      if (CheckForOverrun(header_p, demo_p, size, 8, failonerror))
+        return NULL;
+
+      if (strncmp((const char *)demo_p, "MAP", 3) == 0)
+      {
+        // MAPx form
+        episode = 1;
+        demo_p += 3;
+        map = 0;
+
+        // we're doing hellworld number parsing and i'm sorry
+        // CAPTAIN, WE'RE PICKING UP SOME CODE DUPLICATION IN SECTOR 47
+        for (i = 0; demo_p < string_end; i++)
+        {
+          char cur = *demo_p++;
+          
+          if (cur < '0' || cur > '9')
+          {
+            if (cur != 0)
+            {
+              I_Error("G_ReadDemoHeader: Unable to determine map for UMAPINFO demo.");
+            }
+            break;
+          }
+
+          map = (map * 10) + (cur - '0');
+        }
+      }
+      else if(*demo_p++ == 'E')
+      {
+        // EyMx form
+        episode = 0;
+        map = 0;
+
+        // read in episode #
+        for (i = 0; demo_p < string_end; i++)
+        {
+          char cur = *demo_p++;
+
+          if (cur < '0' || cur > '9')
+          {
+            if (cur == 0 || cur == 'M')
+            {
+              break;
+            }
+
+            I_Error("G_ReadDemoHeader: Unable to determine map for UMAPINFO demo.");
+          }
+
+          episode = (episode * 10) + (cur - '0');
+        }
+
+        // read in map #
+        for (i = 0; demo_p < string_end; i++)
+        {
+          char cur = *demo_p++;
+
+          if (cur < '0' || cur > '9')
+          {
+            if (cur == 0)
+            {
+              break;
+            }
+
+            I_Error("G_ReadDemoHeader: Unable to determine map for UMAPINFO demo.");
+          }
+
+          map = (map * 10) + (cur - '0');
+        }
+      }
+      else
+      {
+        I_Error("G_ReadDemoHeader: Unable to determine map for UMAPINFO demo.");
+      }
+    
+      demo_p = string_end;
+    }
+
+    // ano - jun2019 - this is to support other demovers effectively?
+    // while still having the extended features
+    demover = *demo_p++;
+
   }
-  else if (umapinfo_loaded)
-  {
-	  // Q: Should this abort?
-	  lprintf(LO_ERROR, "UMAPINFO loaded but trying to play a demo recorded without it\n");
-  }
+  // ano - okay we are done with most of the 255 extension code past this point
+  // demover has hopefully been set to the new value
+  // the only stuff related to it will be behind extension_version checks past this point
 
   // e6y
   // Handling of unrecognized demo formats
@@ -3693,8 +4091,18 @@ const byte* G_ReadDemoHeaderEx(const byte *demo_p, size_t size, unsigned int par
         return NULL;
 
       skill = *demo_p++;
-      episode = *demo_p++;
-      map = *demo_p++;
+
+      if (!using_umapinfo)
+      {
+        // ano - jun2019 - umapinfo loads mapname earlier
+        episode = *demo_p++;
+        map = *demo_p++;
+      }
+      else
+      {
+        *demo_p++;
+        *demo_p++;
+      }
       deathmatch = *demo_p++;
       consoleplayer = *demo_p++;
 
@@ -3838,6 +4246,7 @@ dboolean G_CheckDemoStatus (void)
       
       //e6y
       G_WriteDemoFooter(demofp);
+      fclose(demofp);
 
       lprintf(LO_INFO, "G_CheckDemoStatus: Demo recorded\n");
       return false;  // killough
@@ -3919,7 +4328,8 @@ void P_WalkTicker()
     // use two stage accelerative turning
     // on the keyboard and joystick
   if (joyxmove < 0 || joyxmove > 0 ||
-      gamekeydown[key_right] || gamekeydown[key_left])
+      gamekeydown[key_right] || gamekeydown[key_left] ||
+      mousebuttons[mousebturnright] || mousebuttons[mousebturnleft])
     turnheld += ticdup;
   else
     turnheld = 0;
@@ -3933,9 +4343,9 @@ void P_WalkTicker()
 
   if (strafe)
     {
-      if (gamekeydown[key_right])
+      if (gamekeydown[key_right] || mousebuttons[mousebturnright])
         side += sidemove[speed];
-      if (gamekeydown[key_left])
+      if (gamekeydown[key_left] || mousebuttons[mousebturnleft])
         side -= sidemove[speed];
       if (joyxmove > 0)
         side += sidemove[speed];
@@ -3944,9 +4354,9 @@ void P_WalkTicker()
     }
   else
     {
-      if (gamekeydown[key_right])
+      if (gamekeydown[key_right] || mousebuttons[mousebturnright])
         angturn -= angleturn[tspeed];
-      if (gamekeydown[key_left])
+      if (gamekeydown[key_left] || mousebuttons[mousebturnleft])
         angturn += angleturn[tspeed];
       if (joyxmove > 0)
         angturn -= angleturn[tspeed];

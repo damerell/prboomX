@@ -77,6 +77,7 @@
 #include "e6y.h"
 
 int snd_pcspeaker;
+int lowpass_filter;
 
 // The number of internal mixing channels,
 //  the samples calculated for each mixing step,
@@ -93,11 +94,11 @@ static dboolean sound_inited = false;
 static dboolean first_sound_init = true;
 
 // Needed for calling the actual sound output.
-static int SAMPLECOUNT =   512;
 #define MAX_CHANNELS    32
 
 // MWM 2000-01-08: Sample rate in samples/second
 int snd_samplerate = 11025;
+int snd_samplecount = 512;
 
 // The actual output device.
 int audio_fd;
@@ -112,6 +113,9 @@ typedef struct
   // ... and a 0.16 bit remainder of last step.
   unsigned int stepremainder;
   unsigned int samplerate;
+  unsigned int bits;
+  float alpha;
+  int prevS;
   // The channel data pointers, start and end.
   const unsigned char *data;
   const unsigned char *enddata;
@@ -166,21 +170,58 @@ static void stopchan(int i)
 //
 static int addsfx(int sfxid, int channel, const unsigned char *data, size_t len)
 {
+  channel_info_t *const ci = &channelinfo[channel];
+
   stopchan(channel);
 
-  channelinfo[channel].data = data;
-  /* Set pointer to end of raw data. */
-  channelinfo[channel].enddata = channelinfo[channel].data + len - 1;
-  channelinfo[channel].samplerate = (channelinfo[channel].data[3] << 8) + channelinfo[channel].data[2];
-  channelinfo[channel].data += 8; /* Skip header */
+  if (strncmp(data, "RIFF", 4) == 0 && strncmp(data + 8, "WAVEfmt ", 8) == 0)
+  {
+    // FIXME: can't handle stereo wavs
+    // ci->channels = data[22] | (data[23] << 8);
+    ci->samplerate = data[24] | (data[25] << 8) | (data[26] << 16) 
+                   | (data[27] << 24);
+    ci->bits = data[34] | (data[35] << 8);
+    ci->data = data + 44;
+    ci->enddata = data + 44 + (data[40] | (data[41] << 8) | (data[42] << 16) 
+                            | (data[43] << 24));
+    if (ci->enddata > data + len - 2)
+      ci->enddata = data + len - 2;
+  }
+  else
+  {
+    ci->samplerate = (data[3] << 8) + data[2];
+    ci->bits = 8;
+    ci->data = data + 8;
+    ci->enddata = data + len - 1;
+  }
 
-  channelinfo[channel].stepremainder = 0;
+  ci->prevS = 0;
+
+  // Filter from chocolate doom i_sdlsound.c 682-695
+  // Low-pass filter for cutoff frequency f:
+  //
+  // For sampling rate r, dt = 1 / r
+  // rc = 1 / 2*pi*f
+  // alpha = dt / (rc + dt)
+
+  // Filter to the half sample rate of the original sound effect
+  // (maximum frequency, by nyquist)
+
+  if (lowpass_filter)
+  {
+    float rc, dt;
+    dt = 1.0f / snd_samplerate;
+    rc = 1.0f / (3.14f * ci->samplerate);
+    ci->alpha = dt / (rc + dt);
+  }
+
+  ci->stepremainder = 0;
   // Should be gametic, I presume.
-  channelinfo[channel].starttime = gametic;
+  ci->starttime = gametic;
 
   // Preserve sound SFX id,
   //  e.g. for avoiding duplicates of chainsaw.
-  channelinfo[channel].id = sfxid;
+  ci->id = sfxid;
 
   return channel;
 }
@@ -190,7 +231,6 @@ static void updateSoundParams(int handle, int volume, int seperation, int pitch)
   int slot = handle;
   int   rightvol;
   int   leftvol;
-  int         step = steptable[pitch];
 
 #ifdef RANGECHECK
   if ((handle < 0) || (handle >= MAX_CHANNELS))
@@ -206,7 +246,7 @@ static void updateSoundParams(int handle, int volume, int seperation, int pitch)
   // Patched to shift left *then* divide, to minimize roundoff errors
   // as well as to use SAMPLERATE as defined above, not to assume 11025 Hz
   if (pitched_sounds)
-    channelinfo[slot].step = step + (((channelinfo[slot].samplerate << 16) / snd_samplerate) - 65536);
+    channelinfo[slot].step = (unsigned int)(((uint64_t)channelinfo[slot].samplerate * steptable[pitch]) / snd_samplerate);
   else
     channelinfo[slot].step = ((channelinfo[slot].samplerate << 16) / snd_samplerate);
 
@@ -269,7 +309,7 @@ void I_SetChannels(void)
   // This table provides step widths for pitch parameters.
   // I fail to see that this is currently used.
   for (i = -128 ; i < 128 ; i++)
-    steptablemid[i] = (int)(pow(1.2, ((double)i / (64.0 * snd_samplerate / 11025))) * 65536.0);
+    steptablemid[i] = (int)(pow(1.2, (double)i / 64.0) * 65536.0);
 
 
   // Generates volume lookup tables
@@ -500,20 +540,37 @@ static void I_UpdateSound(void *unused, Uint8 *stream, int len)
     //  as well. Thus loop those  channels.
     for ( chan = 0; chan < numChannels; chan++ )
     {
+      channel_info_t *ci = channelinfo + chan;
+
       // Check channel, if active.
-      if (channelinfo[chan].data)
+      if (ci->data)
       {
+        int s;
         // Get the raw data from the channel.
         // no filtering
-        //int s = channelinfo[chan].data[0] * 0x10000 - 0x800000;
+        //s = ci->data[0] * 0x10000 - 0x800000;
 
         // linear filtering
         // the old SRC did linear interpolation back into 8 bit, and then expanded to 16 bit.
         // this does interpolation and 8->16 at same time, allowing slightly higher quality
-        int s = ((unsigned int)channelinfo[chan].data[0] * (0x10000 - channelinfo[chan].stepremainder))
-              + ((unsigned int)channelinfo[chan].data[1] * (channelinfo[chan].stepremainder))
-              - 0x800000; // convert to signed
+        if (ci->bits == 16)
+        {
+          s = (short)(ci->data[0] | (ci->data[1] << 8)) * (255 - (ci->stepremainder >> 8))
+            + (short)(ci->data[2] | (ci->data[3] << 8)) * (ci->stepremainder >> 8);
+        }
+        else
+        {
+          s = (ci->data[0] * (0x10000 - ci->stepremainder))
+            + (ci->data[1] * (ci->stepremainder))
+            - 0x800000; // convert to signed
+        }
 
+        // lowpass
+        if (lowpass_filter)
+        {
+          s = ci->prevS + ci->alpha * (s - ci->prevS);
+          ci->prevS = s;
+        }
 
         // Add left and right part
         //  for this channel (sound)
@@ -522,18 +579,23 @@ static void I_UpdateSound(void *unused, Uint8 *stream, int len)
 
         // full loudness (vol=127) is actually 127/191
 
-        dl += channelinfo[chan].leftvol * s / 49152;  // >> 15;
-        dr += channelinfo[chan].rightvol * s / 49152; // >> 15;
+        dl += ci->leftvol * s / 49152;  // >> 15;
+        dr += ci->rightvol * s / 49152; // >> 15;
 
         // Increment index ???
-        channelinfo[chan].stepremainder += channelinfo[chan].step;
+        ci->stepremainder += ci->step;
+
         // MSB is next sample???
-        channelinfo[chan].data += channelinfo[chan].stepremainder >> 16;
+        if (ci->bits == 16)
+          ci->data += (ci->stepremainder >> 16) * 2;
+        else
+          ci->data += ci->stepremainder >> 16;
+
         // Limit to LSB???
-        channelinfo[chan].stepremainder &= 0xffff;
+        ci->stepremainder &= 0xffff;
 
         // Check whether we are done.
-        if (channelinfo[chan].data >= channelinfo[chan].enddata)
+        if (ci->data >= ci->enddata)
           stopchan(chan);
       }
     }
@@ -616,8 +678,7 @@ void I_InitSound(void)
     /* Initialize variables */
     audio_rate = snd_samplerate;
     audio_channels = 2;
-    SAMPLECOUNT = 512;
-    audio_buffers = SAMPLECOUNT*snd_samplerate/11025;
+    audio_buffers = snd_samplecount * snd_samplerate / 11025;
 
     if (Mix_OpenAudio(audio_rate, MIX_DEFAULT_FORMAT, audio_channels, audio_buffers) < 0)
     {
@@ -628,9 +689,8 @@ void I_InitSound(void)
     }
     sound_inited_once = true;//e6y
     sound_inited = true;
-    SAMPLECOUNT = audio_buffers;
     Mix_SetPostMix(I_UpdateSound, NULL);
-    lprintf(LO_INFO," configured audio device with %d samples/slice\n", SAMPLECOUNT);
+    lprintf(LO_INFO," configured audio device with %d samples/slice\n", audio_buffers);
   }
   else
 #else // HAVE_MIXER
@@ -645,7 +705,7 @@ void I_InitSound(void)
     audio.format = AUDIO_S16LSB;
 #endif
     audio.channels = 2;
-    audio.samples = SAMPLECOUNT * snd_samplerate / 11025;
+    audio.samples = snd_samplecount * snd_samplerate / 11025;
     audio.callback = I_UpdateSound;
     if ( SDL_OpenAudio(&audio, NULL) < 0 )
     {
@@ -656,8 +716,7 @@ void I_InitSound(void)
     }
     sound_inited_once = true;//e6y
     sound_inited = true;
-    SAMPLECOUNT = audio.samples;
-    lprintf(LO_INFO, " configured audio device with %d samples/slice\n", SAMPLECOUNT);
+    lprintf(LO_INFO, " configured audio device with %d samples/slice\n", audio.samples);
   }
   if (first_sound_init)
   {
@@ -1037,7 +1096,7 @@ int I_RegisterSong(const void *data, size_t len)
 
   // e6y: from Chocolate-Doom
   // Assume a MUS file and try to convert
-  if (!music[0])
+  if (len > 4 && !music[0])
   {
     MEMFILE *instream;
     MEMFILE *outstream;
@@ -1208,6 +1267,7 @@ const char *snd_mididev; // midi device to use (portmidiplayer)
 #include "MUSIC/dumbplayer.h"
 #include "MUSIC/flplayer.h"
 #include "MUSIC/vorbisplayer.h"
+#include "MUSIC/alsaplayer.h"
 #include "MUSIC/portmidiplayer.h"
 
 // list of possible music players
@@ -1221,6 +1281,7 @@ static const music_player_t *music_players[] =
   &fl_player, // flplayer.h
   &opl_synth_player, // oplplayer.h
   &pm_player, // portmidiplayer.h
+  &alsa_player, // alsaplayer.h
   NULL
 };
 #define NUM_MUS_PLAYERS ((int)(sizeof (music_players) / sizeof (music_player_t *) - 1))
@@ -1234,6 +1295,7 @@ static int music_player_was_init[NUM_MUS_PLAYERS];
 #define PLAYER_FLUIDSYNTH "fluidsynth midi player"
 #define PLAYER_OPL2       "opl2 synth player"
 #define PLAYER_PORTMIDI   "portmidi midi player"
+#define PLAYER_ALSA       "alsa midi player"
 
 // order in which players are to be tried
 char music_player_order[NUM_MUS_PLAYERS][200] =
@@ -1244,13 +1306,14 @@ char music_player_order[NUM_MUS_PLAYERS][200] =
   PLAYER_FLUIDSYNTH,
   PLAYER_OPL2,
   PLAYER_PORTMIDI,
+  PLAYER_ALSA,
 };
 
 // prefered MIDI device
 const char *snd_midiplayer;
 
 const char *midiplayers[midi_player_last + 1] = {
-  "sdl", "fluidsynth", "opl2", "portmidi", NULL};
+  "sdl", "fluidsynth", "opl2", "portmidi", "alsa", NULL};
 
 static int current_player = -1;
 static const void *music_handle = NULL;
@@ -1454,7 +1517,7 @@ static int Exp_RegisterSongEx (const void *data, size_t len, int try_mus2mid)
 
 
   // load failed? try mus2mid
-  if (try_mus2mid)
+  if (len > 4 && try_mus2mid)
   {
 
     instream = mem_fopen_read (data, len);
@@ -1582,17 +1645,27 @@ void M_ChangeMIDIPlayer(void)
     {
       strcpy(music_player_order[3], PLAYER_FLUIDSYNTH);
       strcpy(music_player_order[4], PLAYER_OPL2);
-      strcpy(music_player_order[5], PLAYER_PORTMIDI);
+      strcpy(music_player_order[6], PLAYER_PORTMIDI);
+      strcpy(music_player_order[5], PLAYER_ALSA);
     }
     else if (!strcasecmp(snd_midiplayer, midiplayers[midi_player_opl2]))
     {
       strcpy(music_player_order[3], PLAYER_OPL2);
-      strcpy(music_player_order[4], PLAYER_FLUIDSYNTH);
-      strcpy(music_player_order[5], PLAYER_PORTMIDI);
+      strcpy(music_player_order[6], PLAYER_PORTMIDI);
+      strcpy(music_player_order[4], PLAYER_ALSA);
+      strcpy(music_player_order[5], PLAYER_FLUIDSYNTH);
+    }
+    else if (!strcasecmp(snd_midiplayer, midiplayers[midi_player_alsa]))
+    {
+      strcpy(music_player_order[3], PLAYER_ALSA);
+      strcpy(music_player_order[5], PLAYER_FLUIDSYNTH);
+      strcpy(music_player_order[6], PLAYER_OPL2);
+      strcpy(music_player_order[4], PLAYER_PORTMIDI);
     }
     else if (!strcasecmp(snd_midiplayer, midiplayers[midi_player_portmidi]))
     {
       strcpy(music_player_order[3], PLAYER_PORTMIDI);
+      strcpy(music_player_order[6], PLAYER_ALSA);
       strcpy(music_player_order[4], PLAYER_FLUIDSYNTH);
       strcpy(music_player_order[5], PLAYER_OPL2);
     }

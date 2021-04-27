@@ -81,6 +81,7 @@ typedef struct
 
 // the set of channels available
 static channel_t *channels;
+static degenmobj_t *sobjs;
 
 // These are not used, but should be (menu).
 // Maximum volume of a sound effect.
@@ -94,7 +95,7 @@ int snd_MusicVolume = 15;
 static dboolean mus_paused;
 
 // music currently being played
-static musicinfo_t *mus_playing;
+musicinfo_t *mus_playing;
 
 // music currently should play
 static int musicnum_current;
@@ -147,6 +148,8 @@ void S_Init(int sfxVolume, int musicVolume)
     // CPhipps - calloc
     channels =
       (channel_t *) calloc(numChannels,sizeof(channel_t));
+    sobjs =
+      (degenmobj_t *) calloc(numChannels, sizeof(degenmobj_t));
 
     // Note that sounds have not been cached (yet).
     for (i=1 ; i<NUMSFX ; i++)
@@ -178,6 +181,15 @@ void S_Stop(void)
 // Kills playing sounds at start of level,
 //  determines music if any, changes music.
 //
+
+static inline int WRAP(int i, int w)
+{
+  while (i < 0)
+    i += w;
+
+  return i % w;
+}
+
 void S_Start(void)
 {
   int mnum;
@@ -195,6 +207,7 @@ void S_Start(void)
 	  int muslump = W_CheckNumForName(gamemapinfo->music);
 	  if (muslump >= 0)
 	  {
+		  musinfo.items[0] = muslump;
 		  S_ChangeMusInfoMusic(muslump, true);
 		  return;
 	  }
@@ -205,7 +218,7 @@ void S_Start(void)
     mnum = idmusnum; //jff 3/17/98 reload IDMUS music if not -1
   else
     if (gamemode == commercial)
-      mnum = mus_runnin + gamemap - 1;
+      mnum = mus_runnin + WRAP(gamemap - 1, NUMMUSIC - mus_runnin);
     else
       {
         static const int spmus[] =     // Song - Who? - Where?
@@ -222,9 +235,9 @@ void S_Start(void)
         };
 
         if (gameepisode < 4)
-          mnum = mus_e1m1 + (gameepisode-1)*9 + gamemap-1;
+          mnum = mus_e1m1 + WRAP((gameepisode-1)*9 + gamemap-1, mus_runnin - mus_e1m1);
         else
-          mnum = spmus[gamemap-1];
+          mnum = spmus[WRAP(gamemap-1, 9)];
       }
 
   memset(&musinfo, 0, sizeof(musinfo));
@@ -358,6 +371,34 @@ void S_StopSound(void *origin)
       }
 }
 
+// [FG] disable sound cutoffs
+int full_sounds;
+
+void S_UnlinkSound(void *origin)
+{
+  int cnum;
+
+  //jff 1/22/98 return if sound is not enabled
+  if (!snd_card || nosfxparm)
+    return;
+
+  if (origin)
+  {
+    for (cnum = 0; cnum < numChannels; cnum++)
+    {
+      if (channels[cnum].sfxinfo && channels[cnum].origin == origin)
+      {
+        degenmobj_t *const sobj = &sobjs[cnum];
+        const mobj_t *const mobj = (mobj_t *) origin;
+        sobj->x = mobj->x;
+        sobj->y = mobj->y;
+        sobj->z = mobj->z;
+        channels[cnum].origin = (mobj_t *) sobj;
+        break;
+      }
+    }
+  }
+}
 
 //
 // Stop and resume music, during game PAUSE.
@@ -493,6 +534,7 @@ void S_ChangeMusic(int musicnum, int looping)
   // current music which should play
   musicnum_current = musicnum;
   musinfo.current_item = -1;
+  S_music[NUMMUSIC].lumpnum = -1;
 
   //jff 1/22/98 return if music is not enabled
   if (!mus_card || nomusicparm)

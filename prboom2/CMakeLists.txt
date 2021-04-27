@@ -1,6 +1,19 @@
 cmake_minimum_required(VERSION 3.0)
 
-project("PrBoom-Plus" VERSION 2.5.1.7)
+project("PrBoom-Plus"
+    VERSION 2.6
+    HOMEPAGE_URL "https://github.com/coelckers/prboom-plus")
+
+# Set a default build type if none was specified
+set(default_build_type "RelWithDebInfo")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+      STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -22,8 +35,10 @@ set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../depen
 
 set(PACKAGE_NAME "${PROJECT_NAME}")
 set(PACKAGE_TARNAME "prboom-plus")
-set(PACKAGE_VERSION "${PROJECT_VERSION}")
+set(PACKAGE_VERSION "${PROJECT_VERSION}um")
+set(PACKAGE_HOMEPAGE "${PROJECT_HOMEPAGE_URL}")
 set(PACKAGE_STRING "${PROJECT_NAME} ${PROJECT_VERSION}")
+set(CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_DATAROOTDIR}/doc/${PACKAGE_TARNAME}" CACHE PATH "")
 
 include(CheckSymbolExists)
 
@@ -49,6 +64,7 @@ if(NOT WIN32)
 endif()
 check_symbol_exists(usleep "unistd.h" HAVE_USLEEP)
 check_symbol_exists(strsignal "string.h" HAVE_STRSIGNAL)
+check_symbol_exists(mkstemp "stdlib.h" HAVE_MKSTEMP)
 
 include(CheckIncludeFile)
 
@@ -61,7 +77,7 @@ if(BUILD_GL)
     find_package(OpenGL)
 endif()
 
-find_package(SDL2 REQUIRED)
+find_package(SDL2 2.0.7 REQUIRED)
 
 option(WITH_IMAGE "Use SDL2_image if available" ON)
 if(WITH_IMAGE)
@@ -144,6 +160,14 @@ if(WITH_PORTMIDI)
     endif()
 endif()
 
+option(WITH_ALSA "Use ALSA MIDI if available" ON)
+if(WITH_ALSA)
+    find_package(ALSA)
+    if(ALSA_FOUND)
+        set(HAVE_ALSA TRUE)
+    endif()
+endif()
+
 set(CMAKE_REQUIRED_INCLUDES_PREV ${CMAKE_REQUIRED_INCLUDES})
 set(CMAKE_REQUIRED_LIBRARIES_PREV ${CMAKE_REQUIRED_LIBRARIES})
 set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${SDL2_INCLUDE_DIRS})
@@ -180,6 +204,21 @@ else()
     )
 endif()
 
+# Support cross compiling
+option(FORCE_CROSSCOMPILE "Enable cross-compilation" OFF)
+if(FORCE_CROSSCOMPILE)
+    set(CMAKE_CROSSCOMPILING ON)
+endif()
+
+if(CMAKE_CROSSCOMPILING)
+    set(IMPORT_EXECUTABLES "IMPORTFILE-NOTFOUND" CACHE FILEPATH "Export file from native build")
+    include(${IMPORT_EXECUTABLES})
+else()
+    if(NOT CROSS_EXPORTS)
+        set(CROSS_EXPORTS "")
+    endif()
+endif()
+
 set(PRBOOM_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
 set(WAD_DATA prboom-plus.wad)
@@ -188,3 +227,7 @@ set(WAD_DATA_PATH "${PRBOOM_OUTPUT_PATH}/${WAD_DATA}")
 add_subdirectory(data)
 add_subdirectory(doc)
 add_subdirectory(src)
+
+if(NOT CMAKE_CROSSCOMPILING)
+    export(TARGETS ${CROSS_EXPORTS} FILE "${CMAKE_BINARY_DIR}/ImportExecutables.cmake")
+endif()

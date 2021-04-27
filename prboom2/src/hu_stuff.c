@@ -65,11 +65,11 @@ int hud_num;
 // Ty 03/28/98 -
 // These four shortcuts modifed to reflect char ** of mapnamesx[]
 // e6y: why sizeof(mapnamest)/sizeof(mapnamest[0]) does not work?
-#define HU_TITLE  (*mapnames[(gameepisode-1)*9+gamemap-1])
-#define HU_TITLE2 (gamemap <= 33 ? *mapnames2[gamemap-1] : "")
-#define HU_TITLEP (gamemap <= 32 ? *mapnamesp[gamemap-1] : "")
-#define HU_TITLET (gamemap <= 32 ? *mapnamest[gamemap-1] : "")
-#define HU_TITLEC (*mapnames[gamemap-1])
+#define HU_TITLE  ((gameepisode <= 5 && gamemap <= 9) ? *mapnames[(gameepisode-1)*9+gamemap-1] : s)
+#define HU_TITLE2 (gamemap <= 33 ? *mapnames2[gamemap-1] : s)
+#define HU_TITLEP (gamemap <= 32 ? *mapnamesp[gamemap-1] : s)
+#define HU_TITLET (gamemap <= 32 ? *mapnamest[gamemap-1] : s)
+#define HU_TITLEC (gamemap <= 5 ? *mapnames[gamemap-1] : s)
 #define HU_TITLEX 0
 //jff 2/16/98 change 167 to ST_Y-1
 // CPhipps - changed to ST_TY
@@ -333,6 +333,11 @@ void HU_Init(void)
     {
       R_SetPatchNum(&hu_font2[i], "DIG45");
       R_SetPatchNum(&hu_font[i], "STCFN045");
+    }
+    else if (j=='.')
+    {
+      R_SetPatchNum(&hu_font2[i], "DIG46");
+      R_SetPatchNum(&hu_font[i], "STCFN046");
     }
     else if (j=='/')
     {
@@ -751,6 +756,10 @@ void HU_Start(void)
 	  // initialize the automap's level title widget
 	  // e6y: stop SEGV here when gamemap is not initialized
 	  if (gamestate == GS_LEVEL && gamemap > 0) /* cph - stop SEGV here when not in level */
+	  {
+		  // initialize the map title widget with the generic map lump name
+		  s = MAPNAME(gameepisode, gamemap);
+
 		  switch (gamemode)
 		  {
 		  case shareware:
@@ -765,14 +774,16 @@ void HU_Start(void)
 				  (gamemission == pack_plut) ? HU_TITLEP : HU_TITLE2;
 			  break;
 		  }
+
+		  // Chex.exe always uses the episode 1 level title
+		  // eg. E2M1 gives the title for E1M1
+		  if (gamemission == chex)
+		  {
+			  s = HU_TITLEC;
+		  }
+	  }
 	  else s = "";
 
-	  // Chex.exe always uses the episode 1 level title
-	  // eg. E2M1 gives the title for E1M1
-	  if (gamemission == chex)
-	  {
-		  s = HU_TITLEC;
-	  }
 	  while (*s)
 		  HUlib_addCharToTextLine(&w_title, *(s++));
   }
@@ -1062,6 +1073,15 @@ void HU_widget_draw_ammo_icon(void);
 void HU_widget_build_gkeys(void);
 void HU_widget_draw_gkeys(void);
 
+// [FG] draw Time/STS widgets above status bar
+static inline dboolean drawTimeSTSwidgets (void)
+{
+  return hudadd_timests &&
+    viewheight < SCREENHEIGHT &&
+    (!(automapmode & am_active) ||
+     (automapmode & am_overlay));
+}
+
 static hud_widget_t hud_name_widget[] =
 {
   {&w_ammo,   0, 0, 0, HU_widget_build_ammo,   HU_widget_draw_ammo,   "ammo"},
@@ -1213,6 +1233,24 @@ void HU_MoveHud(int force)
 {
   static int ohud_num = -1;
 
+  // [FG] draw Time/STS widgets above status bar
+  if (viewheight < SCREENHEIGHT)
+  {
+    if (force || ohud_num != -2)
+    {
+      w_hudadd.x = HU_TITLEX;
+      w_hudadd.y = HU_TITLEY - HU_GAPY;
+      w_hudadd.flags = VPT_ALIGN_LEFT_BOTTOM;
+
+      w_monsec.x = HU_TITLEX;
+      w_monsec.y = HU_TITLEY;
+      w_monsec.flags = VPT_ALIGN_LEFT_BOTTOM;
+
+      ohud_num = -2;
+    }
+    return;
+  }
+
   //jff 3/4/98 move displays around on F5 changing hud_distributed
   if ((huds_count > 0) && (force || hud_num != ohud_num))
   {
@@ -1258,7 +1296,7 @@ int HU_GetArmorColor(int armor, int def)
     result = CR_BLUE;
   else if (plr->armortype == 1)
     result = CR_GREEN;
-  else if (plr->armortype == 0)
+  else
     result = CR_RED;
   }
   else
@@ -2262,10 +2300,8 @@ void HU_draw_crosshair(void)
 
   crosshair.target_sprite = -1;
 
-  if (!crosshair_nam[hudadd_crosshair] || crosshair.lump == -1 ||
-    custom_message_p->ticks > 0 || automapmode & am_active ||
-    menuactive != mnact_inactive || paused ||
-    plr->readyweapon == wp_chainsaw || plr->readyweapon == wp_fist)
+  if (!crosshair_nam[hudadd_crosshair] || crosshair.lump == -1 || automapmode & am_active ||
+      menuactive != mnact_inactive || paused)
   {
     return;
   }
@@ -2277,18 +2313,20 @@ void HU_draw_crosshair(void)
 
   if (hudadd_crosshair_target || hudadd_crosshair_lock_target)
   {
-    fixed_t slope;
+    fixed_t range, slope;
     angle_t an = plr->mo->angle;
+    ammotype_t ammo = weaponinfo[plr->readyweapon].ammo;
     
     // intercepts overflow guard
     overflows_enabled = false;
-    slope = P_AimLineAttack(plr->mo, an, 16*64*FRACUNIT, 0);
-    if (plr->readyweapon == wp_missile || plr->readyweapon == wp_plasma || plr->readyweapon == wp_bfg)
+    range = (ammo == am_noammo) ? MELEERANGE : 16*64*FRACUNIT;
+    slope = P_AimLineAttack(plr->mo, an, range, 0);
+    if (ammo == am_misl || ammo == am_cell)
     {
       if (!linetarget)
-        slope = P_AimLineAttack(plr->mo, an += 1<<26, 16*64*FRACUNIT, 0);
+        slope = P_AimLineAttack(plr->mo, an += 1<<26, range, 0);
       if (!linetarget)
-        slope = P_AimLineAttack(plr->mo, an -= 2<<26, 16*64*FRACUNIT, 0);
+        slope = P_AimLineAttack(plr->mo, an -= 2<<26, range, 0);
     }
     overflows_enabled = true;
 
@@ -2358,7 +2396,7 @@ void HU_Drawer(void)
   // draw the automap widgets if automap is displayed
   if (automapmode & am_active)
   {
-    if (!(automapmode & am_overlay) || (viewheight != SCREENHEIGHT))//!hud_displayed)
+    if ((!(automapmode & am_overlay) || (viewheight != SCREENHEIGHT)) && !drawTimeSTSwidgets())
     {
       // map title
       HUlib_drawTextLine(&w_title, false);
@@ -2517,10 +2555,27 @@ void HU_Drawer(void)
     }
 
   }
+  // [FG] draw Time/STS widgets above status bar
+  else if (drawTimeSTSwidgets())
+  {
+    HU_MoveHud(false);
+
+    if (realframe)
+    {
+      HU_widget_build_monsec();
+      HU_widget_build_hudadd();
+    }
+    HU_widget_draw_monsec();
+    HU_widget_draw_hudadd();
+  }
 
   //jff 3/4/98 display last to give priority
   HU_Erase(); // jff 4/24/98 Erase current lines before drawing current
               // needed when screen not fullsize
+
+  // Draw crosshair before messages
+  if (hudadd_crosshair)
+    HU_draw_crosshair();
 
   //jff 4/21/98 if setup has disabled message list while active, turn it off
   if (hud_msg_lines<=1)
@@ -2533,9 +2588,6 @@ void HU_Drawer(void)
   //e6y
   if (custom_message_p->ticks > 0)
     HUlib_drawTextLine(&w_centermsg, false);
-
-  if (hudadd_crosshair)
-    HU_draw_crosshair();
 
   // if the message review is enabled show the scrolling message review
   if (hud_msg_lines>1 && message_list)

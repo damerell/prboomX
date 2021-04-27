@@ -127,6 +127,14 @@ float gl_sprite_offset;       // precalcilated float value for gl_sprite_offset_
 int gl_sprite_blend;  // e6y: smooth sprite edges
 int gl_mask_sprite_threshold;
 float gl_mask_sprite_threshold_f;
+/* Note: These must be identically-indexed,
+ * including the spritefuzzmode enum */
+spritefuzzmode_t gl_thingspritefuzzmode;
+spritefuzzmode_t gl_weaponspritefuzzmode;
+const char *gl_spritefuzzmodes[] = {"darken", "shadow", "transparent", "ghostly"};
+GLenum gl_fuzzsfactors[] = {GL_DST_COLOR, GL_ZERO, GL_ONE, GL_SRC_ALPHA};
+GLenum gl_fuzzdfactors[] = {GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+    GL_ONE_MINUS_SRC_ALPHA, GL_ONE};
 
 GLuint gld_DisplayList=0;
 int fog_density=200;
@@ -152,6 +160,7 @@ GLfloat cm2RGB[CR_LIMIT + 1][4] =
   {0.50f ,0.50f, 1.00f, 1.00f}, //CR_BLUE2
   {1.00f ,1.00f, 1.00f, 1.00f}, //CR_LIMIT
 };
+
 
 void SetFrameTextureMode(void)
 {
@@ -666,6 +675,10 @@ void gld_DrawNumPatch_f(float x, float y, int lump, int cm, enum patch_translati
     topoffset = gltexture->topoffset;
   }
 
+  // [FG] automatically center wide patches without horizontal offset
+  if (gltexture->width > 320 && leftoffset == 0)
+    x -= (float)(gltexture->width - 320) / 2;
+
   if (flags & VPT_STRETCH_MASK)
   {
     stretch_param_t *params = &stretch_params[flags & VPT_ALIGN_MASK];
@@ -885,7 +898,8 @@ void gld_DrawWeapon(int weaponlump, vissprite_t *vis, int lightlevel)
   // when invisibility is about to go
   if (/*(viewplayer->mo->flags & MF_SHADOW) && */!vis->colormap)
   {
-    glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(gl_fuzzsfactors[gl_weaponspritefuzzmode],
+            gl_fuzzdfactors[gl_weaponspritefuzzmode]);
     glAlphaFunc(GL_GEQUAL,0.1f);
     //glColor4f(0.2f,0.2f,0.2f,(float)tran_filter_pct/100.0f);
     glColor4f(0.2f,0.2f,0.2f,0.33f);
@@ -1013,13 +1027,13 @@ unsigned char *gld_ReadScreen(void)
 
   int i, size;
 
-  size = REAL_SCREENWIDTH * 3;
+  size = SCREENWIDTH * 3;
   if (!buffer || size > buffer_size)
   {
     buffer_size = size;
     buffer = realloc (buffer, size);
   }
-  size = REAL_SCREENWIDTH * REAL_SCREENHEIGHT * 3;
+  size = SCREENWIDTH * SCREENHEIGHT * 3;
   if (!scr || size > scr_size)
   {
     scr_size = size;
@@ -1033,18 +1047,18 @@ unsigned char *gld_ReadScreen(void)
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     
     glFlush();
-    glReadPixels(0, 0, REAL_SCREENWIDTH, REAL_SCREENHEIGHT, GL_RGB, GL_UNSIGNED_BYTE, scr);
+    glReadPixels(0, 0, SCREENWIDTH, SCREENHEIGHT, GL_RGB, GL_UNSIGNED_BYTE, scr);
     
     glPixelStorei(GL_PACK_ALIGNMENT, pack_aligment);
 
-    gld_ApplyGammaRamp(scr, REAL_SCREENWIDTH * 3, REAL_SCREENWIDTH, REAL_SCREENHEIGHT);
+    gld_ApplyGammaRamp(scr, SCREENWIDTH * 3, SCREENWIDTH, SCREENHEIGHT);
 
-    for (i=0; i<REAL_SCREENHEIGHT/2; i++)
+    for (i=0; i<SCREENHEIGHT/2; i++)
     {
-      memcpy(buffer, &scr[i*REAL_SCREENWIDTH*3], REAL_SCREENWIDTH*3);
-      memcpy(&scr[i*REAL_SCREENWIDTH*3],
-        &scr[(REAL_SCREENHEIGHT-(i+1))*REAL_SCREENWIDTH*3], REAL_SCREENWIDTH*3);
-      memcpy(&scr[(REAL_SCREENHEIGHT-(i+1))*REAL_SCREENWIDTH*3], buffer, REAL_SCREENWIDTH*3);
+      memcpy(buffer, &scr[i*SCREENWIDTH*3], SCREENWIDTH*3);
+      memcpy(&scr[i*SCREENWIDTH*3],
+        &scr[(SCREENHEIGHT-(i+1))*SCREENWIDTH*3], SCREENWIDTH*3);
+      memcpy(&scr[(SCREENHEIGHT-(i+1))*SCREENWIDTH*3], buffer, SCREENWIDTH*3);
     }
   }
 
@@ -1059,8 +1073,8 @@ GLvoid gld_Set2DMode(void)
   glLoadIdentity();
   glOrtho(
     (GLdouble) 0,
-    (GLdouble) REAL_SCREENWIDTH,
-    (GLdouble) REAL_SCREENHEIGHT,
+    (GLdouble) SCREENWIDTH,
+    (GLdouble) SCREENHEIGHT,
     (GLdouble) 0,
     (GLdouble) -1.0,
     (GLdouble) 1.0
@@ -1747,7 +1761,7 @@ void gld_AddWall(seg_t *seg)
         }
         else
         {
-          if ((toptexture != NO_TEXTURE && midtexture == NO_TEXTURE) ||
+          if (((backsector->ceilingpic != skyflatnum && toptexture != NO_TEXTURE) && midtexture == NO_TEXTURE) ||
             backsector->ceilingpic != skyflatnum ||
             backsector->ceilingheight <= frontsector->floorheight)
           {
@@ -2249,7 +2263,8 @@ static void gld_DrawSprite(GLSprite *sprite)
     {
       glGetIntegerv(GL_BLEND_SRC, &blend_src);
       glGetIntegerv(GL_BLEND_DST, &blend_dst);
-      glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+      glBlendFunc(gl_fuzzsfactors[gl_thingspritefuzzmode],
+            gl_fuzzdfactors[gl_thingspritefuzzmode]);
       //glColor4f(0.2f,0.2f,0.2f,(float)tran_filter_pct/100.0f);
       glAlphaFunc(GL_GEQUAL,0.1f);
       glColor4f(0.2f,0.2f,0.2f,0.33f);
@@ -2609,6 +2624,11 @@ void gld_ProjectSprite(mobj_t* thing, int lightlevel)
     sprite.fogdensity = gld_CalcFogDensity(thing->subsector->sector, lightlevel, GLDIT_SPRITE);
   }
   sprite.cm = CR_LIMIT + (int)((thing->flags & MF_TRANSLATION) >> (MF_TRANSSHIFT));
+  // [FG] colored blood and gibs
+  if (thing->flags & MF_COLOREDBLOOD)
+  {
+    sprite.cm = (thing->flags & MF_TRANSLATION1) ? CR_BLUE2 : CR_GREEN;
+  }
   sprite.gltexture = gld_RegisterPatch(lump, sprite.cm, true);
   if (!sprite.gltexture)
     goto unlock_patch;
@@ -2619,6 +2639,8 @@ void gld_ProjectSprite(mobj_t* thing, int lightlevel)
 
   sprite.index = gl_spriteindex++;
   sprite.xy = thing->x + (thing->y >> 16); 
+  sprite.fx = thing->x;
+  sprite.fy = thing->y;
 
   sprite.vt = 0.0f;
   sprite.vb = sprite.gltexture->scaleyfac;
@@ -3225,43 +3247,75 @@ void gld_DrawScene(player_t *player)
   gld_RenderShadows();
   glsl_SetActiveShader(sh_main);
 
+  /* Transparent sprites and transparent things must be rendered
+   * in far-to-near order. The approach used here is to sort in-
+   * place by comparing the next farthest items in the queue.
+   * There are known limitations to this approach, but it is
+   * a trade-off of accuracy for speed.
+   * Refer to the discussion below for more detail.
+   * https://github.com/coelckers/prboom-plus/pull/262
+   */
   if (gld_drawinfo.num_items[GLDIT_TWALL] > 0 || gld_drawinfo.num_items[GLDIT_TSPRITE] > 0)
   {
-    if (gld_drawinfo.num_items[GLDIT_TWALL] > 0)
-    {
-      // if translucency percentage is less than 50,
-      // then all translucent textures and sprites disappear completely
-      // without this line
-      glAlphaFunc(GL_GREATER, 0.0f);
+      int twall_idx   = gld_drawinfo.num_items[GLDIT_TWALL] - 1;
+      int tsprite_idx = gld_drawinfo.num_items[GLDIT_TSPRITE] - 1;
 
-      // transparent walls
-      for (i = gld_drawinfo.num_items[GLDIT_TWALL] - 1; i >= 0; i--)
+      if (tsprite_idx > 0)
+          gld_DrawItemsSortSprites(GLDIT_TSPRITE);
+
+      while (twall_idx >= 0 || tsprite_idx >= 0 )
       {
-        gld_SetFog(gld_drawinfo.items[GLDIT_TWALL][i].item.wall->fogdensity);
-        gld_ProcessWall(gld_drawinfo.items[GLDIT_TWALL][i].item.wall);
+          dboolean draw_tsprite = false;
+
+          /* find out what is next to draw */
+          if (twall_idx >= 0 && tsprite_idx >= 0)
+          {
+              /* both are left to draw, determine
+               * which is farther */
+              seg_t *twseg = gld_drawinfo.items[GLDIT_TWALL][twall_idx].item.wall->seg;
+              int ti;
+              for (ti = tsprite_idx; ti >= 0; ti--) {
+                  /* reconstruct the sprite xy */
+                  fixed_t tsx = gld_drawinfo.items[GLDIT_TSPRITE][ti].item.sprite->fx;
+                  fixed_t tsy = gld_drawinfo.items[GLDIT_TSPRITE][ti].item.sprite->fy;
+
+                  if (R_PointOnSegSide(tsx, tsy, twseg))
+                  {
+                      /* a thing is behind the seg */
+                      /* do not draw the seg yet */
+                      draw_tsprite = true;
+                      break;
+                  }
+              }
+          }
+          else if (tsprite_idx >= 0)
+          {
+              /* no transparent walls left, draw a sprite */
+              draw_tsprite = true;
+          }
+          /* fall-through case is draw wall */
+
+          if (draw_tsprite)
+          {
+              /* transparent sprite is farther, draw it */
+              glAlphaFunc(GL_GEQUAL, gl_mask_sprite_threshold_f);
+              gld_SetFog(gld_drawinfo.items[GLDIT_TSPRITE][tsprite_idx].item.sprite->fogdensity);
+              gld_DrawSprite(gld_drawinfo.items[GLDIT_TSPRITE][tsprite_idx].item.sprite);
+              tsprite_idx--;
+          }
+          else
+          {
+              glDepthMask(GL_FALSE);
+              /* transparent wall is farther, draw it */
+              glAlphaFunc(GL_GREATER, 0.0f);
+              gld_SetFog(gld_drawinfo.items[GLDIT_TWALL][twall_idx].item.wall->fogdensity);
+              gld_ProcessWall(gld_drawinfo.items[GLDIT_TWALL][twall_idx].item.wall);
+              glDepthMask(GL_TRUE);
+              twall_idx--;
+          }
       }
-    }
-
-    glEnable(GL_ALPHA_TEST);
-
-    // transparent sprites
-    // sorting is necessary only for transparent sprites.
-    // from back to front
-    if (gld_drawinfo.num_items[GLDIT_TSPRITE] > 0)
-    {
-      glAlphaFunc(GL_GEQUAL, gl_mask_sprite_threshold_f);
-      glDepthMask(GL_FALSE);
-      gld_DrawItemsSortSprites(GLDIT_TSPRITE);
-      for (i = gld_drawinfo.num_items[GLDIT_TSPRITE] - 1; i >= 0; i--)
-      {
-        gld_SetFog(gld_drawinfo.items[GLDIT_TSPRITE][i].item.sprite->fogdensity);
-        gld_DrawSprite(gld_drawinfo.items[GLDIT_TSPRITE][i].item.sprite);
-      }
-      glDepthMask(GL_TRUE);
-    }
-
-    // restoring
-    glAlphaFunc(GL_GEQUAL, 0.5f);
+      glAlphaFunc(GL_GEQUAL, 0.5f);
+      glEnable(GL_ALPHA_TEST);
   }
 
   // e6y: detail

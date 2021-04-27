@@ -52,6 +52,9 @@
 #include "g_overflow.h"
 #include "e6y.h"//e6y
 
+// [FG] colored blood and gibs
+dboolean colored_blood;
+
 //
 // P_SetMobjState
 // Returns true if the mobj is still present.
@@ -68,10 +71,10 @@ dboolean P_SetMobjState(mobj_t* mobj,statenum_t state)
   static int recursion;                       // detects recursion
   statenum_t i = state;                       // initial state
   dboolean ret = true;                         // return value
-  statenum_t tempstate[NUMSTATES];            // for use with recursion
+  statenum_t* tempstate = NULL;               // for use with recursion
 
   if (recursion++)                            // if recursion detected,
-    memset(seenstate=tempstate,0,sizeof tempstate); // clear state table
+    seenstate = tempstate = calloc(NUMSTATES, sizeof(statenum_t)); // allocate state table
 
   do
     {
@@ -106,6 +109,9 @@ dboolean P_SetMobjState(mobj_t* mobj,statenum_t state)
   if (!--recursion)
     for (;(state=seenstate[i]);i=state-1)
       seenstate[i] = 0;  // killough 4/9/98: erase memory of states
+
+  if (tempstate)
+    free(tempstate);
 
   return ret;
 }
@@ -329,6 +335,8 @@ static void P_XYMovement (mobj_t* mo)
       // killough 10/98:
       // Don't affect main player when voodoo dolls stop, except in old demos:
 
+      // COMPAT: MBF compares (demo_version < 203) here, i.e. this should read
+      //         (compatibility_level < lxdoom_1_compatibility)
       if (player && (unsigned)(player->mo->state - states - S_PLAY_RUN1) < 4
     && (player->mo == mo || compatibility_level >= lxdoom_1_compatibility))
   P_SetMobjState(player->mo, S_PLAY);
@@ -697,9 +705,7 @@ static void P_NightmareRespawn(mobj_t* mobj)
    * regardless of that point's nature. SMMU and Eternity need this for
    * script-spawned things like Halif Swordsmythe, as well.
    *
-   * cph - copied from eternity, except comp_respawnfix becomes comp_respawn
-   *   and the logic is reversed (i.e. like the rest of comp_ it *disables*
-   *   the fix)
+   * cph - copied from eternity, alias comp_respawnfix
    */
   if(!comp[comp_respawn] && !x && !y)
   {
@@ -1009,7 +1015,11 @@ void P_RemoveMobj (mobj_t* mobj)
 
   // stop any playing sound
 
-  S_StopSound (mobj);
+  // [FG] removed map objects may finish their sounds
+  if (full_sounds)
+    S_UnlinkSound(mobj);
+  else
+    S_StopSound (mobj);
 
   // killough 11/98:
   //
@@ -1511,10 +1521,25 @@ void P_SpawnPuff(fixed_t x,fixed_t y,fixed_t z)
 }
 
 
+// [FG] colored blood and gibs
+uint_64_t P_ColoredBlood (mobj_t* bleeder)
+{
+  if (colored_blood)
+  {
+    // Barons of Hell and Hell Knights bleed green blood
+    if (bleeder->type == MT_BRUISER || bleeder->type == MT_KNIGHT)
+      return MF_COLOREDBLOOD;
+    // Cacodemons bleed blue blood
+    else if (bleeder->type == MT_HEAD)
+      return MF_COLOREDBLOOD | MF_TRANSLATION1;
+  }
+  return 0;
+}
+
 //
 // P_SpawnBlood
 //
-void P_SpawnBlood(fixed_t x,fixed_t y,fixed_t z,int damage)
+void P_SpawnBlood(fixed_t x,fixed_t y,fixed_t z,int damage, mobj_t* bleeder)
 {
   mobj_t* th;
   // killough 5/5/98: remove dependence on order of evaluation:
@@ -1523,6 +1548,7 @@ void P_SpawnBlood(fixed_t x,fixed_t y,fixed_t z,int damage)
   th = P_SpawnMobj(x,y,z, MT_BLOOD);
   th->momz = FRACUNIT*2;
   th->tics -= P_Random(pr_spawnblood)&3;
+  th->flags |= P_ColoredBlood(bleeder);
 
   if (th->tics < 1)
     th->tics = 1;

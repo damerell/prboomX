@@ -61,6 +61,7 @@ fixed_t pspriteiscale;
 // proff 11/06/98: Added for high-res
 fixed_t pspritexscale;
 fixed_t pspriteyscale;
+fixed_t pspriteiyscale;
 
 static const lighttable_t **spritelights;        // killough 1/25/98 made static
 
@@ -537,6 +538,14 @@ static void R_DrawVisSprite(vissprite_t *vis)
   if (!dcvars.colormap)   // NULL colormap = shadow draw
     colfunc = R_GetDrawColumnFunc(RDC_PIPELINE_FUZZ, filter, filterz);    // killough 3/14/98
   else
+    // [FG] colored blood and gibs
+    if (vis->mobjflags & MF_COLOREDBLOOD)
+      {
+        colfunc = R_GetDrawColumnFunc(RDC_PIPELINE_TRANSLATED, filter, filterz);
+        dcvars.translation = (vis->mobjflags & MF_TRANSLATION1) ?
+                             colrngs[CR_BLUE2] : colrngs[CR_GREEN];
+      }
+  else
     if (vis->mobjflags & MF_TRANSLATION)
       {
         colfunc = R_GetDrawColumnFunc(RDC_PIPELINE_TRANSLATED, filter, filterz);
@@ -564,6 +573,8 @@ static void R_DrawVisSprite(vissprite_t *vis)
   // check to see if weapon is a vissprite
   if(vis->mobjflags & MF_PLAYERSPRITE)
   {
+    // [FG] fix garbage lines at the top of weapon sprites
+    dcvars.iscale = pspriteiyscale;
     dcvars.texturemid += FixedMul(((centery - viewheight/2)<<FRACBITS), dcvars.iscale);
     sprtopscreen += (viewheight/2 - centery)<<FRACBITS;
   }

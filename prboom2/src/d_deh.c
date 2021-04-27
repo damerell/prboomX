@@ -1478,19 +1478,7 @@ void deh_changeCompTranslucency(void)
   {
     if (!DEH_mobjinfo_bits[predefined_translucency[i]])
     {
-      // Transparent sprites are not visible behind transparent walls in OpenGL.
-      // It needs much work.
-#ifdef GL_DOOM
-      if (V_GetMode() == VID_MODEGL)
-      {
-        // Disabling transparency in OpenGL for original sprites
-        // which are not changed by dehacked, because it's buggy for now.
-        // Global sorting of transparent sprites and walls is needed
-        mobjinfo[predefined_translucency[i]].flags &= ~MF_TRANSLUCENT;
-      }
-      else
-#endif
-      if (comp[comp_translucency]) 
+      if (default_comp[comp_translucency])
         mobjinfo[predefined_translucency[i]].flags &= ~MF_TRANSLUCENT;
       else 
         mobjinfo[predefined_translucency[i]].flags |= MF_TRANSLUCENT;
@@ -1576,6 +1564,12 @@ void ProcessDehFile(const char *filename, const char *outfilename, int lumpnum)
     {
       infile.size = W_LumpLength(lumpnum);
       infile.inp = infile.lump = W_CacheLumpNum(lumpnum);
+      // [FG] skip empty DEHACKED lumps
+      if (!infile.inp)
+        {
+          lprintf(LO_WARN, "skipping empty DEHACKED (%d) lump\n",lumpnum);
+          return;
+        }
       filename = lumpinfo[lumpnum].wadfile->name;
       file_or_lump = "lump from";
     }
@@ -2720,6 +2714,8 @@ static void deh_procText(DEHFILE *fpin, FILE* fpout, char *line)
         // Try sound effects entries - see sounds.c
         for (i=1; i<NUMSFX; i++)
           {
+            // skip empty dummy entries in S_sfx[]
+            if (!S_sfx[i].name) continue;
             // avoid short prefix erroneous match
             if (strlen(S_sfx[i].name) != (size_t)fromlen) continue;
             if (!strnicmp(S_sfx[i].name,inbuffer,fromlen) && !S_sfx_state[i])
@@ -2834,7 +2830,7 @@ static void deh_procStrings(DEHFILE *fpin, FILE* fpout, char *line)
           maxstrlen = strlen(holdstring) + strlen(inbuffer);
           if (fpout) fprintf(fpout,
                              "* increased buffer from to %ld for buffer size %d\n",
-                             maxstrlen,(int)strlen(inbuffer));
+                             (long)maxstrlen,(int)strlen(inbuffer));
           holdstring = realloc(holdstring,maxstrlen*sizeof(*holdstring));
         }
       // concatenate the whole buffer if continuation or the value iffirst

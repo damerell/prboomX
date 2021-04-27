@@ -123,6 +123,7 @@ int hudadd_demotime;
 int hudadd_secretarea;
 int hudadd_smarttotals;
 int hudadd_demoprogressbar;
+int hudadd_timests;
 int hudadd_crosshair;
 int hudadd_crosshair_scale;
 int hudadd_crosshair_color;
@@ -133,6 +134,7 @@ int hudadd_crosshair_lock_target;
 int movement_strafe50;
 int movement_shorttics;
 int movement_mouselook;
+int movement_mousenovert;
 int movement_mouseinvert;
 int movement_maxviewpitch;
 int movement_mousestrafedivisor;
@@ -375,9 +377,15 @@ int G_ReloadLevel(void)
 
   if ((gamestate == GS_LEVEL) &&
       !deathmatch && !netgame &&
-      !demorecording && !demoplayback &&
+      !democontinue && !demoplayback &&
       !menuactive)
   {
+    // restart demos from the map they were started
+    if (demorecording)
+    {
+      gameepisode = startepisode;
+      gamemap = startmap;
+    }
     G_DeferedInitNew(gameskill, gameepisode, gamemap);
     result = true;
   }
@@ -385,7 +393,11 @@ int G_ReloadLevel(void)
   return result;
 }
 
-int G_GotoNextLevel(void)
+// [FG] Write the episode and map number of the next level
+//      to the e and m pointers, respectively, or outright
+//      warp to this level if both are NULL.
+
+int G_GotoNextLevel(int *e, int *m)
 {
 	static byte doom2_next[33] = {
 	  2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
@@ -436,30 +448,57 @@ int G_GotoNextLevel(void)
 			(compatibility_level < ultdoom_compatibility) ?
 			11 : 41);
 
-		if ((gamestate == GS_LEVEL) &&
-			!deathmatch && !netgame &&
-			!demorecording && !demoplayback &&
-			!menuactive)
-		{
-			//doom2_next and doom_next are 0 based, unlike gameepisode and gamemap
-			epsd = gameepisode - 1;
-			map = gamemap - 1;
+		//doom2_next and doom_next are 0 based, unlike gameepisode and gamemap
+		epsd = gameepisode - 1;
+		map = gamemap - 1;
 
-			if (gamemode == commercial)
-			{
-				epsd = 1;
-				map = doom2_next[BETWEEN(0, 32, map)];
-			}
+		if (gamemode == commercial)
+		{
+			epsd = 1;
+			if (map >= 0 && map <= 32)
+				map = doom2_next[map];
 			else
+				map = gamemap + 1;
+		}
+		else
+		{
+			if (epsd >= 0 && epsd <= 3 && map >= 0 && map <= 8)
 			{
-				int next = doom_next[BETWEEN(0, 3, epsd)][BETWEEN(0, 9, map)];
+				int next = doom_next[epsd][map];
 				epsd = next / 10;
 				map = next % 10;
 			}
+			else
+			{
+				epsd = gameepisode;
+				map = gamemap + 1;
+			}
 		}
 	}
-	G_DeferedInitNew(gameskill, epsd, map);
-	changed = true;
+
+	// [FG] report next level without changing
+	if (e || m)
+	{
+		if (e) *e = epsd;
+		if (m) *m = map;
+	}
+	else if ((gamestate == GS_LEVEL) &&
+		!deathmatch && !netgame &&
+		!demorecording && !demoplayback &&
+		!menuactive)
+	{
+		char *next = MAPNAME(epsd, map);
+
+		if (W_CheckNumForName(next) == -1)
+		{
+		  doom_printf("Next level not found: %s", next);
+		}
+		else
+		{
+		  G_DeferedInitNew(gameskill, epsd, map);
+		  changed = true;
+		}
+	}
 
 	return changed;
 }
@@ -972,9 +1011,9 @@ void e6y_WriteStats(void)
     sprintf(str,
       "%%s - %%%dd:%%05.2f (%%%dd:%%02d)  K: %%%dd/%%-%dd%%%lds  I: %%%dd/%%-%dd%%%lds  S: %%%dd/%%-%dd %%%lds\r\n",
       max.stat[TT_TIME],      max.stat[TT_TOTALTIME],
-      max.stat[TT_ALLKILL],   max.stat[TT_TOTALKILL],   allkills_len,
-      max.stat[TT_ALLITEM],   max.stat[TT_TOTALITEM],   allitems_len,
-      max.stat[TT_ALLSECRET], max.stat[TT_TOTALSECRET], allsecrets_len);
+      max.stat[TT_ALLKILL],   max.stat[TT_TOTALKILL],   (long)allkills_len,
+      max.stat[TT_ALLITEM],   max.stat[TT_TOTALITEM],   (long)allitems_len,
+      max.stat[TT_ALLSECRET], max.stat[TT_TOTALSECRET], (long)allsecrets_len);
     
     fprintf(f, str, stats[level].map, 
       stats[level].stat[TT_TIME]/TICRATE/60,
