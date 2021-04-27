@@ -1361,6 +1361,73 @@ static int AM_DoorColor(int type)
 #define MAGIC_REFRESH_MAX (2)
 
 
+//
+// AM_drawLineCharacter()
+//
+// Draws a vector graphic according to numerous parameters
+//
+// Passed the structure defining the vector graphic shape, the number
+// of vectors in it, the scale to draw it at, the angle to draw it at,
+// the color to draw it with, and the map coordinates to draw it at.
+// Returns nothing
+//
+static void AM_drawLineCharacter
+( mline_t*  lineguy,
+  int   lineguylines,
+  fixed_t scale,
+  angle_t angle,
+  int   color,
+  fixed_t x,
+  fixed_t y )
+{
+  int   i;
+  mline_t l;
+
+  if (automapmode & am_rotate) angle -= viewangle - ANG90; // cph
+
+  for (i=0;i<lineguylines;i++)
+  {
+    l.a.x = lineguy[i].a.x;
+    l.a.y = lineguy[i].a.y;
+
+    if (scale)
+    {
+      l.a.x = FixedMul(scale, l.a.x);
+      l.a.y = FixedMul(scale, l.a.y);
+    }
+
+    if (angle)
+      AM_rotate(&l.a.x, &l.a.y, angle);
+
+    l.a.x += x;
+    l.a.y += y;
+
+    l.b.x = lineguy[i].b.x;
+    l.b.y = lineguy[i].b.y;
+
+    if (scale)
+    {
+      l.b.x = FixedMul(scale, l.b.x);
+      l.b.y = FixedMul(scale, l.b.y);
+    }
+
+    if (angle)
+      AM_rotate(&l.b.x, &l.b.y, angle);
+
+    l.b.x += x;
+    l.b.y += y;
+
+    l.a.fx = (float)l.a.x;
+    l.a.fy = (float)l.a.y;
+    l.b.fx = (float)l.b.x;
+    l.b.fy = (float)l.b.y;
+
+    AM_drawMline(&l, color);
+  }
+}
+
+
+
 static void AM_drawWalls(void)
 {
   int i;
@@ -1615,6 +1682,11 @@ static void AM_drawWalls(void)
               
           /* draw */
           AM_drawMline(&l, magic_sector_color_pos);
+
+            if( magic_sector_color_pos == MAGIC_SECTOR_COLOR_TAGGED_MIN ) {
+                AM_drawLineCharacter(cross_mark, NUMCROSSMARKLINES,
+                    128<<MAPBITS, 0, 229, l.a.x, l.a.y );
+            }
           
           }
           
@@ -1622,74 +1694,15 @@ static void AM_drawWalls(void)
               
               /* draw */
               AM_drawMline(&l, magic_line_color_pos);
+              /* add highlight icon */
+
+            if( magic_line_color_pos == MAGIC_LINE_COLOR_MIN ) {
+                AM_drawLineCharacter(cross_mark, NUMCROSSMARKLINES,
+                    128<<MAPBITS, 0, 251, l.a.x, l.a.y );
+            }
 
           }
       }
-  }
-}
-
-//
-// AM_drawLineCharacter()
-//
-// Draws a vector graphic according to numerous parameters
-//
-// Passed the structure defining the vector graphic shape, the number
-// of vectors in it, the scale to draw it at, the angle to draw it at,
-// the color to draw it with, and the map coordinates to draw it at.
-// Returns nothing
-//
-static void AM_drawLineCharacter
-( mline_t*  lineguy,
-  int   lineguylines,
-  fixed_t scale,
-  angle_t angle,
-  int   color,
-  fixed_t x,
-  fixed_t y )
-{
-  int   i;
-  mline_t l;
-
-  if (automapmode & am_rotate) angle -= viewangle - ANG90; // cph
-
-  for (i=0;i<lineguylines;i++)
-  {
-    l.a.x = lineguy[i].a.x;
-    l.a.y = lineguy[i].a.y;
-
-    if (scale)
-    {
-      l.a.x = FixedMul(scale, l.a.x);
-      l.a.y = FixedMul(scale, l.a.y);
-    }
-
-    if (angle)
-      AM_rotate(&l.a.x, &l.a.y, angle);
-
-    l.a.x += x;
-    l.a.y += y;
-
-    l.b.x = lineguy[i].b.x;
-    l.b.y = lineguy[i].b.y;
-
-    if (scale)
-    {
-      l.b.x = FixedMul(scale, l.b.x);
-      l.b.y = FixedMul(scale, l.b.y);
-    }
-
-    if (angle)
-      AM_rotate(&l.b.x, &l.b.y, angle);
-
-    l.b.x += x;
-    l.b.y += y;
-
-    l.a.fx = (float)l.a.x;
-    l.a.fy = (float)l.a.y;
-    l.b.fx = (float)l.b.x;
-    l.b.fy = (float)l.b.y;
-
-    AM_drawMline(&l, color);
   }
 }
 
@@ -2404,6 +2417,8 @@ void AM_Drawer (void)
   AM_drawWalls();
   AM_drawPlayers();
   AM_drawThings(); //jff 1/5/98 default double IDDT sprite
+
+  AM_drawCrosshair(mapcolor_hair);
   if( selecting_magic_sector && (players+consoleplayer)->powers[pw_allmap] ) {
       AM_drawCrosshair(mapcolor_hai2);
 
@@ -2445,7 +2460,6 @@ void AM_Drawer (void)
       }
   }
   
-  AM_drawCrosshair(mapcolor_hair);
   
 #if defined(HAVE_LIBSDL2_IMAGE) && defined(GL_DOOM)
   if (V_GetMode() == VID_MODEGL)

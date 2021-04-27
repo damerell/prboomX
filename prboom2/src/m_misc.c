@@ -774,7 +774,7 @@ default_t defaults[] =
   {"mapcolor_hair", {&mapcolor_hair}, {208},0,255,  // white
    def_colour,ss_auto}, // color used for dot crosshair denoting center of map
 
-  {"mapcolor_hai2", {&mapcolor_hair}, {248},0,255,  // peach
+  {"mapcolor_hai2", {&mapcolor_hai2}, {248},0,255,  // peach
    def_colour,ss_auto}, // color used for dot crosshair denoting center of map
 
   {"mapcolor_sngl", {&mapcolor_sngl}, {208},0,255,  // white

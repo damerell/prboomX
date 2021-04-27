@@ -918,6 +918,7 @@ void P_DamageMobj(mobj_t *target,mobj_t *inflictor, mobj_t *source, int damage)
 
       if (player->health == 0 && is_buddha()) {
           player->health = 1;
+          player->mo->health = 1;
           switch( rand() % 10 ) {
               case 9:
                   player->message = "You shrug off mortal damage.";

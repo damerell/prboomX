@@ -785,6 +785,22 @@ void P_MobjThinker (mobj_t* mobj)
 
   CheckThingsHealthTracer(mobj);  //e6y
 
+  static unsigned int regen = 0;
+#define REGEN_STARTUP (35*2)
+  extern dboolean is_buddha();
+  if((mobj == players[consoleplayer].mo) && is_buddha()) {
+      if(mobj->momx == 0 && mobj->momy == 0) {
+          regen++;
+          if(players[consoleplayer].health < 100 && (regen > REGEN_STARTUP) && (regen % 6 == 0)) {
+              players[consoleplayer].health++;
+              players[consoleplayer].mo->health++;
+              regen += MIN(regen/REGEN_STARTUP, 5);
+          }
+      } else {
+          regen = 0;
+      }
+  }
+
   // momentum movement
   if (mobj->momx | mobj->momy || mobj->flags & MF_SKULLFLY)
     {
