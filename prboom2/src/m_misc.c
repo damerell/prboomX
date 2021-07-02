@@ -727,6 +727,8 @@ default_t defaults[] =
    0,MAX_KEY,def_key,ss_keys}, // key to toggle overlaying the automap on the rendered display
   {"key_map_textured", {&key_map_textured},   {0}             ,
    0,MAX_KEY,def_key,ss_keys}, // key to toggle textured automap
+  {"key_map_magicsector", {&key_map_magicsector},   {'x'},
+   0,MAX_KEY,def_key,ss_keys}, // key to toggle textured automap
   {"key_reverse",     {&key_reverse},         {'/'}           ,
    0,MAX_KEY,def_key,ss_keys}, // key to spin 180 instantly
   {"key_zoomin",      {&key_zoomin},          {'='}           ,
