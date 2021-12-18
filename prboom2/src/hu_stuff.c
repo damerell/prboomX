@@ -53,6 +53,8 @@
 #include "lprintf.h"
 #include "e6y.h" //e6y
 #include "g_overflow.h"
+#include "m_cheat.h"
+#include "c_cmd.h"
 
 // global heads up display controls
 
@@ -98,6 +100,9 @@ int hud_num;
 
 #define HU_INPUTX HU_MSGX
 #define HU_INPUTY (HU_MSGY + HU_MSGHEIGHT*(hu_font[0].height) +1)
+
+#define HU_CONSOLEX HU_MSGX
+#define HU_CONSOLEY (HU_MSGY + 10*(HU_MSGHEIGHT*(hu_font[0].height) +1))
 
 #define HU_TRACERX (2)
 #define HU_TRACERY (hu_font['A'-HU_FONTSTART].height)
@@ -148,6 +153,7 @@ patchnum_t hu_font_hud[HU_FONTSIZE];
 static hu_textline_t  w_title;
 static hu_stext_t     w_message;
 static hu_itext_t     w_chat;
+static hu_itext_t     w_console;
 static hu_itext_t     w_inputbuffer[MAXPLAYERS];
 static hu_textline_t  w_coordx; //jff 2/16/98 new coord widget for automap
 static hu_textline_t  w_coordy; //jff 3/3/98 split coord widgets automap
@@ -184,6 +190,7 @@ static hu_textline_t  w_keys_icon;
 static dboolean    always_off = false;
 static char       chat_dest[MAXPLAYERS];
 dboolean           chat_on;
+dboolean           console_on;
 static dboolean    message_on;
 static dboolean    message_list; //2/26/98 enable showing list of messages
 dboolean           message_dontfuckwithme;
@@ -201,6 +208,7 @@ int hudcolor_mapstat_time;
 //jff 2/16/98 hud text colors, controls added
 int hudcolor_mesg;  // color range of scrolling messages
 int hudcolor_chat;  // color range of chat lines
+int hudcolor_console;  // color range of console lines
 int hud_msg_lines;  // number of message lines in window
 //jff 2/26/98 hud text colors, controls added
 int hudcolor_list;  // list of messages color
@@ -464,6 +472,7 @@ void HU_Start(void)
   message_dontfuckwithme = false;
   message_nottobefuckedwith = false;
   chat_on = false;
+  console_on = false;
 
   // create the message widget
   // messages to player in upper-left of screen
@@ -961,6 +970,20 @@ void HU_Start(void)
     VPT_NONE,
     &chat_on
   );
+
+  // create the chat widget
+  HUlib_initIText
+  (
+    &w_console,
+    HU_CONSOLEX,
+    HU_CONSOLEY,
+    hu_font,
+    HU_FONTSTART,
+    hudcolor_console,
+    VPT_NONE,
+    &console_on
+  );
+
 
   // create the inputbuffer widgets, one per player
   for (i=0 ; i<MAXPLAYERS ; i++)
@@ -2595,6 +2618,12 @@ void HU_Drawer(void)
 
   // display the interactive buffer for chat entry
   HUlib_drawIText(&w_chat);
+
+  if (console_on) {
+    V_DrawNamePatchPrecise(0, -100, 0, "INTERPIC", CR_DEFAULT, VPT_NONE);
+  }
+  // display the interactive buffer for console entry
+  HUlib_drawIText(&w_console);
 }
 
 //
@@ -2618,6 +2647,9 @@ void HU_Erase(void)
 
   // erase the interactive text buffer for chat entry
   HUlib_eraseIText(&w_chat);
+
+  // erase the interactive text buffer for console entry
+  HUlib_eraseIText(&w_console);
 
   // erase the automap title
   HUlib_eraseTextLine(&w_title);
@@ -2646,6 +2678,7 @@ void HU_Ticker(void)
   }
   if (bsdown && bscounter++ > 9) {
     HUlib_keyInIText(&w_chat, (unsigned char)key_backspace);
+    HUlib_keyInIText(&w_console, (unsigned char)key_backspace);
     bscounter = 8;
   }
 
@@ -2838,7 +2871,7 @@ dboolean HU_Responder(event_t *ev)
 
   if (!chat_on)
   {
-    if (ev->data1 == key_enter)                                 // phares
+    if (!console_on && ev->data1 == key_enter)                                 // phares
     {
 #ifndef INSTRUMENTED  // never turn on message review if INSTRUMENTED defined
       if (hud_msg_lines>1)  // it posts multi-line messages that will trash
@@ -2894,9 +2927,44 @@ dboolean HU_Responder(event_t *ev)
         }
       }
     }
-    }
-  }//jff 2/26/98 no chat functions if message review is displayed
-  else if (!message_list)
+    } else if (!demoplayback && !netgame && (ev->data1 == key_console)) {
+        console_on ^= 1;
+        paused ^= 1;
+        HUlib_resetIText(&w_console);
+        eatkey = true;
+    } else if (console_on) {
+      eatkey = true;
+      c = ev->data1;
+
+      if (shiftdown || (c >= 'a' && c <= 'z'))
+        c = shiftxform[c];
+
+      if (c == key_enter) {
+        console_on = false;
+        paused = false;
+
+        int ch = 0;
+        for (int i=0; i < w_console.l.len; i++) {
+            ch |= M_FindCheats(tolower(w_console.l.l[i]));
+        }
+        if (!ch) {
+            C_ConsoleCommand(w_console.l.l);
+        }
+        HUlib_resetIText(&w_console);
+      } else if (c == key_escape) {
+        console_on = false;
+        paused = false;
+      } else {
+          if (c >= ' ' && c <= '~') {
+              HUlib_addCharToTextLine(&w_console.l, (char) c);
+          } else if (c == key_backspace && w_console.l.len != w_console.lm && w_console.l.len > 0) {
+              w_console.l.l[--w_console.l.len] = 0;
+              w_console.l.needsupdate = 4;
+          }
+      }
+
+  } 
+  } else if (!message_list)
   {
     c = ev->data1;
     // send a macro

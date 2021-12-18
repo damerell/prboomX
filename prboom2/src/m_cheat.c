@@ -99,6 +99,7 @@ static void cheat_resurrect();
 static void cheat_target_massacre();
 static void cheat_comp_ext();
 static void cheat_shorttics();
+static void cheat_nextlevel();
 
 //-----------------------------------------------------------------------------
 //
@@ -204,6 +205,8 @@ cheatseq_t cheat[] = {
 
   // Enable/disable shorttics in-game
   CHEAT("tntshort",   NULL,               cht_never, cheat_shorttics, 0),
+
+  CHEAT("nextlevel",   NULL,               cht_never, cheat_nextlevel, 0),
 
   // end-of-list marker
   {NULL}
@@ -455,6 +458,11 @@ static void cheat_clev(char buf[3])
   plyr->message = s_STSTR_CLEV; // Ty 03/27/98 - externalized
 
   G_DeferedInitNew(gameskill, epsd, map);
+}
+
+static void cheat_nextlevel()
+{
+    G_ExitLevel();
 }
 
 // 'mypos' for player position

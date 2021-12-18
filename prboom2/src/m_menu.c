@@ -2517,6 +2517,7 @@ setup_menu_t keys_settings2[] =  // Key Binding screen strings
   {"QUICKLOAD"   ,S_KEY       ,m_scrn,KB_X,KB_Y+16*8,{&key_quickload}},
   {"END GAME"    ,S_KEY       ,m_scrn,KB_X,KB_Y+17*8,{&key_endgame}},
   {"QUIT"        ,S_KEY       ,m_scrn,KB_X,KB_Y+18*8,{&key_quit}},
+  {"CONSOLE"     ,S_KEY       ,m_scrn,KB_X,KB_Y+19*8,{&key_console}},
   {"<- PREV", S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8, {keys_settings1}},
   {"NEXT ->", S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {keys_settings3}},
 
@@ -3817,6 +3818,7 @@ enum {
   mess_color_play,
   mess_timer,
   mess_color_chat,
+  mess_color_console,
   mess_chat_timer,
   mess_color_review,
   mess_timed,
@@ -3846,6 +3848,9 @@ setup_menu_t mess_settings1[] =  // Messages screen
 
   {"Chat Message Color", S_CRITEM, m_null, M_X,
    M_Y + mess_color_chat*8, {"hudcolor_chat"}},
+
+  {"Console Message Color", S_CRITEM, m_null, M_X,
+   M_Y + mess_color_console*8, {"hudcolor_console"}},
 
 #if 0
   {"Chat Message Duration (ms)", S_NUM, m_null, M_X,
@@ -4642,6 +4647,7 @@ dboolean M_Responder (event_t* ev) {
 
   ch = -1; // will be changed to a legit char if we're going to use it here
 
+  if(console_on) return false;
   // Process joystick input
 
   if (ev->type == ev_joystick && joywait < I_GetTime())  {

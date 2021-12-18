@@ -773,6 +773,9 @@ default_t defaults[] =
   {"key_screenshot",  {&key_screenshot},      {'*'}            ,
    0,MAX_KEY,def_key,ss_keys}, // key to take a screenshot
 
+  {"key_console",     {&key_console},         {'~'}            ,
+   0,MAX_KEY,def_key,ss_keys}, // key to toggle console
+
   {"Joystick settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"use_joystick",{&usejoystick},{0},0,2,
    def_int,ss_none}, // number of joystick to use (0 for none)
@@ -933,6 +936,8 @@ default_t defaults[] =
   {"hudcolor_mesg", {&hudcolor_mesg}, {6},0,9,  // red range
    def_int,ss_mess}, // color range used for messages during play
   {"hudcolor_chat", {&hudcolor_chat}, {5},0,9,  // gold range
+   def_int,ss_mess}, // color range used for chat messages and entry
+  {"hudcolor_console", {&hudcolor_console}, {4},0,9,  // gold range
    def_int,ss_mess}, // color range used for chat messages and entry
   {"hudcolor_list", {&hudcolor_list}, {5},0,9,  // gold range  //jff 2/26/98
    def_int,ss_mess}, // color range used for message review

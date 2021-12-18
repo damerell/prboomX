@@ -85,6 +85,7 @@ extern int hudcolor_mapstat_time;
 /* jff 2/16/98 hud text colors, controls added */
 extern int hudcolor_mesg;   /* color range of scrolling messages    */
 extern int hudcolor_chat;   /* color range of chat lines            */
+extern int hudcolor_console;   /* color range of console lines      */
 /* jff 2/26/98 hud message list color and background enable */
 extern int hudcolor_list;   /* color of list of past messages                  */
 extern int hud_list_bgon;   /* solid window background for list of messages    */
@@ -94,6 +95,7 @@ extern int hud_displayed;   /* hud is displayed */
 /* jff 2/18/98 hud/status control */
 extern int hud_num;
 extern int huds_count;
+extern dboolean console_on;
 
 typedef struct custom_message_s
 {
