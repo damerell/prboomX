@@ -31,7 +31,8 @@ extern "C"
 #include "doomdef.h"
 #include "doomstat.h"
 
-void M_AddEpisode(const char *map, char *def);
+void M_AddEpisode(const char *map, const char *gfx, const char *txt, const char *alpha);
+void M_ClearEpisodes(void);
 
 MapList Maps;
 }
@@ -311,6 +312,7 @@ static void FreeMap(MapEntry *mape)
 {
 	if (mape->mapname) free(mape->mapname);
 	if (mape->levelname) free(mape->levelname);
+	if (mape->label) free(mape->label);
 	if (mape->intertext) free(mape->intertext);
 	if (mape->intertextsecret) free(mape->intertextsecret);
 	if (mape->properties) free(mape->properties);
@@ -420,6 +422,23 @@ static int ParseStandardProperty(Scanner &scanner, MapEntry *mape)
 		scanner.MustGetToken(TK_StringConst);
 		ReplaceString(&mape->levelname, scanner.string);
 	}
+	else if (!stricmp(pname, "label"))
+	{
+		if (scanner.CheckToken(TK_Identifier))
+		{
+			if (!stricmp(scanner.string, "clear")) ReplaceString(&mape->label, "-");
+			else
+			{
+				scanner.ErrorF("Either 'clear' or string constant expected");
+				return 0;
+			}
+		}
+		else
+		{
+			scanner.MustGetToken(TK_StringConst);
+	                ReplaceString(&mape->label, scanner.string);
+	        }
+	}
 	else if (!stricmp(pname, "next"))
 	{
 		ParseLumpName(scanner, mape->nextmap);
@@ -515,9 +534,38 @@ static int ParseStandardProperty(Scanner &scanner, MapEntry *mape)
 	}
 	else if (!stricmp(pname, "episode"))
 	{
-		char *lname = ParseMultiString(scanner, 1);
-		if (!lname) return 0;
-		M_AddEpisode(mape->mapname, lname);
+		if (scanner.CheckToken(TK_Identifier))
+		{
+			if (!stricmp(scanner.string, "clear")) M_ClearEpisodes();
+			else
+			{
+				scanner.ErrorF("Either 'clear' or string constant expected");
+				return 0;
+			}
+		}
+		else
+		{
+			char lumpname[9] = {0};
+			char *alttext = NULL;
+			char *key = NULL;
+
+			ParseLumpName(scanner, lumpname);
+			if (scanner.CheckToken(','))
+			{
+				scanner.MustGetToken(TK_StringConst);
+				alttext = strdup(scanner.string);
+				if (scanner.CheckToken(','))
+				{
+					scanner.MustGetToken(TK_StringConst);
+					key = strdup(scanner.string);
+				}
+			}
+
+			M_AddEpisode(mape->mapname, lumpname, alttext, key);
+
+			if (alttext) free(alttext);
+			if (key) free(key);
+		}
 	}
 	else if (!stricmp(pname, "bossaction"))
 	{

@@ -71,6 +71,10 @@
 #include "lprintf.h"
 #include "e6y.h"
 
+#ifdef _WIN32
+#include "WIN/win_fopen.h"
+#endif
+
 static dboolean   server;
 static int       remotetic; // Tic expected from the remote
 static int       remotesend; // Tic expected by the remote
@@ -82,6 +86,7 @@ int maketic;
 int ticdup = 1;
 static int xtratics = 0;
 int              wanted_player_number;
+int solo_net = 0;
 
 static void D_QuitNetGame (void);
 
@@ -103,7 +108,9 @@ void D_InitNetGame (void)
     // e6y
     // for play, recording or playback using "single-player coop" mode.
     // Equivalent to using prboom_server with -N 1
-    netgame = M_CheckParm("-solo-net");
+    solo_net = (M_CheckParm("-solo-net") != 0);
+    coop_spawns = (M_CheckParm("-coop_spawns") != 0);
+    netgame = solo_net;
   } else {
     // Get game info from server
     packet_header_t *packet = Z_Malloc(1000, PU_STATIC, NULL);
@@ -127,7 +134,7 @@ void D_InitNetGame (void)
     } while (packet->type != PKT_SETUP);
 
     // Once we have been accepted by the server, we should tell it when we leave
-    atexit(D_QuitNetGame);
+    I_AtExit(D_QuitNetGame, true);
 
     // Get info from the setup packet
     consoleplayer = sinfo->yourplayer;
@@ -170,7 +177,9 @@ void D_InitNetGame (void)
   doomcom->consoleplayer = 0;
   doomcom->numnodes = 0; doomcom->numplayers = 1;
   localcmds = netcmds[consoleplayer];
-  netgame = (M_CheckParm("-solo-net") != 0);
+  solo_net = (M_CheckParm("-solo-net") != 0);
+  coop_spawns = (M_CheckParm("-coop_spawns") != 0);
+  netgame = solo_net;
 
   for (i=0; i<doomcom->numplayers; i++)
     playeringame[i] = true;
@@ -514,7 +523,6 @@ void TryRunTics (void)
     if (advancedemo)
       D_DoAdvanceDemo ();
     M_Ticker ();
-    I_GetTime_SaveMS();
     G_Ticker ();
     P_Checksum(gametic);
     gametic++;

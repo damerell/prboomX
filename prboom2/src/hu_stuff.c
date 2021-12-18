@@ -746,16 +746,21 @@ void HU_Start(void)
     &message_list
   );
 
-  if (gamemapinfo != NULL)
+  if (gamemapinfo && gamemapinfo->levelname)
   {
-	  s = gamemapinfo->mapname;
-	  while (*s)
-		  HUlib_addCharToTextLine(&w_title, *(s++));
+	  if (gamemapinfo->label)
+		  s = gamemapinfo->label;
+	  else
+		  s = gamemapinfo->mapname;
+	  if (s == gamemapinfo->mapname || strcmp(s, "-") != 0)
+	  {
+		  while (*s)
+			  HUlib_addCharToTextLine(&w_title, *(s++));
 
-	  HUlib_addCharToTextLine(&w_title, ':');
-	  HUlib_addCharToTextLine(&w_title, ' ');
+		  HUlib_addCharToTextLine(&w_title, ':');
+		  HUlib_addCharToTextLine(&w_title, ' ');
+	  }
 	  s = gamemapinfo->levelname;
-	  if (!s) s = "Unnamed";
 	  while (*s)
 		  HUlib_addCharToTextLine(&w_title, *(s++));
 
@@ -2305,13 +2310,13 @@ void SetCrosshairTarget(void)
 
       if (!hudadd_crosshair_scale)
       {
-        crosshair.target_screen_x = winx;
-        crosshair.target_screen_y = SCREENHEIGHT - winy;
+        crosshair.target_screen_x = winx - (crosshair.w / 2);
+        crosshair.target_screen_y = SCREENHEIGHT - winy - (crosshair.h / 2);
       }
       else
       {
-        crosshair.target_screen_x = (winx - params->deltax1) * 320.0f / params->video->width;
-        crosshair.target_screen_y = 200 - (winy - params->deltay1) * 200.0f / params->video->height;
+        crosshair.target_screen_x = (winx - params->deltax1) * 320.0f / params->video->width - (crosshair.w / 2);
+        crosshair.target_screen_y = 200 - (winy - params->deltay1) * 200.0f / params->video->height - (crosshair.h / 2);
       }
     }
   }

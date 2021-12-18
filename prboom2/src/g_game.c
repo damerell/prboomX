@@ -87,6 +87,10 @@
 #include "e6y.h"//e6y
 #include "statdump.h"
 
+#ifdef _WIN32
+#include "WIN/win_fopen.h"
+#endif
+
 // ano - used for version 255+ demos, like EE or MBF
 static char     prdemosig[] = "PR+UM";
 
@@ -156,6 +160,8 @@ int             bytes_per_tic;
 
 dboolean boom_autoswitch;
 dboolean done_autoswitch;
+
+dboolean coop_spawns;
 
 // e6y
 // There is a new command-line switch "-shorttics".
@@ -432,7 +438,7 @@ static dboolean WeaponSelectable(weapontype_t weapon)
 static int G_NextWeapon(int direction)
 {
   weapontype_t weapon;
-  int i, arrlen;
+  int start_i, i, arrlen;
 
   // Find index in the table.
   if (players[consoleplayer].pendingweapon == wp_nochange)
@@ -453,13 +459,14 @@ static int G_NextWeapon(int direction)
     }
   }
 
-  // Switch weapon.
+  // Switch weapon. Don't loop forever.
+  start_i = i;
   do
   {
     i += direction;
     i = (i + arrlen) % arrlen;
   }
-  while (!WeaponSelectable(weapon_order_table[i].weapon));
+  while (i != start_i && !WeaponSelectable(weapon_order_table[i].weapon));
 
   return weapon_order_table[i].weapon_num;
 }
@@ -581,7 +588,7 @@ void G_BuildTiccmd(ticcmd_t* cmd)
 
   // Make Boom insert only a single weapon change command on autoswitch.
   if ((!demo_compatibility && players[consoleplayer].attackdown && // killough
-       !P_CheckAmmo(&players[consoleplayer]) && !done_autoswitch && boom_autoswitch) ||
+       !P_CheckAmmo(&players[consoleplayer]) && !(done_autoswitch && boom_autoswitch)) ||
        gamekeydown[key_weapontoggle])
   {
     newweapon = P_SwitchWeapon(&players[consoleplayer]);           // phares
@@ -1005,7 +1012,7 @@ dboolean G_Responder (event_t* ev)
 
   // If the next/previous weapon keys are pressed, set the next_weapon
   // variable to change weapons when the next ticcmd is generated.
-  if (ev->type == ev_keydown)
+  if (gamestate == GS_LEVEL && ev->type == ev_keydown)
   {
     if (ev->data1 == key_prevweapon)
     {
@@ -2143,6 +2150,16 @@ void G_DoLoadGame(void)
   name = malloc(length+1);
   G_SaveGameName(name, length+1, savegameslot, demoplayback);
 
+  // [crispy] loaded game must always be single player.
+  // Needed for ability to use a further game loading, as well as
+  // cheat codes and other single player only specifics.
+  if (!command_loadgame)
+  {
+    netdemo = false;
+    netgame = false;
+    deathmatch = false;
+  }
+
   gameaction = ga_nothing;
 
   length = M_ReadFile(name, &savebuffer);
@@ -2761,11 +2778,13 @@ void G_ReloadDefaults(void)
 
 void G_DoNewGame (void)
 {
+  extern int solo_net;
+
   // e6y: allow new level's music to be loaded
   idmusnum = -1;
 
   G_ReloadDefaults();            // killough 3/1/98
-  netgame = false;               // killough 3/29/98
+  netgame = solo_net;
   deathmatch = false;
   G_InitNew (d_skill, d_episode, d_map);
   gameaction = ga_nothing;
@@ -3823,6 +3842,10 @@ const byte* G_ReadDemoHeaderEx(const byte *demo_p, size_t size, unsigned int par
       // this section can become more complex
       if (r_len == 8 && strncmp((const char *)demo_p, "UMAPINFO", 8) == 0)
       {
+        if (!umapinfo_loaded && !(params & RDH_SKIP_HEADER))
+        {
+          I_Error("G_ReadDemoHeader: Playing demo with UMAPINFO extension without UMAPINFO loaded.");
+        }
         using_umapinfo = 1;
       }
       else
@@ -3922,6 +3945,7 @@ const byte* G_ReadDemoHeaderEx(const byte *demo_p, size_t size, unsigned int par
 
     // ano - jun2019 - this is to support other demovers effectively?
     // while still having the extended features
+    header_p = demo_p;
     demover = *demo_p++;
 
   }
@@ -4269,7 +4293,7 @@ dboolean G_CheckDemoStatus (void)
   if (demoplayback)
     {
       if (singledemo)
-        exit(0);  // killough
+        I_SafeExit(0);  // killough
 
       if (demolumpnum != -1) {
   // cph - unlock the demo lump

@@ -86,6 +86,10 @@
 // NSM
 #include "i_capture.h"
 
+#ifdef _WIN32
+#include "WIN/win_fopen.h"
+#endif
+
 /* cph - disk icon not implemented */
 static inline void I_BeginRead(void) {}
 static inline void I_EndRead(void) {}
@@ -337,9 +341,6 @@ default_t defaults[] =
    def_int,ss_none}, // selects default skill 1=TYTD 2=NTR 3=HMP 4=UV 5=NM
   {"weapon_recoil",{&default_weapon_recoil},{0},0,1,
    def_bool,ss_weap, &weapon_recoil},
-  /* killough 10/98 - toggle between SG/SSG and Fist/Chainsaw */
-  {"doom_weapon_toggles",{&doom_weapon_toggles}, {1}, 0, 1,
-   def_bool, ss_weap },
   {"player_bobbing",{&default_player_bobbing},{1},0,1,         // phares 2/25/98
    def_bool,ss_weap, &player_bobbing},
   {"weapon_attack_alignment",{&weapon_attack_alignment},{0},0,3,         // phares 2/25/98
@@ -481,8 +482,6 @@ default_t defaults[] =
    def_int,ss_none}, // gamma correction level // killough 1/18/98
   {"uncapped_framerate", {&movement_smooth_default},  {1},0,1,
    def_bool,ss_stat},
-  {"test_interpolation_method", {&interpolation_method},  {0},0,1,
-   def_int,ss_stat},
   {"filter_wall",{(int*)&drawvars.filterwall},{RDRAW_FILTER_POINT},
    RDRAW_FILTER_POINT, RDRAW_FILTER_ROUNDED, def_int,ss_none},
   {"filter_floor",{(int*)&drawvars.filterfloor},{RDRAW_FILTER_POINT},

@@ -71,6 +71,7 @@
 #include "doomtype.h"
 
 #include "d_main.h"
+#include "i_system.h"
 
 //e6y
 #include "i_pcsound.h"
@@ -340,7 +341,7 @@ int I_GetSfxLumpNum(sfxinfo_t *sfx)
   prefix = (snd_pcspeaker ? "dp" : "ds");
 
   sprintf(namebuf, "%s%s", prefix, sfx->name);
-  return W_SafeGetNumForName(namebuf); //e6y: make missing sounds non-fatal
+  return W_CheckNumForName(namebuf); //e6y: make missing sounds non-fatal
 }
 
 //
@@ -720,7 +721,7 @@ void I_InitSound(void)
   }
   if (first_sound_init)
   {
-    atexit(I_ShutdownSound);
+    I_AtExit(I_ShutdownSound, true);
     first_sound_init = false;
   }
 
@@ -911,7 +912,7 @@ void I_InitMusic(void)
 #else /* !_WIN32 */
     music_tmp = strdup("doom.tmp");
 #endif
-    atexit(I_ShutdownMusic);
+    I_AtExit(I_ShutdownMusic, true);
   }
   return;
 #endif
@@ -1356,7 +1357,7 @@ static void Exp_InitMusic(void)
   // todo not so greedy
   for (i = 0; music_players[i]; i++)
     music_player_was_init[i] = music_players[i]->init (snd_samplerate);
-  atexit(Exp_ShutdownMusic);
+  I_AtExit(Exp_ShutdownMusic, true);
 }
 
 static void Exp_PlaySong(int handle, int looping)

@@ -1850,7 +1850,7 @@ void P_UseLines (player_t*  player)
   // This added test makes the "oof" sound work on 2s lines -- killough:
 
   if (P_PathTraverse ( x1, y1, x2, y2, PT_ADDLINES, PTR_UseTraverse ))
-    if (!comp[comp_sound] && !P_PathTraverse ( x1, y1, x2, y2, PT_ADDLINES, PTR_NoWayTraverse ))
+    if (!default_comp[comp_sound] && !P_PathTraverse ( x1, y1, x2, y2, PT_ADDLINES, PTR_NoWayTraverse ))
       S_StartSound (usething, sfx_noway);
 }
 
@@ -1971,7 +1971,11 @@ dboolean PIT_ChangeSector (mobj_t* thing)
     }
     thing->height = 0;
     thing->radius = 0;
-    thing->flags |= P_ColoredBlood(thing);
+    if (colored_blood)
+    {
+      thing->flags |= MF_COLOREDBLOOD;
+      thing->bloodcolor = V_BloodColor(thing->info->bloodcolor);
+    }
     return true; // keep checking
     }
 
@@ -2009,7 +2013,11 @@ dboolean PIT_ChangeSector (mobj_t* thing)
     mo = P_SpawnMobj (thing->x,
                       thing->y,
                       thing->z + thing->height/2, MT_BLOOD);
-    mo->flags |= P_ColoredBlood(thing);
+    if (colored_blood)
+    {
+      mo->flags |= MF_COLOREDBLOOD;
+      mo->bloodcolor = V_BloodColor(thing->info->bloodcolor);
+    }
 
     /* killough 8/10/98: remove dependence on order of evaluation */
     t = P_Random(pr_crush);

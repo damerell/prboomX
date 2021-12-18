@@ -53,7 +53,6 @@
 #define    R_OK    4    /* Check for read permission */
 #endif
 
-extern int interpolation_method;
 extern int ms_to_next_tick;
 dboolean I_StartDisplay(void);
 void I_EndDisplay(void);
@@ -61,7 +60,8 @@ int I_GetTime_RealTime(void);     /* killough */
 #ifndef PRBOOM_SERVER
 fixed_t I_GetTimeFrac (void);
 #endif
-void I_GetTime_SaveMS(void);
+
+extern int (*I_TickElapsedTime)(void);
 
 unsigned long I_GetRandomTimeSeed(void); /* cphipps */
 
@@ -98,5 +98,12 @@ void I_Read(int fd, void* buf, size_t sz);
 
 /* cph 2001/11/18 - Move W_Filelength to i_system.c */
 int I_Filelength(int handle);
+
+// Schedule a function to be called when the program exits.
+// If run_if_error is true, the function is called if the exit
+// is due to an error (I_Error)
+
+typedef void (*atexit_func_t)(void);
+void I_AtExit(atexit_func_t func, dboolean run_if_error);
 
 #endif

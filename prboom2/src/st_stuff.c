@@ -438,6 +438,10 @@ static void ST_refreshBackground(void)
     {
       flags = VPT_ALIGN_BOTTOM;
 
+      // Applies palette to backfill
+      if (V_GetMode() == VID_MODE15 || V_GetMode() == VID_MODE16 || V_GetMode() == VID_MODE32)
+        R_FillBackScreen();
+
       V_DrawNumPatch(ST_X, y, BG, stbarbg.lumpnum, CR_DEFAULT, flags);
       if (!deathmatch)
       {
@@ -559,7 +563,7 @@ static void ST_updateFaceWidget(void)
            // was due to inversion of this test:
            // if(plyr->health - st_oldhealth > ST_MUCHPAIN)
            // e6y: compatibility optioned
-           if((comp[comp_ouchface]?
+           if((default_comp[comp_ouchface]?
               (plyr->health - st_oldhealth):
               (st_oldhealth - plyr->health)) > ST_MUCHPAIN)
             {
@@ -567,7 +571,7 @@ static void ST_updateFaceWidget(void)
               // There are TWO bugs in the ouch face code.
               // Not only was the condition reversed, but the priority system is
               // broken in a way that makes the face not work with monster damage.
-              if(!comp[comp_ouchface])
+              if(!default_comp[comp_ouchface])
                 priority = 8;
 
               st_facecount = ST_TURNCOUNT;
@@ -625,7 +629,7 @@ static void ST_updateFaceWidget(void)
            // was due to inversion of this test:
            // if(plyr->health - st_oldhealth > ST_MUCHPAIN)
            // e6y: compatibility optioned
-           if((comp[comp_ouchface]?
+           if((default_comp[comp_ouchface]?
               (plyr->health - st_oldhealth):
               (st_oldhealth - plyr->health)) > ST_MUCHPAIN)
             {
@@ -832,7 +836,8 @@ static void ST_doPaletteStuff(void)
 
 void M_ChangeApplyPalette(void)
 {
-  ST_doPaletteStuff();
+  if (gamestate == GS_LEVEL)
+    ST_doPaletteStuff();
 }
 
 static void ST_drawWidgets(dboolean refresh)

@@ -173,6 +173,8 @@ extern  dboolean netgame;
 // An enum might handle altdeath/cooperative better.
 extern  dboolean deathmatch;
 
+extern dboolean coop_spawns;
+
 // ------------------------------------------
 // Internal parameters for sound rendering.
 // These have been taken from the DOS version,
@@ -355,8 +357,6 @@ extern int monster_friction, default_monster_friction;
 extern int help_friends, default_help_friends;
 
 extern int flashing_hom; // killough 10/98
-
-extern int doom_weapon_toggles;   // killough 10/98
 
 /* killough 7/19/98: whether monsters should fight against each other */
 extern int monster_infighting, default_monster_infighting;

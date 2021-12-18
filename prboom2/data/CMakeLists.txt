@@ -39,6 +39,9 @@ set(LUMPS
     lumps/crblue2.lmp
     lumps/crorange.lmp
     lumps/cryellow.lmp
+    lumps/crblack.lmp
+    lumps/crpurple.lmp
+    lumps/crwhite.lmp
 )
 
 set(COLORMAPS 
@@ -364,4 +367,4 @@ add_custom_command(
     DEPENDS rdatawad ${WAD_SRC}
 )
 add_custom_target(prboomwad DEPENDS ${WAD_DATA_PATH})
-install(FILES ${WAD_DATA_PATH} DESTINATION ${DOOMWADDIR} COMPONENT "PrBoom-Plus internal WAD")
+install(FILES ${WAD_DATA_PATH} DESTINATION ${PRBOOMDATADIR} COMPONENT "PrBoom-Plus internal WAD")

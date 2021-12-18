@@ -158,6 +158,9 @@ GLfloat cm2RGB[CR_LIMIT + 1][4] =
   {1.00f ,0.50f, 0.25f, 1.00f}, //CR_ORANGE
   {1.00f ,1.00f, 0.00f, 1.00f}, //CR_YELLOW
   {0.50f ,0.50f, 1.00f, 1.00f}, //CR_BLUE2
+  {0.00f ,0.00f, 0.00f, 1.00f}, //CR_BLACK
+  {0.50f ,0.00f, 0.50f, 1.00f}, //CR_PURPLE
+  {1.00f ,1.00f, 1.00f, 1.00f}, //CR_WHITE
   {1.00f ,1.00f, 1.00f, 1.00f}, //CR_LIMIT
 };
 
@@ -441,7 +444,7 @@ void gld_Init(int width, int height)
   // Create FBO object and associated render targets
 #ifdef USE_FBO_TECHNIQUE
   gld_InitFBO();
-  atexit(gld_FreeScreenSizeFBO);
+  I_AtExit(gld_FreeScreenSizeFBO, true);
 #endif
 
   if(!gld_LoadGLDefs("GLBDEFS"))
@@ -451,7 +454,7 @@ void gld_Init(int width, int height)
 
   gld_ResetLastTexture();
 
-  atexit(gld_CleanMemory); //e6y
+  I_AtExit(gld_CleanMemory, true); //e6y
 }
 
 void gld_InitCommandLine(void)
@@ -1273,10 +1276,12 @@ void gld_StartDrawScene(void)
 }
 
 //e6y
-static void gld_ProcessExtraAlpha(void)
+void gld_ProcessExtraAlpha(void)
 {
-  if (extra_alpha>0.0f)
+  if (extra_alpha>0.0f && !invul_method)
   {
+    float current_color[4];
+    glGetFloatv(GL_CURRENT_COLOR, current_color);
     glDisable(GL_ALPHA_TEST);
     glColor4f(extra_red, extra_green, extra_blue, extra_alpha);
     gld_EnableTexture2D(GL_TEXTURE0_ARB, false);
@@ -1288,6 +1293,7 @@ static void gld_ProcessExtraAlpha(void)
     glEnd();
     gld_EnableTexture2D(GL_TEXTURE0_ARB, true);
     glEnable(GL_ALPHA_TEST);
+    glColor4f(current_color[0], current_color[1], current_color[2], current_color[3]);
   }
 }
 
@@ -1331,12 +1337,6 @@ void gld_EndDrawScene(void)
   // Vortex: Black and white effect
   if (SceneInTexture)
   {
-    // below if scene is in texture
-    if (!invul_method)
-    {
-      gld_ProcessExtraAlpha();
-    }
-
     // Vortex: Restore original RT
     GLEXT_glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
@@ -1401,11 +1401,6 @@ void gld_EndDrawScene(void)
     if (invul_method & INVUL_BW)
     {
       glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-    }
-
-    if (!invul_method)
-    {
-      gld_ProcessExtraAlpha();
     }
   }
 
@@ -1923,8 +1918,7 @@ bottomtexture:
       }
       else
       {
-        if (bs->floorpic == skyflatnum &&// fs->floorpic != skyflatnum &&
-          bottomtexture == NO_TEXTURE && midtexture == NO_TEXTURE)
+        if (bottomtexture == NO_TEXTURE && midtexture == NO_TEXTURE)
         {
           wall.ytop=(float)max_floor/MAP_SCALE;
           gld_AddSkyTexture(&wall, frontsector->sky, backsector->sky, SKY_CEILING);
@@ -2627,7 +2621,7 @@ void gld_ProjectSprite(mobj_t* thing, int lightlevel)
   // [FG] colored blood and gibs
   if (thing->flags & MF_COLOREDBLOOD)
   {
-    sprite.cm = (thing->flags & MF_TRANSLATION1) ? CR_BLUE2 : CR_GREEN;
+    sprite.cm = thing->bloodcolor;
   }
   sprite.gltexture = gld_RegisterPatch(lump, sprite.cm, true);
   if (!sprite.gltexture)

@@ -97,33 +97,16 @@
 
 #include "z_zone.h"
 
+#ifdef _WIN32
+#include "../WIN/win_fopen.h"
+#endif
+
 void I_uSleep(unsigned long usecs)
 {
     SDL_Delay(usecs/1000);
 }
 
-int ms_to_next_tick;
-
-static int basetime = 0;
-int I_GetTime_RealTime (void)
-{
-  int i;
-  int t = SDL_GetTicks();
-  
-  //e6y: removing startup delay
-  if (basetime == 0)
-    basetime = t;
-  t -= basetime;
-
-  i = t*(TICRATE/5)/200;
-  ms_to_next_tick = (i+1)*200/(TICRATE/5) - t;
-  if (ms_to_next_tick > 1000/TICRATE || ms_to_next_tick<1) ms_to_next_tick = 1;
-  return i;
-}
-
 #ifndef PRBOOM_SERVER
-static unsigned int start_displaytime;
-static unsigned int displaytime;
 static dboolean InDisplay = false;
 static int saved_gametic = -1;
 dboolean realframe = false;
@@ -138,61 +121,32 @@ dboolean I_StartDisplay(void)
   if (realframe)
     saved_gametic = gametic;
 
-  start_displaytime = SDL_GetTicks();
   InDisplay = true;
   return true;
 }
 
 void I_EndDisplay(void)
 {
-  displaytime = SDL_GetTicks() - start_displaytime;
   InDisplay = false;
 }
 
-static int subframe = 0;
-static int prevsubframe = 0;
-int interpolation_method;
 fixed_t I_GetTimeFrac (void)
 {
-  unsigned long now;
   fixed_t frac;
 
-  now = SDL_GetTicks();
-
-  subframe++;
-
-  if (tic_vars.step == 0)
+  if (!movement_smooth)
   {
     frac = FRACUNIT;
   }
   else
   {
-    extern int renderer_fps;
-    if ((interpolation_method == 0) || (prevsubframe <= 0) || (renderer_fps <= 0))
-    {
-      frac = (fixed_t)((now - tic_vars.start + displaytime) * FRACUNIT / tic_vars.step);
-    }
-    else
-    {
-      frac = (fixed_t)((now - tic_vars.start) * FRACUNIT / tic_vars.step);
-      frac = (unsigned int)((float)FRACUNIT * TICRATE * subframe / renderer_fps);
-    }
+    int tic_time = I_TickElapsedTime();
+
+    frac = tic_time * FRACUNIT * TICRATE / 1000;
     frac = BETWEEN(0, FRACUNIT, frac);
   }
 
   return frac;
-}
-
-void I_GetTime_SaveMS(void)
-{
-  if (!movement_smooth)
-    return;
-
-  tic_vars.start = SDL_GetTicks();
-  tic_vars.next = (unsigned int) ((tic_vars.start * tic_vars.msec + 1.0f) / tic_vars.msec);
-  tic_vars.step = tic_vars.next - tic_vars.start;
-  prevsubframe = subframe;
-  subframe = 0;
 }
 #endif
 
@@ -468,6 +422,7 @@ char* I_FindFileInternal(const char* wfname, const char* ext, dboolean isStatic)
   } search0[] = {
     {NULL, NULL, NULL, I_DoomExeDir}, // config directory
     {NULL}, // current working directory
+    {PRBOOMDATADIR}, // supplemental data directory
     {NULL, NULL, "DOOMWADDIR"}, // run-time $DOOMWADDIR
     {DOOMWADDIR}, // build-time configured DOOMWADDIR
     {NULL, "doom", "HOME"}, // ~/doom

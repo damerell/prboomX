@@ -5,11 +5,13 @@
 #cmakedefine PACKAGE_STRING "@PACKAGE_STRING@"
 
 #cmakedefine DOOMWADDIR "@DOOMWADDIR@"
+#cmakedefine PRBOOMDATADIR "@PRBOOMDATADIR@"
 
 #cmakedefine WORDS_BIGENDIAN
 
 #cmakedefine HAVE_GETOPT
 #cmakedefine HAVE_MMAP
+#cmakedefine HAVE_CREATE_FILE_MAPPING
 #cmakedefine HAVE_SCHED_SETAFFINITY
 #cmakedefine HAVE_USLEEP
 #cmakedefine HAVE_STRSIGNAL
@@ -18,6 +20,7 @@
 #cmakedefine HAVE_SYS_WAIT_H
 #cmakedefine HAVE_UNISTD_H
 #cmakedefine HAVE_ASM_BYTEORDER_H
+#cmakedefine HAVE_DIRENT_H
 
 #cmakedefine HAVE_SDL_JOYSTICKGETAXIS
 #cmakedefine HAVE_LIBSDL2_IMAGE

@@ -87,6 +87,10 @@
 #include "d_deh.h"
 #include "e6y.h"
 
+#ifdef _WIN32
+#include "WIN/win_fopen.h"
+#endif
+
 dboolean wasWiped = false;
 
 int secretfound;
@@ -417,10 +421,15 @@ int G_GotoNextLevel(int *e, int *m)
 	int changed = false;
 	if (gamemapinfo != NULL)
 	{
-		const char *n;
+		const char *n = NULL;
 		if (gamemapinfo->nextsecret[0]) n = gamemapinfo->nextsecret;
-		else n = gamemapinfo->nextmap;
-		G_ValidateMapName(n, &epsd, &map);
+		else if (gamemapinfo->nextmap[0]) n = gamemapinfo->nextmap;
+		else if (gamemapinfo->endpic[0] && gamemapinfo->endpic[0] != '-')
+		{
+			epsd = 1;
+			map = 1;
+		}
+		if (n) G_ValidateMapName(n, &epsd, &map);
 	}
 
 	if (map == -1)
@@ -946,11 +955,12 @@ void e6y_WriteStats(void)
   int i, level, playerscount;
   timetable_t max;
   tmpdata_t tmp;
-  tmpdata_t all[32];
+  tmpdata_t *all;
   size_t allkills_len=0, allitems_len=0, allsecrets_len=0;
 
   f = fopen("levelstat.txt", "wb");
   
+  all = malloc(sizeof(*all) * numlevels);
   memset(&max, 0, sizeof(timetable_t));
 
   playerscount = 0;
@@ -1027,6 +1037,7 @@ void e6y_WriteStats(void)
     
   }
   
+  free(all);
   fclose(f);
 }
 
