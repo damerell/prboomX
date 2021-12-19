@@ -76,4 +76,7 @@ struct MapProperty *FindProperty(struct MapEntry *map, const char *name);
 }
 #endif
 
+extern const char * const ActorNames[];
+
+
 #endif

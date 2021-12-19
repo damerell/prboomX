@@ -45,7 +45,7 @@ MapList Maps;
 //
 //==========================================================================
 
-static const char * const ActorNames[] =
+const char * const ActorNames[] =
 {
 	"DoomPlayer",
 	"ZombieMan",

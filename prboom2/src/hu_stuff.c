@@ -2936,6 +2936,7 @@ dboolean HU_Responder(event_t *ev)
         console_on ^= 1;
         paused ^= 1;
         HUlib_resetIText(&w_console);
+        C_ResetCommandHistoryPosition();
         eatkey = true;
     } else if (console_on) {
       eatkey = true;
@@ -2959,6 +2960,15 @@ dboolean HU_Responder(event_t *ev)
       } else if (c == key_escape) {
         console_on = false;
         paused = false;
+      } else if (c == KEYD_UPARROW || c == KEYD_DOWNARROW) {
+          const char* cmd = C_NavigateCommandHistory((c == KEYD_UPARROW ? -1 : 1));
+          if (cmd) {
+              HUlib_resetIText(&w_console);
+              while (*cmd) {
+                  HUlib_addCharToTextLine(&w_console.l, (char) *cmd);
+                  cmd++;
+              }
+          }
       } else {
           if (c >= ' ' && c <= '~') {
               HUlib_addCharToTextLine(&w_console.l, (char) c);
