@@ -167,6 +167,28 @@ static void C_togglepsprites(char* cmd)
     doom_printf("Draw player sprites %s", (c_drawpsprites ? "on" : "off"));
 }
 
+static void C_sndvol(char* cmd)
+{
+    if (cmd && *cmd) {
+        int vol = atoi(cmd);
+        vol = MIN(vol,15);
+        vol = MAX(vol, 0);
+        S_SetSfxVolume(vol);
+    }
+    doom_printf("Sound volume: %d/15", snd_SfxVolume);
+}
+
+static void C_musvol(char* cmd)
+{
+    if (cmd && *cmd) {
+        int vol = atoi(cmd);
+        vol = MIN(vol,15);
+        vol = MAX(vol, 0);
+        S_SetMusicVolume(vol);
+    }
+    doom_printf("Music volume: %d/15", snd_MusicVolume);
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -177,8 +199,14 @@ command command_list[] = {
     {"kill", C_kill},
     {"print", C_printcmd},
     {"quit", C_quit},
-    {"exit", C_quit},
     {"toggle_psprites", C_togglepsprites},
+    {"snd_sfxvolume", C_sndvol},
+    {"snd_musicvolume", C_musvol},
+
+    /* aliases */
+    {"snd", C_sndvol},
+    {"mus", C_musvol},
+    {"exit", C_quit},
     {0,0}
 };
 
@@ -196,24 +224,34 @@ void C_AddCommandToHistory(const char* cmd)
 
 void C_ConsoleCommand(char* cmd)
 {
-    /* tokenize based on first space */
-    int i = 0;
-    char* cptr = cmd;
+    /* try cheats first */
+    int ch = 0;
     if(!cmd || !cmd[0]) return;
     int cmdlen = strlen(cmd);
-    char fullcmd[cmdlen+1];
-    strcpy(fullcmd, cmd);
-    while(cptr && *cptr && !isspace(*cptr)) cptr++;
-    if(*cptr) *cptr = '\0';
-
-    for (i=0; command_list[i].name; i++) {
-        if (stricmp(command_list[i].name, cmd) == 0) {
-            command_list[i].func(cptr+1);
-            C_AddCommandToHistory(fullcmd);
-            return;
-        }
+    for (int i=0; i < cmdlen; i++) {
+        ch |= M_FindCheats(tolower(cmd[i]));
     }
-    doom_printf("Command not found: %s", cmd);
+
+    if (ch) {
+        C_AddCommandToHistory(cmd);
+    } else {
+        /* tokenize based on first space */
+        int i = 0;
+        char* cptr = cmd;
+        char fullcmd[cmdlen+1];
+        strcpy(fullcmd, cmd);
+        while(cptr && *cptr && !isspace(*cptr)) cptr++;
+        if(*cptr) *cptr = '\0';
+
+        for (i=0; command_list[i].name; i++) {
+            if (stricmp(command_list[i].name, cmd) == 0) {
+                command_list[i].func(cptr+1);
+                C_AddCommandToHistory(fullcmd);
+                return;
+            }
+        }
+        doom_printf("Command not found: %s", cmd);
+    }
 }
 
 void C_ResetCommandHistoryPosition()

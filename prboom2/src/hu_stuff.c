@@ -2949,13 +2949,7 @@ dboolean HU_Responder(event_t *ev)
         console_on = false;
         paused = false;
 
-        int ch = 0;
-        for (int i=0; i < w_console.l.len; i++) {
-            ch |= M_FindCheats(tolower(w_console.l.l[i]));
-        }
-        if (!ch) {
-            C_ConsoleCommand(w_console.l.l);
-        }
+        C_ConsoleCommand(w_console.l.l);
         HUlib_resetIText(&w_console);
       } else if (c == key_escape) {
         console_on = false;
