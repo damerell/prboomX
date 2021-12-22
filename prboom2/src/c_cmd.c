@@ -228,6 +228,9 @@ void C_ConsoleCommand(char* cmd)
     int ch = 0;
     if(!cmd || !cmd[0]) return;
     int cmdlen = strlen(cmd);
+    /* send a bogus space to clear out any cached
+     * cheat keystrokes */
+    M_FindCheats(' ');
     for (int i=0; i < cmdlen; i++) {
         ch |= M_FindCheats(tolower(cmd[i]));
     }
