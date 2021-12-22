@@ -2625,7 +2625,7 @@ void HU_Drawer(void)
   HUlib_drawIText(&w_chat);
 
   if (console_on) {
-    V_DrawNamePatchPrecise(0, -100, 0, "INTERPIC", CR_DEFAULT, VPT_NONE);
+    V_FillRect(0, 0, 0, SCREENWIDTH, SCREENHEIGHT>>3, 0);
   }
   // display the interactive buffer for console entry
   HUlib_drawIText(&w_console);
