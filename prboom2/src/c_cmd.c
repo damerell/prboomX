@@ -16,6 +16,9 @@
 #include "e6y.h" // G_GotoNextLevel()
 #include "umapinfo.h"
 
+
+extern void M_QuitDOOM(int choice);
+
 #define plyr (players+consoleplayer)
 #define CONSOLE_COMMAND_HISTORY_LEN (16)
 static char* command_history[CONSOLE_COMMAND_HISTORY_LEN] = { 0 };
