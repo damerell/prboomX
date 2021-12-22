@@ -114,7 +114,7 @@ static void C_nextlevelsecret(char* cmd)
 static void C_printcmd(char* cmd)
 {
     if(cmd)
-        doom_printf(cmd);
+        doom_printf("%s", cmd);
 }
 
 static void C_kill(char* cmd)
@@ -244,8 +244,7 @@ void C_ConsoleCommand(char* cmd)
         /* tokenize based on first space */
         int i = 0;
         char* cptr = cmd;
-        char fullcmd[cmdlen+1];
-        strcpy(fullcmd, cmd);
+        char* fullcmd = strdup(cmd);
         while(cptr && *cptr && !isspace(*cptr)) cptr++;
         if(*cptr) *cptr = '\0';
 
@@ -253,10 +252,12 @@ void C_ConsoleCommand(char* cmd)
             if (stricmp(command_list[i].name, cmd) == 0) {
                 command_list[i].func(cptr+1);
                 C_AddCommandToHistory(fullcmd);
-                return;
+                break;
             }
         }
-        doom_printf("Command not found: %s", cmd);
+        free(fullcmd);
+        if(!command_list[i].name)
+            doom_printf("Command not found: %s", cmd);
     }
 }
 
