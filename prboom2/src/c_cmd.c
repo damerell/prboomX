@@ -18,6 +18,7 @@
 
 
 extern void M_QuitDOOM(int choice);
+extern const char * const ActorNames[];
 
 #define plyr (players+consoleplayer)
 #define CONSOLE_COMMAND_HISTORY_LEN (16)
