@@ -193,6 +193,27 @@ static void C_musvol(char* cmd)
     doom_printf("Music volume: %d/15", snd_MusicVolume);
 }
 
+extern dboolean plat_skip;
+static void C_jds(char* cmd)
+{
+    extern dboolean buddha;
+    static unsigned char jds = false;
+    jds = !jds;
+    if (jds) {
+        buddha = true;
+        plat_skip = true;
+    } else {
+        buddha = false;
+        plat_skip = false;
+    }
+    doom_printf("JDS mode %s", jds ? "on" : "off");
+}
+
+static void C_platskip(char* cmd)
+{
+    plat_skip = !plat_skip;
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -206,6 +227,8 @@ command command_list[] = {
     {"toggle_psprites", C_togglepsprites},
     {"snd_sfxvolume", C_sndvol},
     {"snd_musicvolume", C_musvol},
+    {"jds", C_jds},
+    {"plat_skip", C_platskip},
 
     /* aliases */
     {"snd", C_sndvol},

@@ -1822,6 +1822,7 @@ dboolean PTR_NoWayTraverse(intercept_t* in)
   );
 }
 
+dboolean plat_skip = false;
 //
 // P_UseLines
 // Looks for special lines in front of the player to activate.
@@ -1855,19 +1856,20 @@ void P_UseLines (player_t*  player)
       S_StartSound (usething, sfx_noway);
 
   /* JDS: check if we have plat-raise on space */
-  /* FIXME: Guard this with a cheat */
-  struct msecnode_s* ts = player->mo->touching_sectorlist;
-  sector_t* s = ts->m_sector;
-  while (s) {
-      floormove_t* ss = s->floordata;
-      if (ss && ss->thinker.function == T_PlatRaise) {
-          plat_t* p = (plat_t*)ss;
-          if (p) p->count = 1;
-      }
+  if (plat_skip) {
+      struct msecnode_s* ts = player->mo->touching_sectorlist;
+      sector_t* s = ts->m_sector;
+      while (s) {
+          floormove_t* ss = s->floordata;
+          if (ss && ss->thinker.function == T_PlatRaise) {
+              plat_t* p = (plat_t*)ss;
+              if (p) p->count = 1;
+          }
 
-      ts = ts->m_snext;
-      if (ts) s = ts->m_sector;
-      else s = NULL;
+          ts = ts->m_snext;
+          if (ts) s = ts->m_sector;
+          else s = NULL;
+      }
   }
 }
 

@@ -130,7 +130,7 @@ const char *map_things_appearance_list[map_things_appearance_max] =
 #define INITSCALEMTOF (.2*FRACUNIT)
 // how much the automap moves window per tic in frame-buffer coordinates
 // moves 140 pixels in 1 second
-#define F_PANINC  (gamekeydown[key_speed] ? map_scroll_speed * 2 : map_scroll_speed)
+#define F_PANINC  (gamekeydown[key_speed] ? map_scroll_speed * 6 : map_scroll_speed)
 // how much zoom-in per tic
 // goes to 2x in 1 second
 #define M_ZOOMIN        ((int) ((float)FRACUNIT * (1.00f + F_PANINC / 200.0f)))
