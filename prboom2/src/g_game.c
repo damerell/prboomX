@@ -1309,6 +1309,7 @@ void G_Ticker (void)
 // Can when a player completes a level.
 //
 
+extern dboolean allmap_always;
 static void G_PlayerFinishLevel(int player)
 {
   player_t *p = &players[player];
@@ -1319,6 +1320,8 @@ static void G_PlayerFinishLevel(int player)
   p->fixedcolormap = 0;   // cancel ir gogles
   p->damagecount = 0;     // no palette changes
   p->bonuscount = 0;
+  if (allmap_always)
+      p->powers[pw_allmap] = true;
 }
 
 // CPhipps - G_SetPlayerColour

@@ -194,17 +194,24 @@ static void C_musvol(char* cmd)
 }
 
 extern dboolean plat_skip;
+dboolean allmap_always = false;
 static void C_jds(char* cmd)
 {
     extern dboolean buddha;
     static unsigned char jds = false;
+    static int had_allmap = false;
     jds = !jds;
     if (jds) {
         buddha = true;
         plat_skip = true;
+        had_allmap = plyr->powers[pw_allmap];
+        plyr->powers[pw_allmap] = true;
+        allmap_always = true;
     } else {
         buddha = false;
         plat_skip = false;
+        allmap_always = false;
+        plyr->powers[pw_allmap] = had_allmap;
     }
     doom_printf("JDS mode %s", jds ? "on" : "off");
 }
