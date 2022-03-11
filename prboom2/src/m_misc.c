@@ -309,6 +309,8 @@ default_t defaults[] =
   {"default_compatibility_level",{(int*)&default_compatibility_level},
    {-1},-1,MAX_COMPATIBILITY_LEVEL-1,
    def_int,ss_none}, // compatibility level" - CPhipps
+  {"vanilla_keymap",{&vanilla_keymap},{0},0,1,
+  def_bool,ss_none}, // Use vanilla keybaord mapping
   {"realtic_clock_rate",{&realtic_clock_rate},{100},0,UL,
    def_int,ss_none}, // percentage of normal speed (35 fps) realtic clock runs at
   {"menu_background", {(int*)&menu_background}, {1}, 0, 1,
@@ -434,7 +436,7 @@ default_t defaults[] =
   {"pitched_sounds",{&pitched_sounds},{0},0,1, // killough 2/21/98
    def_bool,ss_none}, // enables variable pitch in sound effects (from id's original code)
   {"samplerate",{&snd_samplerate},{44100},11025,48000, def_int,ss_none},
-  {"slice_samplecount",{&snd_samplecount},{512},32,8192, def_int,ss_none},
+  {"slice_samplecount",{&snd_samplecount},{0},0,8192, def_int,ss_none},
   {"sfx_volume",{&snd_SfxVolume},{8},0,15, def_int,ss_none},
   {"music_volume",{&snd_MusicVolume},{8},0,15, def_int,ss_none},
   {"mus_pause_opt",{&mus_pause_opt},{1},0,2, // CPhipps - music pausing
@@ -589,6 +591,8 @@ default_t defaults[] =
    def_int,ss_keys}, // mouse button number to use for turning left
   {"mouseb_use", {&mousebuse},{-1},-1,MAX_MOUSEB,
    def_int,ss_keys}, // mouse button number to use for using doors/switches
+  {"mouseb_speed", {&mousebspeed},{-1},-1,MAX_MOUSEB,
+   def_int,ss_keys},
   //jff 3/8/98 end of lower range change for -1 allowed in mouse binding
 
   {"mb_weapon1",{&mb_weapon1},{-1},-1,MAX_MOUSEB,

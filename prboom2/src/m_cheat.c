@@ -97,6 +97,7 @@ static void cheat_fly();
 static void cheat_buddha();
 static void cheat_resurrect();
 static void cheat_target_massacre();
+static void cheat_skill();
 static void cheat_comp_ext();
 static void cheat_shorttics();
 static void cheat_nextlevel();
@@ -197,8 +198,13 @@ cheatseq_t cheat[] = {
   CHEAT("notarget",   NULL,               cht_never, cheat_notarget, 0),
   // fly mode is active
   CHEAT("fly",        NULL,               cht_never, cheat_fly, 0),
+
+  // jds cheats
   CHEAT("buddha",     NULL,               cht_never, cheat_buddha, 0),
   CHEAT("liveagain",  NULL,               cht_never, cheat_resurrect, 0),
+
+  // Show skill level
+  CHEAT("skill",      NULL,               always, cheat_skill, 0),
 
   // Complevels with parameters
   CHEAT("tntcl",      NULL,               cht_never, cheat_comp_ext, -2),
@@ -751,6 +757,7 @@ static void cheat_fly()
   }
 }
 
+<<<<<<< HEAD
 dboolean buddha = false;
 static void cheat_buddha()
 {
@@ -781,6 +788,11 @@ static void cheat_resurrect()
 }
 
 
+
+static void cheat_skill()
+{
+  doom_printf("Skill: %d", gameskill+1);
+}
 
 //-----------------------------------------------------------------------------
 // 2/7/98: Cheat detection rewritten by Lee Killough, to avoid
