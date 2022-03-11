@@ -757,7 +757,6 @@ static void cheat_fly()
   }
 }
 
-<<<<<<< HEAD
 dboolean buddha = false;
 static void cheat_buddha()
 {
