@@ -69,7 +69,7 @@ static void cheat_kfa();
 static void cheat_noclip();
 static void cheat_pw();
 static void cheat_behold();
-static void cheat_clev();
+void cheat_clev();
 static void cheat_clev0();
 static void cheat_mypos();
 static void cheat_rate();
@@ -414,7 +414,7 @@ static void cheat_clev0()
     doom_printf("Current: %s",  W_GetLumpInfoByNum(maplumpnum)->name);
 }
 
-static void cheat_clev(char buf[3])
+void cheat_clev(char buf[3])
 {
   int epsd, map;
   struct MapEntry* entry;

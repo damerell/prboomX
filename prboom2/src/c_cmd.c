@@ -221,6 +221,16 @@ static void C_platskip(char* cmd)
     plat_skip = !plat_skip;
 }
 
+void cheat_clev(char buf[3]);
+static void C_map(char* cmd)
+{
+    char buf[3] = { 0 };
+    int len = strlen(cmd);
+    if(len >= 2) buf[1] = cmd[len-1];
+    if(len >= 1) buf[0] = cmd[len-2];
+    if(buf[0]) cheat_clev(buf);
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -236,6 +246,8 @@ command command_list[] = {
     {"snd_musicvolume", C_musvol},
     {"jds", C_jds},
     {"plat_skip", C_platskip},
+    {"map", C_map},
+    {"warp", C_map},
 
     /* aliases */
     {"snd", C_sndvol},

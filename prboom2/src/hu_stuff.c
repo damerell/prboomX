@@ -976,7 +976,7 @@ void HU_Start(void)
     &chat_on
   );
 
-  // create the chat widget
+  // create the console widget
   HUlib_initIText
   (
     &w_console,
@@ -2625,7 +2625,7 @@ void HU_Drawer(void)
   HUlib_drawIText(&w_chat);
 
   if (console_on) {
-    V_FillRect(0, 0, 0, SCREENWIDTH, SCREENHEIGHT>>3, 0);
+    V_FillRect(0, 0, 0, SCREENWIDTH, HU_CONSOLEY + (hu_font[0].height) +1, 0);
   }
   // display the interactive buffer for console entry
   HUlib_drawIText(&w_console);
@@ -2932,7 +2932,7 @@ dboolean HU_Responder(event_t *ev)
         }
       }
     }
-    } else if (!demoplayback && !netgame && (ev->data1 == key_console)) {
+    } else if (!demorecording && !demoplayback && !netgame && (ev->data1 == key_console)) {
         console_on ^= 1;
         paused ^= 1;
         HUlib_resetIText(&w_console);
@@ -2971,7 +2971,6 @@ dboolean HU_Responder(event_t *ev)
               w_console.l.needsupdate = 4;
           }
       }
-
   } 
   } else if (!message_list)
   {
