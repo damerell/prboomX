@@ -102,7 +102,8 @@ int hud_num;
 #define HU_INPUTY (HU_MSGY + HU_MSGHEIGHT*(hu_font[0].height) +1)
 
 #define HU_CONSOLEX HU_MSGX
-#define HU_CONSOLEY (HU_MSGY + 10*(HU_MSGHEIGHT*(hu_font[0].height) +1))
+#define HU_CONSOLE_MESSAGE_COUNT (9)
+#define HU_CONSOLEY (HU_MSGY + (HU_CONSOLE_MESSAGE_COUNT+1)*(HU_MSGHEIGHT*(hu_font[0].height) +1))
 
 #define HU_TRACERX (2)
 #define HU_TRACERY (hu_font['A'-HU_FONTSTART].height)
@@ -166,6 +167,7 @@ static hu_textline_t  w_keys;   //jff 2/16/98 new keys widget for hud
 static hu_textline_t  w_gkeys;  //jff 3/7/98 graphic keys widget for hud
 static hu_textline_t  w_monsec; //jff 2/16/98 new kill/secret widget for hud
 static hu_mtext_t     w_rtext;  //jff 2/26/98 text message refresh widget
+static hu_mtext_t     w_consoletext;  //jds console message widget
 
 static hu_textline_t  w_map_monsters;  //e6y monsters widget for automap
 static hu_textline_t  w_map_secrets;   //e6y secrets widgets automap
@@ -738,12 +740,31 @@ void HU_Start(void)
     320,
 //    SCREENWIDTH,
     (hud_msg_lines+2)*HU_REFRESHSPACING,
+    hud_msg_lines,
     hu_font,
     HU_FONTSTART,
     hudcolor_list,
     hu_msgbg,
     VPT_ALIGN_LEFT_TOP,
-    &message_list
+    &message_list,
+    false
+  );
+
+  HUlib_initMText
+  (
+    &w_consoletext,
+    0,
+    0,
+    320,
+    (HU_CONSOLE_MESSAGE_COUNT+2)*HU_REFRESHSPACING,
+    HU_CONSOLE_MESSAGE_COUNT,
+    hu_font,
+    HU_FONTSTART,
+    hudcolor_list,
+    hu_msgbg,
+    VPT_NONE,
+    &console_on,
+    true
   );
 
   if (gamemapinfo && gamemapinfo->levelname)
@@ -2621,11 +2642,13 @@ void HU_Drawer(void)
   if (hud_msg_lines>1 && message_list)
     HUlib_drawMText(&w_rtext);
 
+
   // display the interactive buffer for chat entry
   HUlib_drawIText(&w_chat);
 
   if (console_on) {
     V_FillRect(0, 0, 0, SCREENWIDTH, HU_CONSOLEY + (hu_font[0].height) +1, 0);
+    HUlib_drawMText(&w_consoletext);
   }
   // display the interactive buffer for console entry
   HUlib_drawIText(&w_console);
@@ -2653,8 +2676,9 @@ void HU_Erase(void)
   // erase the interactive text buffer for chat entry
   HUlib_eraseIText(&w_chat);
 
-  // erase the interactive text buffer for console entry
+  // erase the text buffers for console entry
   HUlib_eraseIText(&w_console);
+  HUlib_eraseMText(&w_consoletext);
 
   // erase the automap title
   HUlib_eraseTextLine(&w_title);
@@ -2687,6 +2711,11 @@ void HU_Ticker(void)
     bscounter = 8;
   }
 
+  if (plr->message) {
+      // Add messages to console log whether or not they're displayed
+      HUlib_addMessageToMText(&w_consoletext, 0, plr->message);
+  }
+
   // if messages on, or "Messages Off" is being displayed
   // this allows the notification of turning messages off to be seen
   if (showMessages || message_dontfuckwithme)
@@ -2712,7 +2741,7 @@ void HU_Ticker(void)
       message_dontfuckwithme = 0;
     }
   }
-  
+
   // centered messages
   for (i = 0; i < MAXPLAYERS; i++)
   {
