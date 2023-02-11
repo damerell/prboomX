@@ -94,9 +94,6 @@ int detect_voices = 0; // God knows
 static dboolean sound_inited = false;
 static dboolean first_sound_init = true;
 
-// Needed for calling the actual sound output.
-#define MAX_CHANNELS    32
-
 // MWM 2000-01-08: Sample rate in samples/second
 int snd_samplerate = 11025;
 int snd_samplecount = 512;
@@ -1356,6 +1353,11 @@ int mus_fluidsynth_chorus;
 int mus_fluidsynth_reverb;
 int mus_fluidsynth_gain; // NSM  fine tune fluidsynth output level
 int mus_opl_gain; // NSM  fine tune OPL output level
+const char *mus_portmidi_reset_type; // portmidi reset type
+int mus_portmidi_reset_delay; // portmidi delay after reset
+int mus_portmidi_filter_sysex; // portmidi block sysex from midi files
+int mus_portmidi_reverb_level; // portmidi reverb send level
+int mus_portmidi_chorus_level; // portmidi chorus send level
 
 
 static void Exp_ShutdownMusic(void)

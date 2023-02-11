@@ -91,7 +91,7 @@ int mapcolor_sngl;    // single player arrow color
 int mapcolor_exis;    // secret exit
 int mapcolor_asec;    // automap secret
 int mapcolor_secf;    // found secret
-int mapcolor_plyr[4] = { 112, 88, 64, 32 }; // colors for player arrows in multiplayer
+int mapcolor_plyr[4] = { 112, 96, 64, 176 }; // colors for player arrows in multiplayer
 
 sector_t* magic_sector;
 short int magic_tag;
