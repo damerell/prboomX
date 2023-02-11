@@ -464,6 +464,7 @@ void HU_Start(void)
 {
   int   i;
   const char* s; /* cph - const */
+  static dboolean console_initialized = false;
 
   if (headsupactive)                    // stop before starting
     HU_Stop();
@@ -750,22 +751,25 @@ void HU_Start(void)
     false
   );
 
-  HUlib_initMText
-  (
-    &w_consoletext,
-    0,
-    0,
-    320,
-    (HU_CONSOLE_MESSAGE_COUNT+2)*HU_REFRESHSPACING,
-    HU_CONSOLE_MESSAGE_COUNT,
-    hu_font,
-    HU_FONTSTART,
-    hudcolor_list,
-    hu_msgbg,
-    VPT_NONE,
-    &console_on,
-    true
-  );
+  if (!console_initialized) {
+      console_initialized = true;
+      HUlib_initMText
+          (
+           &w_consoletext,
+           0,
+           0,
+           320,
+           (HU_CONSOLE_MESSAGE_COUNT+2)*HU_REFRESHSPACING,
+           HU_CONSOLE_MESSAGE_COUNT,
+           hu_font,
+           HU_FONTSTART,
+           hudcolor_list,
+           hu_msgbg,
+           VPT_NONE,
+           &console_on,
+           true
+          );
+  }
 
   if (gamemapinfo && gamemapinfo->levelname)
   {
@@ -2676,9 +2680,8 @@ void HU_Erase(void)
   // erase the interactive text buffer for chat entry
   HUlib_eraseIText(&w_chat);
 
-  // erase the text buffers for console entry
+  // erase the text buffer for console entry
   HUlib_eraseIText(&w_console);
-  HUlib_eraseMText(&w_consoletext);
 
   // erase the automap title
   HUlib_eraseTextLine(&w_title);
@@ -2714,6 +2717,10 @@ void HU_Ticker(void)
   if (plr->message) {
       // Add messages to console log whether or not they're displayed
       HUlib_addMessageToMText(&w_consoletext, 0, plr->message);
+      // Clear the message from multiposting if showMessages is off
+      if (!showMessages && !message_dontfuckwithme) {
+          plr->message = 0;
+      }
   }
 
   // if messages on, or "Messages Off" is being displayed
