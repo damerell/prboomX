@@ -1,6 +1,8 @@
-# JadingTsunami's PrBoom+UM Fork
+# PrBoomX
 
-This is my own personal fork of PrBoom+UM. It contains stuff I like and you may or may not.
+*JadingTsunami's PrBoom-Plus Fork*
+
+This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrades that I like and you may or may not.
 
 * Drop-down console (default key bind: `~`)
     * 16-command history, use up/down arrows
