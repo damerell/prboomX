@@ -35,8 +35,6 @@ void M_AddEpisode(const char *map, const char *gfx, const char *txt, const char 
 void M_ClearEpisodes(void);
 
 MapList Maps;
-}
-
 
 //==========================================================================
 //
@@ -302,6 +300,7 @@ const char * const ActorNames[] =
 	NULL
 };
 
+}
 
 // -----------------------------------------------
 //
