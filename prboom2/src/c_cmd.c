@@ -15,6 +15,8 @@
 #include "p_tick.h"
 #include "e6y.h" // G_GotoNextLevel()
 #include "umapinfo.h"
+#include "hu_stuff.h"
+#include "lprintf.h"
 
 
 extern void M_QuitResponse(int ch);
@@ -23,6 +25,7 @@ extern const char * const ActorNames[];
 #define plyr (players+consoleplayer)
 #define CONSOLE_COMMAND_HISTORY_LEN (16)
 static char* command_history[CONSOLE_COMMAND_HISTORY_LEN] = { 0 };
+static char console_message[HU_MSGWIDTH];
 
 dboolean c_drawpsprites = true;
 
@@ -220,14 +223,27 @@ static void C_platskip(char* cmd)
     plat_skip = !plat_skip;
 }
 
-void cheat_clev(char buf[3]);
 static void C_map(char* cmd)
 {
-    char buf[3] = { 0 };
+    char buf[9] = { 0 };
+    int bufwr = 7;
     int len = strlen(cmd);
-    if(len >= 2) buf[1] = cmd[len-1];
-    if(len >= 1) buf[0] = cmd[len-2];
-    if(buf[0]) cheat_clev(buf);
+    for (int i = len - 1; i >= 0; i--) {
+        if (isnumber(cmd[i])) {
+            buf[bufwr--] = cmd[i];
+        }
+    }
+    if (strlen(&buf[bufwr+1]) == 1) {
+        buf[bufwr--] = '0';
+    }
+    if (buf[bufwr+1]) {
+        char clev[18];
+        snprintf(clev, 18, "IDCLEV%s", &buf[bufwr+1]);
+        M_FindCheats(' ');
+        for (int i=0; i < strlen(clev); i++) {
+            M_FindCheats(tolower(clev[i]));
+        }
+    }
 }
 
 command command_list[] = {
@@ -316,4 +332,27 @@ const char* C_NavigateCommandHistory(int direction)
     if (command_history[new_command_rdptr])
         command_rdptr = new_command_rdptr;
     return command_history[command_rdptr];
+}
+
+void C_ConsolePrintf(const char *s, ...)
+{
+    va_list v;
+    va_start(v,s);
+    doom_vsnprintf(console_message,sizeof(console_message),s,v);
+    va_end(v);
+}
+
+const char* C_GetMessage()
+{
+    return console_message;
+}
+
+dboolean C_HasMessage()
+{
+    return (console_message[0] != '\0');
+}
+
+void C_ClearMessage()
+{
+    console_message[0] = '\0';
 }

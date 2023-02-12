@@ -2723,6 +2723,11 @@ void HU_Ticker(void)
       }
   }
 
+  if (C_HasMessage()) {
+      HUlib_addMessageToMText(&w_consoletext, 0, C_GetMessage());
+      C_ClearMessage();
+  }
+
   // if messages on, or "Messages Off" is being displayed
   // this allows the notification of turning messages off to be seen
   if (showMessages || message_dontfuckwithme)

@@ -6,6 +6,10 @@
 void C_ConsoleCommand(char* cmd);
 const char* C_NavigateCommandHistory(int direction);
 void C_ResetCommandHistoryPosition();
+void C_ConsolePrintf(const char *s, ...);
+const char* C_GetMessage();
+void C_ClearMessage();
+dboolean C_HasMessage();
 
 typedef struct _command {
     const char* name;

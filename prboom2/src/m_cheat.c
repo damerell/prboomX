@@ -48,6 +48,7 @@
 #include "p_tick.h"
 #include "e6y.h" // G_GotoNextLevel()
 #include "w_wad.h" // W_GetLumpInfoByNum()
+#include "c_cmd.h"
 
 #define plyr (players+consoleplayer)     /* the console player */
 
@@ -69,7 +70,7 @@ static void cheat_kfa();
 static void cheat_noclip();
 static void cheat_pw();
 static void cheat_behold();
-void cheat_clev();
+static void cheat_clev();
 static void cheat_clev0();
 static void cheat_mypos();
 static void cheat_rate();
@@ -463,6 +464,7 @@ void cheat_clev(char buf[3])
 
   plyr->message = s_STSTR_CLEV; // Ty 03/27/98 - externalized
 
+  C_ConsolePrintf("Warping to %s", MAPNAME(epsd, map));
   G_DeferedInitNew(gameskill, epsd, map);
 }
 
