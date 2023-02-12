@@ -17,7 +17,7 @@
 #include "umapinfo.h"
 
 
-extern void M_QuitDOOM(int choice);
+extern void M_QuitResponse(int ch);
 extern const char * const ActorNames[];
 
 #define plyr (players+consoleplayer)
@@ -161,8 +161,7 @@ static void C_kill(char* cmd)
 
 static void C_quit(char* cmd)
 {
-    S_StartSound(NULL,sfx_swtchn);
-    M_QuitDOOM(0);
+    M_QuitResponse('y');
 }
 
 static void C_togglepsprites(char* cmd)

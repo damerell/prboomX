@@ -1212,7 +1212,7 @@ int quitsounds2[8] =
   sfx_sgtatk
 };
 
-static void M_QuitResponse(int ch)
+void M_QuitResponse(int ch)
 {
   if (ch != 'y')
     return;

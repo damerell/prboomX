@@ -1379,6 +1379,8 @@ void G_PlayerReborn (int player)
     int cheats = p->cheats;
     memset (p, 0, sizeof(*p));
     p->cheats = cheats;
+    if (allmap_always)
+        p->powers[pw_allmap] = true;
   }
 
   memcpy(players[player].frags, frags, sizeof(players[player].frags));
