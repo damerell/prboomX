@@ -95,11 +95,11 @@ jobs:
         cd build
         mkdir package
         if [[ "${{ runner.os }}" == 'Windows' ]]; then
-          cp ${{ matrix.config.build_type }}/prboom-plus.exe ${{ matrix.config.build_type }}/prboom-plus-game-server.exe prboom-plus.wad package
+          cp ${{ matrix.config.build_type }}/prboomX.exe ${{ matrix.config.build_type }}/prboomX-game-server.exe prboomX.wad package
         elif [[ "${{ runner.os }}" == 'macOS' ]]; then
           cp -R Launcher.app package
         else
-          cp prboom-plus prboom-plus-game-server prboom-plus.wad package
+          cp prboomX prboomX-game-server prboomX.wad package
         fi
         cp config.h package
 
