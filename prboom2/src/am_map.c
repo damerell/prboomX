@@ -112,6 +112,7 @@ int map_overlay_pos_x;
 int map_overlay_pos_y;
 int map_overlay_pos_width;
 int map_overlay_pos_height;
+int map_enhanced_allmap;
 
 map_things_appearance_t map_things_appearance;
 const char *map_things_appearance_list[map_things_appearance_max] =
@@ -1510,7 +1511,7 @@ static void AM_drawWalls(void)
     // if line has been seen or IDDT has been used
     if (ddt_cheating || (lines[i].flags & ML_MAPPED))
     {
-      if ((lines[i].flags & ML_DONTDRAW) && !ddt_cheating && !plr->powers[pw_allmap])
+      if ((lines[i].flags & ML_DONTDRAW) && !ddt_cheating && !(map_enhanced_allmap && plr->powers[pw_allmap]))
         continue;
       {
         /* cph - show keyed doors and lines */
@@ -2463,7 +2464,7 @@ void AM_Drawer (void)
   AM_drawWalls();
   AM_drawPlayers();
   AM_drawThings(); //jff 1/5/98 default double IDDT sprite
-  if( selecting_magic_sector && (players+consoleplayer)->powers[pw_allmap] ) {
+  if (selecting_magic_sector && (map_enhanced_allmap && (players+consoleplayer)->powers[pw_allmap])) {
       AM_drawCrosshair(mapcolor_hai2);
 
       fixed_t tmapx = (m_x + m_w/2);

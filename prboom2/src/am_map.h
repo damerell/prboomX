@@ -154,6 +154,7 @@ extern int map_textured;
 extern int map_textured_trans;
 extern int map_textured_overlay_trans;
 extern int map_lines_overlay_trans;
+extern int map_enhanced_allmap;
 extern int map_overlay_pos_x;
 extern int map_overlay_pos_y;
 extern int map_overlay_pos_width;
