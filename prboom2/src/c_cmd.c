@@ -229,7 +229,7 @@ static void C_map(char* cmd)
     int bufwr = 7;
     int len = strlen(cmd);
     for (int i = len - 1; i >= 0; i--) {
-        if (isnumber(cmd[i])) {
+        if (cmd[i] >= '0' && cmd[i] <= '9') {
             buf[bufwr--] = cmd[i];
         }
     }
