@@ -4,6 +4,8 @@
 
 This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrades that I like and you may or may not.
 
+* Zip file support
+    * Note all WAD/DEH/BEX in the zip will be loaded
 * Drop-down console (default key bind: `~`)
     * 16-command history, use up/down arrows
     * Cheats work in the console

@@ -176,6 +176,8 @@ set(COMMON_SRC
     z_zone.h
     c_cmd.h
     c_cmd.c
+    zip/zip.h
+    zip/zip.c
 )
 
 set(NET_CLIENT_SRC

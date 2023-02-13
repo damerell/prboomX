@@ -86,6 +86,7 @@
 #include "am_map.h"
 #include "umapinfo.h"
 #include "statdump.h"
+#include "zip/zip.h"
 
 //e6y
 #include "r_demo.h"
@@ -1601,6 +1602,19 @@ static void D_AutoloadDehPWadDir()
   }
 }
 
+static int D_ProcessZipExtractedFile(const char *filename, void *arg)
+{
+    char* suffix = strrchr(filename, '.');
+    if (suffix) {
+        if (0 == stricmp(suffix, ".wad")) {
+            D_AddFile(filename,source_pwad);
+        } else if (0 == stricmp(suffix, ".deh") || 0 == stricmp(suffix, ".bex")) {
+            ProcessDehFile(filename,D_dehout(),0);
+        }
+    }
+    return 0;
+}
+
 //
 // D_DoomMainSetup
 //
@@ -1918,10 +1932,50 @@ static void D_DoomMainSetup(void)
         {
           file = I_FindFile(myargv[p], ".wad");
         }
+        dboolean is_zip = (0 == stricmp(strrchr(file, '.'), ".zip"));
         if (file)
         {
-          D_AddFile(file,source_pwad);
-          free(file);
+            if (is_zip) {
+                const char* tmp_dir;
+                char* tmp_path = NULL;
+
+                tmp_dir = I_GetTempDir();
+                if (tmp_dir && *tmp_dir != '\0')
+                {
+                    const char* basefile = BaseName(file);
+                    int arg = 1;
+
+                    tmp_path = (char*) malloc(sizeof(char)*(strlen(tmp_dir) + strlen(basefile) + 2));
+
+                    strcpy(tmp_path, tmp_dir);
+
+                    if (!HasTrailingSlash(tmp_dir))
+                    {
+                        strcat(tmp_path, "/");
+                    }
+
+                    strcat(tmp_path, basefile);
+
+                    /* strip .zip */
+                    tmp_path[strlen(tmp_path)-4] = '\0';
+
+                    /* make a subfolder for this ZIP */
+                    if (M_access(tmp_path, W_OK) && -1 == M_mkdir(tmp_path)) {
+                        lprintf(LO_WARN, "Could not make temporary folder for zip extraction: %s not loaded\n", file);
+                    } else {
+                        zip_extract(file, tmp_path, D_ProcessZipExtractedFile, &arg);
+                    }
+
+                    free(tmp_path);
+                } else {
+                    lprintf(LO_WARN, "Could not extract zip to temporary folder (%s); %s not loaded.\n", tmp_dir, file);
+                }
+            } else {
+                /* normal WAD file add path */
+                D_AddFile(file,source_pwad);
+            }
+
+            free(file);
         }
       }
     }
