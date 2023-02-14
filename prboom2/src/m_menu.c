@@ -3742,7 +3742,7 @@ setup_menu_t comp_settings3[] =  // Compatibility Settings screen #3
   //e6y
   {"Retain quirks in Doom's sound code", S_YESNO, m_null, C_X,
    C_Y + compat_sound * COMP_SPC, {"comp_sound"}},
-  {"PrBoom-Plus Settings", S_SKIP|S_TITLE,m_null,C_X,
+  {"PrBoomX Settings", S_SKIP|S_TITLE,m_null,C_X,
    C_Y + compat_plussettings * COMP_SPC},
   {"Use Doom's buggy \"Ouch\" face code", S_YESNO, m_null, C_X,
    C_Y + compat_ouchface * COMP_SPC, {"comp_ouchface"}},

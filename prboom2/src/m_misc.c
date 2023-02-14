@@ -418,7 +418,7 @@ default_t defaults[] =
   {"comp_soul",{&default_comp[comp_soul]},{0},0,1,def_bool,ss_comp,&comp[comp_soul]},
   {"comp_maskedanim",{&default_comp[comp_maskedanim]},{0},0,1,def_bool,ss_comp,&comp[comp_maskedanim]},
   //e6y
-  {"PrBoom-plus compatibility settings",{NULL},{0},UL,UL,def_none,ss_none},
+  {"PrBoomX compatibility settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"comp_ouchface",{&default_comp[comp_ouchface]},{0},0,1,def_bool,ss_comp,&comp[comp_ouchface]},
   {"comp_maxhealth",{&default_comp[comp_maxhealth]},{0},0,1,def_bool,ss_comp,&comp[comp_maxhealth]},
   {"comp_translucency",{&default_comp[comp_translucency]},{0},0,1,def_bool,ss_comp,&comp[comp_translucency]},
@@ -979,7 +979,7 @@ default_t defaults[] =
    def_bool,ss_none}, // enables display of HUD
 
 //e6y
-  {"Prboom-plus key bindings",{NULL},{0},UL,UL,def_none,ss_none},
+  {"PrboomX key bindings",{NULL},{0},UL,UL,def_none,ss_none},
   {"key_speedup", {&key_speed_up}, {0},
    0,MAX_KEY,def_key,ss_keys},
   {"key_speeddown", {&key_speed_down}, {0},
@@ -1003,7 +1003,7 @@ default_t defaults[] =
   {"key_showalive", {&key_showalive}, {KEYD_KEYPADDIVIDE},
    0,MAX_KEY,def_key,ss_keys},
 
-  {"Prboom-plus heads-up display settings",{NULL},{0},UL,UL,def_none,ss_none},
+  {"PrboomX heads-up display settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"hudadd_gamespeed", {&hudadd_gamespeed},  {0},0,1,
    def_bool,ss_stat},
   {"hudadd_leveltime", {&hudadd_leveltime},  {0},0,1,
@@ -1034,7 +1034,7 @@ default_t defaults[] =
    def_bool,ss_stat},
 
   //e6y
-  {"Prboom-plus mouse settings",{NULL},{0},UL,UL,def_none,ss_none},
+  {"PrboomX mouse settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"mouse_acceleration",{&mouse_acceleration},{0},0,UL,
    def_int,ss_none},
   {"mouse_sensitivity_mlook",{&mouseSensitivity_mlook},{10},0,UL,
@@ -1044,7 +1044,7 @@ default_t defaults[] =
   {"mouse_carrytics", {&mouse_carrytics}, {0},0,1,
    def_bool,ss_stat},
 
-  {"Prboom-plus demos settings",{NULL},{0},UL,UL,def_none,ss_none},
+  {"PrboomX demos settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"demo_extendedformat", {&demo_extendedformat_default},  {1},0,1,
    def_bool,ss_stat},
   {"demo_demoex_filename", {NULL,&demo_demoex_filename}, {0,""},UL,UL,
@@ -1056,7 +1056,7 @@ default_t defaults[] =
   {"quickstart_window_ms", {&quickstart_window_ms},  {0},0,1000,
    def_int,ss_stat},
 
-  {"Prboom-plus game settings",{NULL},{0},UL,UL,def_none,ss_none},
+  {"PrboomX game settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"movement_strafe50", {&movement_strafe50},  {0},0,1,
    def_bool,ss_stat},
   {"movement_shorttics", {&movement_shorttics},  {0},0,1,
@@ -1064,7 +1064,7 @@ default_t defaults[] =
   {"interpolation_maxobjects", {&interpolation_maxobjects},  {0},0,UL,
    def_int,ss_stat},
 
-  {"Prboom-plus misc settings",{NULL},{0},UL,UL,def_none,ss_none},
+  {"PrboomX misc settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"showendoom", {&showendoom},  {0},0,1,
    def_bool,ss_stat},
   {"screenshot_dir", {NULL,&screenshot_dir}, {0,""},UL,UL,
@@ -1091,7 +1091,7 @@ default_t defaults[] =
   {"cap_fps", {&cap_fps},{60},16,300,def_int,ss_none},
   {"cap_wipescreen", {&cap_wipescreen},{0},0,1,def_bool,ss_none},
 
-  {"Prboom-plus video settings",{NULL},{0},UL,UL,def_none,ss_none},
+  {"PrboomX video settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"sdl_video_window_pos", {NULL,&sdl_video_window_pos}, {0,"center"},UL,UL,
    def_str,ss_none},
   {"palette_ondamage", {&palette_ondamage},  {1},0,1,
@@ -1134,7 +1134,7 @@ default_t defaults[] =
   {"movement_mouseinvert", {&movement_mouseinvert},  {0},0,1,
    def_bool,ss_stat},
 
-  {"Prboom-plus OpenGL settings",{NULL},{0},UL,UL,def_none,ss_none},
+  {"PrboomX OpenGL settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"gl_allow_detail_textures", {&gl_allow_detail_textures},  {1},0,1,
    def_bool,ss_stat},
   {"gl_detail_maxdist", {&gl_detail_maxdist},  {0},0,65535,
@@ -1207,7 +1207,7 @@ default_t defaults[] =
   {"gl_weaponspritefuzzmode",{(int*)&gl_weaponspritefuzzmode},{fuzz_darken},fuzz_darken,fuzz_last-1,
       def_int, ss_none},
 
-  {"Prboom-plus emulation settings",{NULL},{0},UL,UL,def_none,ss_none},
+  {"PrboomX emulation settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"overrun_spechit_warn", {&overflows[OVERFLOW_SPECHIT].warn},  {0},0,1,
    def_bool,ss_stat},
   {"overrun_spechit_emulate", {&overflows[OVERFLOW_SPECHIT].emulate},  {1},0,1,
@@ -1233,7 +1233,7 @@ default_t defaults[] =
   {"overrun_missedbackside_emulate", {&overflows[OVERFLOW_MISSEDBACKSIDE].emulate},  {0},0,1,
    def_bool,ss_stat},
 
-  {"Prboom-plus 'bad' compatibility settings",{NULL},{0},UL,UL,def_none,ss_none},
+  {"PrboomX 'bad' compatibility settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"comperr_zerotag", {&default_comperr[comperr_zerotag]},  {0},0,1,
    def_bool,ss_stat},
   {"comperr_passuse", {&default_comperr[comperr_passuse]},  {0},0,1,
@@ -1248,7 +1248,7 @@ default_t defaults[] =
    def_bool,ss_stat},
 
 #ifdef USE_WINDOWS_LAUNCHER
-  {"Prboom-plus launcher settings",{NULL},{0},UL,UL,def_none,ss_none},
+  {"PrboomX launcher settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"launcher_enable",{(int*)&launcher_enable},{launcher_enable_never},
    launcher_enable_never, launcher_enable_count - 1, def_int,ss_none},
   {"launcher_history0", {NULL,&launcher_history[0]}, {0,""},UL,UL,def_str,ss_none},
@@ -1262,7 +1262,7 @@ default_t defaults[] =
   {"launcher_history8", {NULL,&launcher_history[8]}, {0,""},UL,UL,def_str,ss_none},
   {"launcher_history9", {NULL,&launcher_history[9]}, {0,""},UL,UL,def_str,ss_none},
 #endif
-  {"Prboom-plus demo patterns list. Put your patterns here",{NULL},{0},UL,UL,def_none,ss_none},
+  {"PrboomX demo patterns list. Put your patterns here",{NULL},{0},UL,UL,def_none,ss_none},
   {"demo_patterns_mask", {NULL, &demo_patterns_mask, &demo_patterns_count, &demo_patterns_list}, {0,"demo_pattern",9, &demo_patterns_list_def[0]},UL,UL,def_arr,ss_none},
   {"demo_pattern0", {NULL,&demo_patterns_list_def[0]}, 
    {0,"DOOM 2: Hell on Earth/((lv)|(nm)|(pa)|(ty))\\d\\d.\\d\\d\\d\\.lmp/doom2.wad"},UL,UL,def_str,ss_none},
@@ -1606,7 +1606,7 @@ void M_LoadDefaults (void)
 
   // check for a custom default file
 
-#define BOOM_CFG "prboom-plus.cfg"
+#define BOOM_CFG "prboomX.cfg"
 
   i = M_CheckParm ("-config");
   if (i && i < myargc-1)
@@ -1744,7 +1744,7 @@ void M_LoadDefaults (void)
      doesn't overlap with the cfg settings */
   //e6y: Check on existence of prboom.wad
   if (!(wad_files[0] = I_FindFile(PACKAGE_TARNAME ".wad", "")))
-    I_Error("PrBoom-Plus.wad not found. Can't continue.");
+    I_Error("PrBoomX.wad not found. Can't continue.");
 }
 
 
