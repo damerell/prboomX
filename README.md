@@ -14,6 +14,7 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
     * Also adds regeneration if you stand still, similar to modern FPS games
 * Targeted massacre cheat: `tntsem`
     * Kills only monsters currently targeting the player
+* Uncapped framerate limiting
 * Optional enhancements to the allmap powerup:
     * Secrets in undiscovered parts of the map are bright yellow
     * Secrets in discovered parts of the map are bright purple

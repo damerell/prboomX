@@ -291,6 +291,8 @@ extern int endoom_mode;
 
 extern const char* S_music_files[]; // cournia
 
+int fps_limit;
+
 /* cph - Some MBF stuff parked here for now
  * killough 10/98
  */
@@ -483,6 +485,8 @@ default_t defaults[] =
    def_int,ss_none}, // gamma correction level // killough 1/18/98
   {"uncapped_framerate", {&movement_smooth_default},  {1},0,1,
    def_bool,ss_stat},
+  {"fps_limit", {&fps_limit},  {60},35,1000,
+   def_int,ss_stat},
   {"filter_wall",{(int*)&drawvars.filterwall},{RDRAW_FILTER_POINT},
    RDRAW_FILTER_POINT, RDRAW_FILTER_ROUNDED, def_int,ss_none},
   {"filter_floor",{(int*)&drawvars.filterfloor},{RDRAW_FILTER_POINT},

@@ -3280,13 +3280,14 @@ setup_menu_t gen_settings1[] = { // General Settings screen1
   {"Enable Translucency",            S_YESNO,            m_null, G_X, G_Y+ 9*8, {"translucency"}, 0, 0, M_Trans},
   {"Translucency filter percentage", S_NUM,              m_null, G_X, G_Y+10*8, {"tran_filter_pct"}, 0, 0, M_Trans},
   {"Uncapped Framerate",             S_YESNO,            m_null, G_X, G_Y+11*8, {"uncapped_framerate"}, 0, 0, M_ChangeUncappedFrameRate},
+  {"Uncapped Framerate Limit",       S_NUM,              m_null, G_X, G_Y+12*8, {"fps_limit"}},
 
-  {"Sound & Music",                  S_SKIP|S_TITLE,     m_null, G_X, G_Y+13*8},
-  {"Number of Sound Channels",       S_NUM|S_PRGWARN,    m_null, G_X, G_Y+14*8, {"snd_channels"}},
-  {"Enable v1.1 Pitch Effects",      S_YESNO,            m_null, G_X, G_Y+15*8, {"pitched_sounds"}},
-  {"PC Speaker emulation",           S_YESNO|S_PRGWARN,  m_null, G_X, G_Y+16*8, {"snd_pcspeaker"}},
-  {"Preferred MIDI player",          S_CHOICE|S_PRGWARN, m_null, G_X, G_Y+17*8, {"snd_midiplayer"}, 0, 0, M_ChangeMIDIPlayer, midiplayers},
-  {"disable sound cutoffs",          S_YESNO,            m_null, G_X, G_Y+18*8, {"full_sounds"}},
+  {"Sound & Music",                  S_SKIP|S_TITLE,     m_null, G_X, G_Y+14*8},
+  {"Number of Sound Channels",       S_NUM|S_PRGWARN,    m_null, G_X, G_Y+15*8, {"snd_channels"}},
+  {"Enable v1.1 Pitch Effects",      S_YESNO,            m_null, G_X, G_Y+16*8, {"pitched_sounds"}},
+  {"PC Speaker emulation",           S_YESNO|S_PRGWARN,  m_null, G_X, G_Y+17*8, {"snd_pcspeaker"}},
+  {"Preferred MIDI player",          S_CHOICE|S_PRGWARN, m_null, G_X, G_Y+18*8, {"snd_midiplayer"}, 0, 0, M_ChangeMIDIPlayer, midiplayers},
+  {"disable sound cutoffs",          S_YESNO,            m_null, G_X, G_Y+19*8, {"full_sounds"}},
 //{"Low-pass filter",                S_YESNO,            m_null, G_X, G_Y+19*8, {"lowpass_filter"}},
 
   // Button for resetting to defaults

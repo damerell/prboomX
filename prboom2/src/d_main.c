@@ -130,6 +130,8 @@ dboolean umapinfo_loaded;
 extern dboolean inhelpscreens;
 extern dboolean BorderNeedRefresh;
 
+extern int fps_limit;
+
 skill_t startskill;
 int     startepisode;
 int     startmap;
@@ -438,6 +440,22 @@ void D_Display (fixed_t frac)
   // Don't thrash cpu during pausing or if the window doesnt have focus
   if ( (paused && !walkcamera.type) || (!window_focused) ) {
     I_uSleep(5000);
+  }
+
+  /* delay to limit fps to desired amount */
+  if (movement_smooth && fps_limit) {
+      static int tick_a;
+      int tick_b = SDL_GetTicks();
+      if (tick_a == 0 || tick_b < tick_a)
+          tick_a = SDL_GetTicks();
+      else {
+          int64_t wait_time = 1000/(7+fps_limit) - (tick_b - tick_a);
+          while (wait_time > 0) {
+              I_uSleep(1000);
+              wait_time -= 1;
+          }
+          tick_a = SDL_GetTicks();
+      }
   }
 
   I_EndDisplay();
