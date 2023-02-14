@@ -36,3 +36,4 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
 - `snd_sfxvolume` / `snd`
 - `snd_musicvolume` / `mus`
 - `kill <class>`
+- `give <thing>`

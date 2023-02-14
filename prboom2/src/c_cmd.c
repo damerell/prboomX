@@ -29,6 +29,16 @@ static char console_message[HU_MSGWIDTH];
 
 dboolean c_drawpsprites = true;
 
+static int C_SendCheat(const char* cheat)
+{
+    int ch = 0;
+    M_FindCheats(' ');
+    for (int i=0; i < strlen(cheat); i++) {
+        ch |= M_FindCheats(tolower(cheat[i]));
+    }
+    return ch;
+}
+
 static void C_noclip(char* cmd)
 {
   plyr->message = (plyr->cheats ^= CF_NOCLIP) & CF_NOCLIP ?
@@ -239,10 +249,72 @@ static void C_map(char* cmd)
     if (buf[bufwr+1]) {
         char clev[18];
         snprintf(clev, 18, "IDCLEV%s", &buf[bufwr+1]);
-        M_FindCheats(' ');
-        for (int i=0; i < strlen(clev); i++) {
-            M_FindCheats(tolower(clev[i]));
+        C_SendCheat(clev);
+    }
+}
+
+typedef struct
+{
+    char* give;
+    char* cheat;
+} cheat_map_t;
+
+/* map of give to cheat */
+static cheat_map_t cheatmap[] = {
+    {"allmap", "idbeholda"},
+    {"visor", "idbeholdl"},
+    {"invuln", "idbeholdv"},
+    {"invulnerability", "idbeholdv"},
+    {"invisibility", "idbeholdi"},
+    {"radsuit", "idbeholdr"},
+    {"keys", "tntka"},
+    {"health", "idbeholdh"},
+    {"ammo", "idfa"},
+    {"all", "idkfa"},
+    {"armor", "idbeholdm"},
+    {"armour", "idbeholdm"},
+    {"redkey", "tntkeyrc"},
+    {"redskull", "tntkeyrs"},
+    {"bluekey", "tntkeybc"},
+    {"blueskull", "tntkeybs"},
+    {"yellowkey", "tntkeyyc"},
+    {"yellowskull", "tntkeyys"},
+    {"bullets", "tntammo1"},
+    {"shells", "tntammo2"},
+    {"rockets", "tntammo3"},
+    {"cells", "tntammo4"},
+    {"backpack", "tntammob"},
+    {"berserk", "idbeholds"},
+    {"chainsaw", "tntweap8"},
+    {"shotgun", "tntweap3"},
+    {"chaingun", "tntweap4"},
+    {"rocketlauncher", "tntweap5"},
+    {"plasmagun", "tntweap6"},
+    {"plasmarifle", "tntweap6"},
+    {"bfg", "tntweap7"},
+    {"bfg9000", "tntweap7"},
+    {"supershotgun", "tntweap9"},
+    {"ssg", "tntweap9"},
+    {"doubleshotgun", "tntweap9"},
+    {"shotgun2", "tntweap9"},
+    {NULL, NULL}
+};
+
+static void C_give(char* cmd)
+{
+    char* giveme = strtok(cmd, " ");
+    int i = 0;
+    while (giveme) {
+        for (i = 0; cheatmap[i].cheat; i++) {
+            if (stricmp(giveme, cheatmap[i].give) == 0) {
+                C_SendCheat(cheatmap[i].cheat);
+                break;
+            }
         }
+        if (!cheatmap[i].cheat) {
+            C_ConsolePrintf("Did not find give cheat: %s", giveme);
+        }
+        giveme = strtok(NULL, " ");
     }
 }
 
@@ -263,6 +335,7 @@ command command_list[] = {
     {"plat_skip", C_platskip},
     {"map", C_map},
     {"warp", C_map},
+    {"give", C_give},
 
     /* aliases */
     {"snd", C_sndvol},
@@ -291,10 +364,7 @@ void C_ConsoleCommand(char* cmd)
     int cmdlen = strlen(cmd);
     /* send a bogus space to clear out any cached
      * cheat keystrokes */
-    M_FindCheats(' ');
-    for (int i=0; i < cmdlen; i++) {
-        ch |= M_FindCheats(tolower(cmd[i]));
-    }
+    ch = C_SendCheat(cmd);
 
     if (ch) {
         C_AddCommandToHistory(cmd);
