@@ -87,6 +87,7 @@
 #include "umapinfo.h"
 #include "statdump.h"
 #include "zip/zip.h"
+#include "md5.h"
 
 //e6y
 #include "r_demo.h"
@@ -168,6 +169,81 @@ const char *const standard_iwads[]=
 };
 //e6y static 
 const int nstandard_iwads = sizeof standard_iwads/sizeof*standard_iwads;
+
+void D_AdjustSaveLocation()
+{
+    static char* base_folder;
+
+    if (!base_folder) {
+        base_folder = strdup(basesavegame);
+    }
+
+    if (organize_saves) {
+        struct MD5Context wads_md5 = {0};
+        char* wadlist = malloc(sizeof(char));
+        int wadlen = 0;
+        wadlist[0] = '\0';
+        MD5Init(&wads_md5);
+        unsigned char digest[16];
+        for (int j = 0; j < numwadfiles; j++) {
+            /* ignore GWA files */
+            if (stricmp(strrchr(wadfiles[j].name,'.'), ".gwa")) {
+                char* wad = strdup(BaseName(wadfiles[j].name));
+                for (int k = 0; k < strlen(wad); k++) {
+                    wad[k] = tolower(wad[k]);
+                }
+                wadlen += strlen(wad) + 1;
+                wadlist = realloc(wadlist, sizeof(char)*(wadlen + 1));
+                strcat(wadlist, wad);
+                wadlist[wadlen-1] = '\n';
+                wadlist[wadlen] = '\0';
+                MD5Update(&wads_md5, (md5byte const *)wad, strlen(wad));
+                free(wad);
+            }
+        }
+        MD5Final(digest, &wads_md5);
+
+        /* append the digest to the base save game folder */
+        char* newsavedir = (char*) malloc(strlen(basesavegame) + sizeof(digest) + 2);
+        strcpy(newsavedir, basesavegame);
+        if (!HasTrailingSlash(newsavedir)) {
+            strcat(newsavedir, "/");
+        }
+
+        int wrptr = strlen(newsavedir);
+        char b[3];
+        for (int i = 0; i < 16; i++) {
+            snprintf(b, sizeof(b), "%02X",digest[i]);
+            strcat(newsavedir, b);
+        }
+
+        /* create folder if it doesn't exist */
+        if (M_access(newsavedir, W_OK) && -1 == M_mkdir(newsavedir)) {
+            lprintf(LO_WARN, "Could not make save game folder: %s, defaulting to regular save game location.\n", newsavedir);
+        } else {
+            FILE *f;
+            char* saveinfo = "saveinfo.txt";
+            int filenamelen = strlen(newsavedir) + strlen(saveinfo) + 2;
+            char* filename = malloc(sizeof(char)*(filenamelen));
+            snprintf(filename, filenamelen, "%s/%s", newsavedir, saveinfo);
+            f=M_fopen(filename,"w");
+            if (f) {
+                free(basesavegame);
+                basesavegame = newsavedir;
+                fprintf(f,"Saves in this folder are for the following content, as loaded in the following order:\n");
+                fprintf(f,"%s", wadlist);
+                fclose(f);
+                lprintf(LO_INFO, "Organizing saves into folder: %s\n", newsavedir);
+            } else {
+                lprintf(LO_WARN, "Could not write to save game folder: %s, defaulting to regular save game location.\n", newsavedir);
+            }
+            free(filename);
+        }
+        free(wadlist);
+    } else {
+        basesavegame = base_folder;
+    }
+}
 
 /*
  * D_PostEvent - Event handling
@@ -2188,6 +2264,7 @@ static void D_DoomMainSetup(void)
 	  }
   }
 
+  D_AdjustSaveLocation();
 
   V_InitColorTranslation(); //jff 4/24/98 load color translation lumps
 

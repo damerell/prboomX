@@ -216,6 +216,8 @@ extern dboolean secretexit;
 
 extern int  bodyquesize;       // killough 2/8/98: adustable corpse limit
 
+extern dboolean organize_saves;
+
 // killough 5/2/98: moved from d_deh.c:
 // Par times (new item with BOOM) - from g_game.c
 extern int pars[5][10];  // hardcoded array size

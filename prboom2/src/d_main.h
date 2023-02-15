@@ -78,6 +78,8 @@ void D_AddFile (const char *file, wad_source_t source);
 void AddIWAD(const char *iwad);
 const char *BaseName(const char *filename);
 
+void D_AdjustSaveLocation();
+
 /* cph - MBF-like wad/deh/bex autoload code */
 /* proff 2001/7/1 - added prboom.wad as last entry so it's always loaded and
    doesn't overlap with the cfg settings */

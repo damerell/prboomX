@@ -351,6 +351,8 @@ int defaultskill;               //note 1-based
 int    bodyqueslot, bodyquesize;        // killough 2/8/98
 mobj_t **bodyque = 0;                   // phares 8/10/98
 
+dboolean organize_saves;
+
 static void G_DoSaveGame (dboolean menu);
 
 //e6y: save/restore all data which could be changed by G_ReadDemoHeader

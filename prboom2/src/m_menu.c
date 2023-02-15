@@ -3345,8 +3345,9 @@ setup_menu_t gen_settings2[] = { // General Settings screen2
   {"Default compatibility level",      S_CHOICE,        m_null, G_X, G_Y+15*8, {"default_compatibility_level"}, 0, 0, NULL, &gen_compstrings[1]},
   {"Show ENDOOM screen",               S_YESNO,         m_null, G_X, G_Y+16*8, {"showendoom"}},
   {"Fullscreen menu background",       S_YESNO, m_null, G_X, G_Y + 17*8, {"menu_background"}},
+  {"Organize Save files by loaded WAD",S_YESNO,         m_null, G_X, G_Y+18*8, {"organize_saves"}, 0, 0, D_AdjustSaveLocation},
 #ifdef USE_WINDOWS_LAUNCHER
-  {"Use In-Game Launcher",             S_CHOICE,        m_null, G_X, G_Y+ 18*8, {"launcher_enable"}, 0, 0, NULL, launcher_enable_states},
+  {"Use In-Game Launcher",             S_CHOICE,        m_null, G_X, G_Y+ 20*8, {"launcher_enable"}, 0, 0, NULL, launcher_enable_states},
 #endif
 
 
