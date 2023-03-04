@@ -107,6 +107,7 @@ float bw_green = 0.59f;
 float bw_blue = 0.11f;
 
 extern int tran_filter_pct;
+extern dboolean c_drawpsprites;
 
 dboolean use_fog=false;
 
@@ -1321,7 +1322,7 @@ void gld_EndDrawScene(void)
   gl_EnableFog(false);
   gld_Set2DMode();
 
-  if (!viewangleoffset && !viewpitchoffset)
+  if (!viewangleoffset && !viewpitchoffset && c_drawpsprites)
   { // don't draw on side views
     glsl_SetActiveShader(sh_main);
     R_DrawPlayerSprites();
