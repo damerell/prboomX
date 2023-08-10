@@ -327,6 +327,7 @@ static void C_note(char* cmd)
     struct tm tm = *localtime(&t);
     FILE* f;
     char* notefile = (char*) malloc(sizeof(char)*(20));
+    static dboolean first_note = true;
     if (!cmd || !*cmd) {
         doom_printf("Invalid note command: Supply a message to write.");
     }
@@ -335,12 +336,17 @@ static void C_note(char* cmd)
         snprintf(notefile, 20, "notes_%04d%02d%02d.txt", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
         f = M_fopen(notefile,"a");
         if (f) {
-            fprintf(f, "=== %02d:%02d:%02d\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
-            for (int j = 0; j < numwadfiles; j++) {
-                /* ignore GWA files */
-                if (stricmp(strrchr(wadfiles[j].name,'.'), ".gwa")) {
-                    fprintf(f, "%s\n", wadfiles[j].name);
+            if (first_note) {
+                fprintf(f, "=== %02d:%02d:%02d\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+                for (int j = 0; j < numwadfiles; j++) {
+                    /* ignore GWA files */
+                    if (stricmp(strrchr(wadfiles[j].name,'.'), ".gwa")) {
+                        fprintf(f, "%s\n", wadfiles[j].name);
+                    }
                 }
+                first_note = false;
+            } else {
+                fprintf(f, "%02d:%02d:%02d\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
             }
             fprintf(f, "Position (%d,%d,%d)\tAngle %-.0f\n\n",
                     players[consoleplayer].mo->x >> FRACBITS,
