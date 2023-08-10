@@ -24,6 +24,10 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
     * Lines can't be hidden from the map
     * Tag finder: Pressing "X" while in nofollow highlights the sector or line under the crosshair and shows the activating line/sector if any.
         * This lets you figure out what switches do or uncover how to open secrets if you are stuck.
+* Note-taking console command
+    * Jot down quick notes while playtesting. Notes go into a dated text file in the current working directory.
+    * Each note lists the time, all loaded WAD files, player position, and an optional user-supplied message on the console.
+    * Example: `note demon is stuck in the wall here`.
 
 ![Tag finder demo](prboom2/doc/magic_sector.gif)
 
@@ -40,3 +44,4 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
 - `snd_musicvolume` / `mus`
 - `kill <class>`
 - `give <thing>`
+- `note <message>` (write notes to a dated text file, useful for quick notes while playtesting)

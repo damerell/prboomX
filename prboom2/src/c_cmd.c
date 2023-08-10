@@ -17,8 +17,11 @@
 #include "umapinfo.h"
 #include "hu_stuff.h"
 #include "lprintf.h"
+#include "m_io.h"
 
+#include <time.h>
 
+extern char *basesavegame;
 extern void M_QuitResponse(int ch);
 extern const char * const ActorNames[];
 
@@ -318,6 +321,42 @@ static void C_give(char* cmd)
     }
 }
 
+static void C_note(char* cmd)
+{
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    FILE* f;
+    char* notefile = (char*) malloc(sizeof(char)*(20));
+    if (!cmd || !*cmd) {
+        doom_printf("Invalid note command: Supply a message to write.");
+    }
+
+    if (notefile) {
+        snprintf(notefile, 20, "notes_%04d%02d%02d.txt", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+        f = M_fopen(notefile,"a");
+        if (f) {
+            fprintf(f, "=== %02d:%02d:%02d\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+            for (int j = 0; j < numwadfiles; j++) {
+                /* ignore GWA files */
+                if (stricmp(strrchr(wadfiles[j].name,'.'), ".gwa")) {
+                    fprintf(f, "%s\n", wadfiles[j].name);
+                }
+            }
+            fprintf(f, "Position (%d,%d,%d)\tAngle %-.0f\n\n",
+                    players[consoleplayer].mo->x >> FRACBITS,
+                    players[consoleplayer].mo->y >> FRACBITS,
+                    players[consoleplayer].mo->z >> FRACBITS,
+                    players[consoleplayer].mo->angle * (90.0/ANG90));
+            fprintf(f, "%s", cmd);
+            fprintf(f, "\n\n");
+            fclose(f);
+            doom_printf("Note written to %s", notefile);
+        } else {
+            doom_printf("Couldn't open note file %s", notefile);
+        }
+    }
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -336,6 +375,7 @@ command command_list[] = {
     {"map", C_map},
     {"warp", C_map},
     {"give", C_give},
+    {"note", C_note},
 
     /* aliases */
     {"snd", C_sndvol},
@@ -373,8 +413,14 @@ void C_ConsoleCommand(char* cmd)
         int i = 0;
         char* cptr = cmd;
         char* fullcmd = strdup(cmd);
+        const char* sendcmd = NULL;
         while(cptr && *cptr && !isspace(*cptr)) cptr++;
-        if(*cptr) *cptr = '\0';
+        if(*cptr) {
+            *cptr = '\0';
+            sendcmd = cptr+1;
+        } else {
+            sendcmd = cptr;
+        }
 
         for (i=0; command_list[i].name; i++) {
             if (stricmp(command_list[i].name, cmd) == 0) {
