@@ -361,6 +361,7 @@ static void C_note(char* cmd)
             doom_printf("Couldn't open note file %s", notefile);
         }
     }
+    free(notefile);
 }
 
 command command_list[] = {
