@@ -151,7 +151,7 @@ patchnum_t hu_msgbg[9];          //jff 2/26/98 add patches for message backgroun
 patchnum_t hu_font_hud[HU_FONTSIZE];
 
 // widgets
-static hu_textline_t  w_title;
+       hu_textline_t  w_title;
 static hu_stext_t     w_message;
 static hu_itext_t     w_chat;
 static hu_itext_t     w_console;

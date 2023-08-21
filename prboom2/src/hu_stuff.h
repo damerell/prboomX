@@ -34,6 +34,7 @@
 #define __HU_STUFF_H__
 
 #include "d_event.h"
+#include "hu_lib.h"
 
 /*
  * Globally visible constants.
@@ -96,6 +97,7 @@ extern int hud_displayed;   /* hud is displayed */
 extern int hud_num;
 extern int huds_count;
 extern dboolean console_on;
+extern hu_textline_t  w_title;
 
 typedef struct custom_message_s
 {

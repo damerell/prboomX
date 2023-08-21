@@ -321,6 +321,7 @@ static void C_give(char* cmd)
     }
 }
 
+extern hu_textline_t  w_title;
 static void C_note(char* cmd)
 {
     time_t t = time(NULL);
@@ -347,6 +348,20 @@ static void C_note(char* cmd)
                 first_note = false;
             } else {
                 fprintf(f, "%02d:%02d:%02d\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+            }
+            if (gamestate == GS_LEVEL && gamemap > 0) {
+                /* Fixme: Ideally we should use the same code as the
+                 * automap widget generator, but that needs to be
+                 * refactored to its own function. Will do that later
+                 */
+                char* mapname = w_title.l;
+                if (mapname) {
+                    while (*mapname) {
+                        fprintf(f, "%c", toupper(*mapname));
+                        mapname++;
+                    }
+                    fprintf(f, "\n");
+                }
             }
             fprintf(f, "Position (%d,%d,%d)\tAngle %-.0f\n\n",
                     players[consoleplayer].mo->x >> FRACBITS,
