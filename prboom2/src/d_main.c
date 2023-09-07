@@ -525,9 +525,10 @@ void D_Display (fixed_t frac)
       if (tick_a == 0 || tick_b < tick_a) {
           tick_a = SDL_GetTicks();
       } else {
-          int64_t wait_time = (int64_t)(1000.0/(fps_limit) - (double)(tick_b - tick_a));
-          if (wait_time > 0 && wait_time < (int64_t)(1000.0/(fps_limit))) {
-              I_uSleep(wait_time*1000);
+          double frame_time = 1000000.0/((double) fps_limit);
+          int64_t wait_time = (int64_t)(frame_time - (1000.0)*(double)(tick_b - tick_a));
+          if (wait_time > 0 && wait_time < (int64_t)(frame_time)) {
+              I_uSleep(wait_time);
           }
           tick_a = SDL_GetTicks();
       }
