@@ -101,9 +101,9 @@ int hud_num;
 #define HU_INPUTX HU_MSGX
 #define HU_INPUTY (HU_MSGY + HU_MSGHEIGHT*(hu_font[0].height) +1)
 
-#define HU_CONSOLEX HU_MSGX
+#define HU_CONSOLEX HU_MSGX+(hu_font[0].width)
 #define HU_CONSOLE_MESSAGE_COUNT (9)
-#define HU_CONSOLEY (HU_MSGY + (HU_CONSOLE_MESSAGE_COUNT+1)*(HU_MSGHEIGHT*(hu_font[0].height) +1))
+#define HU_CONSOLEY (HU_MSGY + (HU_CONSOLE_MESSAGE_COUNT+1)*(HU_MSGHEIGHT*(hu_font[0].height)+1))
 
 #define HU_TRACERX (2)
 #define HU_TRACERY (hu_font['A'-HU_FONTSTART].height)
@@ -765,7 +765,7 @@ void HU_Start(void)
            HU_FONTSTART,
            hudcolor_list,
            hu_msgbg,
-           VPT_NONE,
+           VPT_STRETCH,
            &console_on,
            true
           );
@@ -1010,7 +1010,7 @@ void HU_Start(void)
     hu_font,
     HU_FONTSTART,
     hudcolor_console,
-    VPT_NONE,
+    VPT_STRETCH,
     &console_on
   );
 
@@ -2651,7 +2651,6 @@ void HU_Drawer(void)
   HUlib_drawIText(&w_chat);
 
   if (console_on) {
-    V_FillRect(0, 0, 0, SCREENWIDTH, HU_CONSOLEY + (hu_font[0].height) +1, 0);
     HUlib_drawMText(&w_consoletext);
   }
   // display the interactive buffer for console entry

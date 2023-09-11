@@ -457,7 +457,7 @@ void HUlib_initMText(hu_mtext_t *m, int x, int y, int w, int h, int drawlines,
     (
       &m->l[i],
       x,
-      y + (hud_list_bgon? i+1 : i)*HU_REFRESHSPACING,
+      y + ((console_on || hud_list_bgon)? i+1 : i)*HU_REFRESHSPACING,
       font,
       startchar,
       cm,
@@ -568,7 +568,9 @@ void HUlib_drawMText(hu_mtext_t* m)
     return; // if not on, don't draw
 
   // draw everything
-  if (hud_list_bgon)
+  if (console_on)
+    HUlib_drawMBg(m->x,m->y,m->w,m->h+1,m->bg);
+  else if (hud_list_bgon)
     HUlib_drawMBg(m->x,m->y,m->w,m->h,m->bg);
   y = m->y + HU_REFRESHSPACING;
   for (i=0 ; i<m->nl ; i++)
@@ -579,7 +581,7 @@ void HUlib_drawMText(hu_mtext_t* m)
 
     l = &m->l[idx];
     yidx = m->reversed ? m->drawlines - i - 1 : i;
-    if (hud_list_bgon)
+    if (console_on || hud_list_bgon)
     {
       l->x = m->x + 4;
       l->y = m->y + ((yidx)+1)*HU_REFRESHSPACING;
@@ -643,7 +645,7 @@ void HUlib_eraseMText(hu_mtext_t* m)
 {
   int i;
 
-  if (hud_list_bgon)
+  if (console_on || hud_list_bgon)
     HUlib_eraseMBg(m);
 
   for (i=0 ; i< m->nl ; i++)
