@@ -45,11 +45,18 @@ jobs:
             package_name: "linux_clang"
           }
         - {
-            name: "macOS Clang",
+            name: "macOS Clang (Big Sur)",
             os: macos-11,
             build_type: "Release",
             extra_options: "",
-            package_name: "macos"
+            package_name: "macos-big-sur"
+          }
+        - {
+            name: "macOS Clang (Latest)",
+            os: macos-latest,
+            build_type: "Release",
+            extra_options: "",
+            package_name: "macos-latest"
           }
 
     steps:
