@@ -1504,8 +1504,12 @@ void M_QuickSave(void)
     quickSaveSlot = -2; // means to pick a slot now
     return;
   }
-  sprintf(tempstring,s_QSPROMPT,savegamestrings[quickSaveSlot]); // Ty 03/27/98 - externalized
-  M_StartMessage(tempstring,M_QuickSaveResponse,true);
+  if (!skip_quicksaveload_confirmation) {
+      sprintf(tempstring,s_QSPROMPT,savegamestrings[quickSaveSlot]); // Ty 03/27/98 - externalized
+      M_StartMessage(tempstring,M_QuickSaveResponse,true);
+  } else {
+      M_QuickSaveResponse('y');
+  }
 }
 
 /////////////////////////////
@@ -1536,8 +1540,12 @@ void M_QuickLoad(void)
     M_StartMessage(s_QSAVESPOT,NULL,false); // Ty 03/27/98 - externalized
     return;
   }
-  sprintf(tempstring,s_QLPROMPT,savegamestrings[quickSaveSlot]); // Ty 03/27/98 - externalized
-  M_StartMessage(tempstring,M_QuickLoadResponse,true);
+  if (!skip_quicksaveload_confirmation) {
+      sprintf(tempstring,s_QLPROMPT,savegamestrings[quickSaveSlot]); // Ty 03/27/98 - externalized
+      M_StartMessage(tempstring,M_QuickLoadResponse,true);
+  } else {
+      M_QuickLoadResponse('y');
+  }
 }
 
 /////////////////////////////
@@ -3238,10 +3246,12 @@ extern int detect_voices, realtic_clock_rate, tran_filter_pct;
 setup_menu_t gen_settings1[], gen_settings2[], gen_settings3[];
 setup_menu_t gen_settings4[], gen_settings5[], gen_settings6[];
 setup_menu_t gen_settings7[], gen_settings8[];
+setup_menu_t gen_settings_prboomx[];
 
 setup_menu_t* gen_settings[] =
 {
   gen_settings1,
+  gen_settings_prboomx,
   gen_settings2,
   gen_settings3,
   gen_settings4,
@@ -3293,9 +3303,23 @@ setup_menu_t gen_settings1[] = { // General Settings screen1
   // Button for resetting to defaults
   {0,S_RESET,m_null,X_BUTTON,Y_BUTTON},
 
+  {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {gen_settings_prboomx}},
+  {0,S_SKIP|S_END,m_null}
+};
+
+
+setup_menu_t gen_settings_prboomx[] = { // prboomX General Settings
+
+  {"PrBoomX Settings"                 ,S_SKIP|S_TITLE,m_null, G_X, G_Y+ 1*8},
+  {"Organize Save files by loaded WAD",S_YESNO       ,m_null, G_X, G_Y+2*8, {"organize_saves"}, 0, 0, D_AdjustSaveLocation},
+  {"Enhanced allmap power up"         ,S_YESNO       ,m_null,G_X,G_Y+3*8, {"map_enhanced_allmap"}},
+  {"Skip QuickSave/Load confirmation" ,S_YESNO       ,m_null,G_X,G_Y+4*8, {"skip_quicksaveload_confirmation"}},
+
+  {"<- PREV",S_SKIP|S_PREV, m_null,KB_PREV, KB_Y+20*8, {gen_settings1}},
   {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {gen_settings2}},
   {0,S_SKIP|S_END,m_null}
 };
+
 
 static const char *gen_skillstrings[] = {
   // Dummy first option because defaultskill is 1-based
@@ -3345,13 +3369,13 @@ setup_menu_t gen_settings2[] = { // General Settings screen2
   {"Default compatibility level",      S_CHOICE,        m_null, G_X, G_Y+15*8, {"default_compatibility_level"}, 0, 0, NULL, &gen_compstrings[1]},
   {"Show ENDOOM screen",               S_YESNO,         m_null, G_X, G_Y+16*8, {"showendoom"}},
   {"Fullscreen menu background",       S_YESNO, m_null, G_X, G_Y + 17*8, {"menu_background"}},
-  {"Organize Save files by loaded WAD",S_YESNO,         m_null, G_X, G_Y+18*8, {"organize_saves"}, 0, 0, D_AdjustSaveLocation},
+  {"Organize Save files by loaded WAD",S_YESNO       ,m_null, G_X, G_Y+18*8  , {"organize_saves"}, 0, 0, D_AdjustSaveLocation},
 #ifdef USE_WINDOWS_LAUNCHER
   {"Use In-Game Launcher",             S_CHOICE,        m_null, G_X, G_Y+ 20*8, {"launcher_enable"}, 0, 0, NULL, launcher_enable_states},
 #endif
 
 
-  {"<- PREV",S_SKIP|S_PREV, m_null, KB_PREV, KB_Y+20*8, {gen_settings1}},
+  {"<- PREV",S_SKIP|S_PREV, m_null, KB_PREV, KB_Y+20*8, {gen_settings_prboomx}},
   {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {gen_settings3}},
   {0,S_SKIP|S_END,m_null}
 };

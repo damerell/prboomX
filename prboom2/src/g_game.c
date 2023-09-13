@@ -352,6 +352,7 @@ int    bodyqueslot, bodyquesize;        // killough 2/8/98
 mobj_t **bodyque = 0;                   // phares 8/10/98
 
 dboolean organize_saves;
+dboolean skip_quicksaveload_confirmation;
 
 static void G_DoSaveGame (dboolean menu);
 
