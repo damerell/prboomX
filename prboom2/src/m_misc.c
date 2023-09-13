@@ -784,6 +784,12 @@ default_t defaults[] =
 
   {"key_console",     {&key_console},         {'~'}            ,
    0,MAX_KEY,def_key,ss_keys}, // key to toggle console
+                               //
+  {"key_forward_time",     {&key_forward_time},         {'>'}  ,
+   0,MAX_KEY,def_key,ss_keys}, // key to move forward in time
+                               //
+  {"key_rewind_time",     {&key_rewind_time},         {'<'}  ,
+   0,MAX_KEY,def_key,ss_keys}, // key to move forward in time
 
   {"Joystick settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"use_joystick",{&usejoystick},{0},0,2,

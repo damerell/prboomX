@@ -2401,6 +2401,7 @@ static void M_DrawInstructions(void)
 // Definitions of the (in this case) four key binding screens.
 
 setup_menu_t keys_settings1[];
+setup_menu_t keys_settings_prboomx[];
 setup_menu_t keys_settings2[];
 setup_menu_t keys_settings3[];
 setup_menu_t keys_settings4[];
@@ -2413,6 +2414,7 @@ setup_menu_t keys_settings7[];
 setup_menu_t* keys_settings[] =
 {
   keys_settings1,
+  keys_settings_prboomx,
   keys_settings2,
   keys_settings3,
   keys_settings4,
@@ -2481,11 +2483,28 @@ setup_menu_t keys_settings1[] =  // Key Binding screen strings
   // Button for resetting to defaults
   {0,S_RESET,m_null,X_BUTTON,Y_BUTTON},
 
-  {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {keys_settings2}},
+  {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {keys_settings_prboomx}},
 
   // Final entry
   {0,S_SKIP|S_END,m_null}
 
+};
+
+setup_menu_t keys_settings_prboomx[] =  // Key Binding screen strings
+{
+  {"PRBOOMX"                ,S_SKIP|S_TITLE,m_null,KB_X   ,KB_Y}    ,
+  {"CONSOLE"                ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 1*8,{&key_console}},
+  {"REWIND TIME"            ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 2*8,{&key_rewind_time}},
+  {"FORWARD TIME"           ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 3*8,{&key_forward_time}},
+
+  {"MAGIC SECTOR (automap)" ,S_KEY         ,m_map ,KB_X   ,KB_Y+ 18*8,{&key_map_magicsector}},
+
+  {"<- PREV"                , S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8,{keys_settings1}}      ,
+  {"NEXT ->"                , S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8,{keys_settings2}}      ,
+
+  // Final entry
+
+  {0,S_SKIP|S_END,m_null}
 };
 
 setup_menu_t keys_settings2[] =  // Key Binding screen strings
@@ -2524,7 +2543,7 @@ setup_menu_t keys_settings2[] =  // Key Binding screen strings
   {"END GAME"    ,S_KEY       ,m_scrn,KB_X,KB_Y+17*8,{&key_endgame}},
   {"QUIT"        ,S_KEY       ,m_scrn,KB_X,KB_Y+18*8,{&key_quit}},
   {"CONSOLE"     ,S_KEY       ,m_scrn,KB_X,KB_Y+19*8,{&key_console}},
-  {"<- PREV", S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8, {keys_settings1}},
+  {"<- PREV", S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8, {keys_settings_prboomx}},
   {"NEXT ->", S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {keys_settings3}},
 
   // Final entry
@@ -4876,6 +4895,20 @@ dboolean M_Responder (event_t* ev) {
       {
       S_StartSound(NULL,sfx_swtchn);
       M_QuickSave();
+      return true;
+      }
+
+    if (ch == key_rewind_time)
+      {
+      S_StartSound(NULL,sfx_swtchn);
+      doom_printf("rewind time");
+      return true;
+      }
+
+    if (ch == key_forward_time)
+      {
+      S_StartSound(NULL,sfx_swtchn);
+      doom_printf("forward time");
       return true;
       }
 

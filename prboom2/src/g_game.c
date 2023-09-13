@@ -278,6 +278,9 @@ int     joybstraferight;
 int     joybuse;
 int     joybspeed;
 
+int     key_rewind_time;
+int     key_forward_time;
+
 #define MAXPLMOVE   (forwardmove[1])
 #define TURBOTHRESHOLD  0x32
 #define SLOWTURNTICS  6

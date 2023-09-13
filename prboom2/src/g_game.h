@@ -210,6 +210,9 @@ extern int  joybstraferight;
 extern int  joybuse;
 extern int  joybspeed;
 
+extern int  key_forward_time;
+extern int  key_rewind_time;
+
 extern int  defaultskill;      //jff 3/24/98 default skill
 extern dboolean haswolflevels;  //jff 4/18/98 wolf levels present
 extern dboolean secretexit;
