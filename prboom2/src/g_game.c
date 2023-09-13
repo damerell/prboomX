@@ -278,8 +278,8 @@ int     joybstraferight;
 int     joybuse;
 int     joybspeed;
 
-int     key_rewind_time;
-int     key_forward_time;
+int     key_timewarp_forward;
+int     key_timewarp_backward;
 
 #define MAXPLMOVE   (forwardmove[1])
 #define TURBOTHRESHOLD  0x32
@@ -356,6 +356,17 @@ mobj_t **bodyque = 0;                   // phares 8/10/98
 
 dboolean organize_saves;
 dboolean skip_quicksaveload_confirmation;
+dboolean enable_time_warping;
+
+/* jds: time warp parameters */
+#define TIMEWARP_SLOTS (64)
+       int  timewarp_position = -1;
+static int  timewarp_future_limit = -1;
+static int  timewarp_past_limit = -1;
+static byte *timewarp_array[TIMEWARP_SLOTS] = { 0 };
+static void G_TimeWarpSetNextAnchorPoint();
+static void G_TimeWarpLoadAnchorPoint(int position);
+static void G_TimeWarpReset();
 
 static void G_DoSaveGame (dboolean menu);
 
@@ -4493,4 +4504,365 @@ void G_CheckDemoContinue(void)
       usergame = true;
     }
   }
+}
+
+//jds
+static void G_DoLoadTimeWarp(int position)
+{
+  int  i;
+  byte* warp_p;
+  // CPhipps - do savegame filename stuff here
+  int savegame_compatibility = -1;
+  //e6y: numeric version number of package should be zero before initializing from savegame
+  unsigned int packageversion = 0;
+
+  // [crispy] loaded game must always be single player.
+  // Needed for ability to use a further game loading, as well as
+  // cheat codes and other single player only specifics.
+  if (!command_loadgame)
+  {
+    netdemo = false;
+    netgame = false;
+    deathmatch = false;
+  }
+
+  warp_p = timewarp_array[position];
+
+  if (!warp_p)
+      I_Error("Timewarp attempted to unpopulated slot: %d\n", position);
+
+  // CPhipps - read the description field, compare with supported ones
+  for (i=0; (size_t)i<num_version_headers; i++) {
+    char vcheck[VERSIONSIZE];
+    // killough 2/22/98: "proprietary" version string :-)
+    sprintf (vcheck, version_headers[i].ver_printf, version_headers[i].version);
+
+    if (!strncmp((char*)warp_p, vcheck, VERSIONSIZE)) {
+      savegame_compatibility = version_headers[i].comp_level;
+      break;
+    }
+  }
+  if (savegame_compatibility == -1) {
+    if (forced_loadgame) {
+      savegame_compatibility = MAX_COMPATIBILITY_LEVEL-1;
+    } else {
+      G_LoadGameErr("Unrecognised savegame version!\nAre you sure? (y/n) ");
+      return;
+    }
+  }
+
+  warp_p += VERSIONSIZE;
+
+  // CPhipps - always check savegames even when forced,
+  //  only print a warning if forced
+  {  // killough 3/16/98: check lump name checksum (independent of order)
+    uint_64_t checksum = 0;
+
+    checksum = G_Signature();
+
+    if (memcmp(&checksum, warp_p, sizeof checksum)) {
+      if (!forced_loadgame) {
+        char *msg = malloc(strlen((char*)warp_p + sizeof checksum) + 128);
+        strcpy(msg,"Incompatible Savegame!!!\n");
+        if (warp_p[sizeof checksum])
+          strcat(strcat(msg,"Wads expected:\n\n"), (char*)warp_p + sizeof checksum);
+        strcat(msg, "\nAre you sure?");
+        G_LoadGameErr(msg);
+        free(msg);
+        return;
+      } else
+  lprintf(LO_WARN, "G_DoLoadGame: Incompatible savegame\n");
+    }
+    warp_p += sizeof checksum;
+   }
+
+  warp_p += strlen((char*)warp_p)+1;
+
+  //e6y: check on new savegame format
+  if (!memcmp(NEWFORMATSIG, warp_p, strlen(NEWFORMATSIG)))
+  {
+    warp_p += strlen(NEWFORMATSIG);
+    memcpy(&packageversion, warp_p, sizeof packageversion);
+    warp_p += sizeof packageversion;
+  }
+  //e6y: let's show the warning if savegame is from the previous version of prboom
+  if (packageversion != GetPackageVersion())
+  {
+    if (!forced_loadgame)
+    {
+      G_LoadGameErr("Incompatible Savegame version!!!\n\nAre you sure?");
+      return;
+    } else
+      lprintf(LO_WARN, "G_DoLoadGame: Incompatible savegame version\n");
+  }
+
+  compatibility_level = (savegame_compatibility >= prboom_4_compatibility) ? *warp_p : savegame_compatibility;
+  if (savegame_compatibility < prboom_6_compatibility)
+    compatibility_level = map_old_comp_levels[compatibility_level];
+  warp_p++;
+
+  gameskill = *warp_p++;
+  gameepisode = *warp_p++;
+  gamemap = *warp_p++;
+  gamemapinfo = G_LookupMapinfo(gameepisode, gamemap);
+
+  for (i=0 ; i<MAXPLAYERS ; i++)
+    playeringame[i] = *warp_p++;
+  warp_p += MIN_MAXPLAYERS-MAXPLAYERS;         // killough 2/28/98
+
+  idmusnum = *warp_p++;           // jff 3/17/98 restore idmus music
+  if (idmusnum==255) idmusnum=-1; // jff 3/18/98 account for unsigned byte
+
+  /* killough 3/1/98: Read game options
+   * killough 11/98: move down to here
+   */
+  // Avoid assignment of const to non-const: add the difference
+  // between the updated and original pointer onto the original
+  warp_p += (G_ReadOptions(warp_p) - warp_p);
+
+  // load a base level
+  G_InitNew (gameskill, gameepisode, gamemap);
+
+  /* get the times - killough 11/98: save entire word */
+  memcpy(&leveltime, warp_p, sizeof leveltime);
+  warp_p += sizeof leveltime;
+
+  /* cph - total episode time */
+  //e6y: total level times are always saved since 2.4.8.1
+  memcpy(&totalleveltimes, warp_p, sizeof totalleveltimes);
+  warp_p += sizeof totalleveltimes;
+
+  // killough 11/98: load revenant tracer state
+  basetic = gametic - *warp_p++;
+
+  // dearchive all the modifications
+  P_MapStart();
+  P_UnArchivePlayers ();
+  P_UnArchiveWorld ();
+  P_UnArchiveThinkers ();
+  P_UnArchiveSpecials ();
+  P_UnArchiveRNG ();    // killough 1/18/98: load RNG information
+  P_UnArchiveMap ();    // killough 1/22/98: load automap information
+  P_MapEnd();
+  R_ActivateSectorInterpolations();//e6y
+  R_SmoothPlaying_Reset(NULL); // e6y
+
+  if (musinfo.current_item != -1)
+  {
+    S_ChangeMusInfoMusic(musinfo.current_item, true);
+  }
+
+  RecalculateDrawnSubsectors();
+
+  if (*warp_p != 0xe6)
+    I_Error ("G_DoLoadGame: Bad savegame");
+
+  if (setsizeneeded)
+    R_ExecuteSetViewSize ();
+
+  // draw the pattern into the back screen
+  R_FillBackScreen ();
+}
+
+static void G_DoSetTimeWarp(int position)
+{
+  char name2[VERSIONSIZE];
+  int  i;
+  byte *warp_p;
+  unsigned int packageversion = GetPackageVersion();
+
+  if (position < 0 || position >= TIMEWARP_SLOTS)
+      I_Error("Set timewarp called with invalid position: %d\n", position);
+
+  warp_p = malloc(savegamesize);
+
+  CheckSaveGame(SAVESTRINGSIZE+VERSIONSIZE+sizeof(uint_64_t));
+  memcpy (warp_p, NULL, SAVESTRINGSIZE);
+  warp_p += SAVESTRINGSIZE;
+  memset (name2,0,sizeof(name2));
+
+  // CPhipps - scan for the version header
+  for (i=0; (size_t)i<num_version_headers; i++)
+    if (version_headers[i].comp_level == best_compatibility) {
+      // killough 2/22/98: "proprietary" version string :-)
+      sprintf (name2,version_headers[i].ver_printf,version_headers[i].version);
+      memcpy (warp_p, name2, VERSIONSIZE);
+      i = num_version_headers+1;
+    }
+
+  warp_p += VERSIONSIZE;
+
+  { /* killough 3/16/98, 12/98: store lump name checksum */
+    uint_64_t checksum = G_Signature();
+    memcpy(warp_p, &checksum, sizeof checksum);
+    warp_p += sizeof checksum;
+  }
+
+  // killough 3/16/98: store pwad filenames in savegame
+  {
+    // CPhipps - changed for new wadfiles handling
+    size_t i;
+    for (i = 0; i<numwadfiles; i++)
+      {
+        const char *const w = wadfiles[i].name;
+        CheckSaveGame(strlen(w)+2);
+        strcpy((char*)warp_p, w);
+        warp_p += strlen((char*)warp_p);
+        *warp_p++ = '\n';
+      }
+    *warp_p++ = 0;
+  }
+
+  CheckSaveGame(GAME_OPTION_SIZE+MIN_MAXPLAYERS+14+strlen(NEWFORMATSIG)+sizeof packageversion);
+
+  //e6y: saving of the version number of package
+  strcpy((char*)warp_p, NEWFORMATSIG);
+  warp_p += strlen(NEWFORMATSIG);
+  memcpy(warp_p, &packageversion, sizeof packageversion);
+  warp_p += sizeof packageversion;
+
+  *warp_p++ = compatibility_level;
+
+  *warp_p++ = gameskill;
+  *warp_p++ = gameepisode;
+  *warp_p++ = gamemap;
+
+  for (i=0 ; i<MAXPLAYERS ; i++)
+    *warp_p++ = playeringame[i];
+
+  for (;i<MIN_MAXPLAYERS;i++)         // killough 2/28/98
+    *warp_p++ = 0;
+
+  *warp_p++ = idmusnum;               // jff 3/17/98 save idmus state
+
+  warp_p = G_WriteOptions(warp_p);    // killough 3/1/98: save game options
+
+  /* cph - FIXME - endianness? */
+  /* killough 11/98: save entire word */
+  memcpy(warp_p, &leveltime, sizeof leveltime);
+  warp_p += sizeof leveltime;
+
+  /* cph - total episode time */
+  //e6y: always saved since 2.4.8
+  memcpy(warp_p, &totalleveltimes, sizeof totalleveltimes);
+  warp_p += sizeof totalleveltimes;
+
+  // killough 11/98: save revenant tracer state
+  *warp_p++ = (gametic-basetic) & 255;
+
+  // killough 3/22/98: add Z_CheckHeap after each call to ensure consistency
+  Z_CheckHeap();
+  P_ArchivePlayers();
+  Z_CheckHeap();
+
+  // phares 9/13/98: Move mobj_t->index out of P_ArchiveThinkers so the
+  // indices can be used by P_ArchiveWorld when the sectors are saved.
+  // This is so we can save the index of the mobj_t of the thinker that
+  // caused a sound, referenced by sector_t->soundtarget.
+  P_ThinkerToIndex();
+
+  P_ArchiveWorld();
+  Z_CheckHeap();
+  P_ArchiveThinkers();
+
+  // phares 9/13/98: Move index->mobj_t out of P_ArchiveThinkers, simply
+  // for symmetry with the P_ThinkerToIndex call above.
+
+  P_IndexToThinker();
+
+  Z_CheckHeap();
+  P_ArchiveSpecials();
+  P_ArchiveRNG();    // killough 1/18/98: save RNG information
+  Z_CheckHeap();
+  P_ArchiveMap();    // killough 1/22/98: save automap information
+
+  *warp_p++ = 0xe6;   // consistancy marker
+
+  Z_CheckHeap();
+
+  /* if the slot is used, free it */
+  /* if null, this is a no-op */
+  free(timewarp_array[position]);
+  timewarp_array[position] = warp_p;
+}
+
+static void G_TimeWarpReset()
+{
+    int i;
+    /* if time warping is disabled, none of this has any effect */
+    timewarp_position = -1;
+    timewarp_future_limit = -1;
+    timewarp_past_limit = -1;
+    /* free any used slots */
+    for (i = 0; i < TIMEWARP_SLOTS; i++)
+        if (timewarp_array[i])
+            free(timewarp_array[i]);
+    memset(timewarp_array, 0, sizeof(timewarp_array));
+}
+
+static dboolean G_CheckTimeWarpingIsOK()
+{
+    if (!enable_time_warping) {
+        doom_printf("Time warping disabled. Enable in options to use.");
+        return false;
+    }
+
+    if (demorecording || demoplayback) {
+        doom_printf("Time warping not available during demos.");
+        return false;
+    }
+
+    if (netgame) {
+        doom_printf("Time warping not available during network play.");
+        return false;
+    }
+
+    return true;
+}
+
+static void G_TimeWarpSetNextAnchorPoint()
+{
+    if (!G_CheckTimeWarpingIsOK())
+        return;
+
+    if (timewarp_position < 0) {
+        timewarp_position = 0;
+        timewarp_future_limit = 0;
+        timewarp_past_limit = 0;
+    }
+
+    G_DoSetTimeWarp(timewarp_position);
+    timewarp_future_limit = timewarp_position;
+
+    /* the array wraps around, so if we just overwrote
+     * the past limit, we need to advance the past limit
+     * 1 slot into the future */
+    if (timewarp_position == timewarp_past_limit) {
+        timewarp_past_limit++;
+        if (timewarp_past_limit > TIMEWARP_SLOTS)
+            timewarp_past_limit = 0;
+    }
+
+    timewarp_position++;
+    if (timewarp_position > TIMEWARP_SLOTS) {
+        timewarp_position = 0;
+    }
+}
+
+void G_TimeWarpForward()
+{
+
+}
+
+void G_TimeWarpBackward()
+{
+
+}
+
+static void G_TimeWarpLoadAnchorPoint(int position)
+{
+    if (!G_CheckTimeWarpingIsOK())
+        return;
+
+    G_DoLoadTimeWarp(position);
 }

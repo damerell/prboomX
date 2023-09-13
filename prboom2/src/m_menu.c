@@ -2494,8 +2494,8 @@ setup_menu_t keys_settings_prboomx[] =  // Key Binding screen strings
 {
   {"PRBOOMX"                ,S_SKIP|S_TITLE,m_null,KB_X   ,KB_Y}    ,
   {"CONSOLE"                ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 1*8,{&key_console}},
-  {"REWIND TIME"            ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 2*8,{&key_rewind_time}},
-  {"FORWARD TIME"           ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 3*8,{&key_forward_time}},
+  {"TIME WARP FORWARD"      ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 2*8,{&key_timewarp_forward}},
+  {"TIME WARP BACKWARD"     ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 3*8,{&key_timewarp_backward}},
 
   {"MAGIC SECTOR (automap)" ,S_KEY         ,m_map ,KB_X   ,KB_Y+ 18*8,{&key_map_magicsector}},
 
@@ -4898,14 +4898,14 @@ dboolean M_Responder (event_t* ev) {
       return true;
       }
 
-    if (ch == key_rewind_time)
+    if (ch == key_timewarp_backward)
       {
       S_StartSound(NULL,sfx_swtchn);
       doom_printf("rewind time");
       return true;
       }
 
-    if (ch == key_forward_time)
+    if (ch == key_timewarp_forward)
       {
       S_StartSound(NULL,sfx_swtchn);
       doom_printf("forward time");

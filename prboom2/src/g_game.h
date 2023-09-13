@@ -86,6 +86,11 @@ void G_ChangedPlayerColour(int pn, int cl); // CPhipps - On-the-fly player colou
 void G_MakeSpecialEvent(buttoncode_t bc, ...); /* cph - new event stuff */
 int G_ValidateMapName(const char *mapname, int *pEpi, int *pMap);
 
+// jds - time warping
+extern int timewarp_position;
+void G_TimeWarpForward();
+void G_TimeWarpBackward();
+
 //e6y
 extern dboolean democontinue;
 extern char democontinuename[];
@@ -210,8 +215,8 @@ extern int  joybstraferight;
 extern int  joybuse;
 extern int  joybspeed;
 
-extern int  key_forward_time;
-extern int  key_rewind_time;
+extern int  key_timewarp_forward;
+extern int  key_timewarp_backward;
 
 extern int  defaultskill;      //jff 3/24/98 default skill
 extern dboolean haswolflevels;  //jff 4/18/98 wolf levels present
@@ -220,8 +225,8 @@ extern dboolean secretexit;
 extern int  bodyquesize;       // killough 2/8/98: adustable corpse limit
 
 extern dboolean organize_saves;
-
 extern dboolean skip_quicksaveload_confirmation;
+extern dboolean enable_time_warping;
 
 // killough 5/2/98: moved from d_deh.c:
 // Par times (new item with BOOM) - from g_game.c
