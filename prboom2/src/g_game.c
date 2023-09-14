@@ -4965,12 +4965,6 @@ static void G_TimeWarpLoadAnchorPoint(int position)
 
 static void G_TimeWarpTicker()
 {
-    /*
-     * Useful for debugging
-     if (timewarp_ticks % 2*35 == 35)
-        doom_printf("tw_tick: [ %d %d %d ] (%d)", timewarp_past_limit, timewarp_position, timewarp_future_limit, timewarp_ticks/35);
-    */
-
     if (!G_CheckTimeWarpingIsOK(false))
         return;
 
