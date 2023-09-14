@@ -4830,20 +4830,23 @@ static void G_TimeWarpReset()
     memset(timewarp_array, 0, sizeof(timewarp_array));
 }
 
-static dboolean G_CheckTimeWarpingIsOK()
+static dboolean G_CheckTimeWarpingIsOK(dboolean print)
 {
     if (!enable_time_warping) {
-        doom_printf("Time warping disabled. Enable in options.");
+        if (print)
+            doom_printf("Time warping disabled. Enable in options.");
         return false;
     }
 
     if (demorecording || demoplayback) {
-        doom_printf("Time warping not available during demos.");
+        if (print)
+            doom_printf("Time warping not available during demos.");
         return false;
     }
 
     if (netgame) {
-        doom_printf("Time warping not available during net play.");
+        if (print)
+            doom_printf("Time warping not available during net play.");
         return false;
     }
 
@@ -4896,7 +4899,7 @@ static void G_TimeWarpSetNextAnchorPoint()
 
 void G_TimeWarpForward()
 {
-    if (!G_CheckTimeWarpingIsOK())
+    if (!G_CheckTimeWarpingIsOK(true))
         return;
 
     /* if current timewarp pointer is 1
@@ -4920,7 +4923,7 @@ void G_TimeWarpForward()
 
 void G_TimeWarpBackward()
 {
-    if (!G_CheckTimeWarpingIsOK())
+    if (!G_CheckTimeWarpingIsOK(true))
         return;
 
     /* if current timewarp position is at
@@ -4968,7 +4971,7 @@ static void G_TimeWarpTicker()
         doom_printf("tw_tick: [ %d %d %d ] (%d)", timewarp_past_limit, timewarp_position, timewarp_future_limit, timewarp_ticks/35);
     */
 
-    if (!enable_time_warping || !G_CheckTimeWarpingIsOK())
+    if (!G_CheckTimeWarpingIsOK(false))
         return;
 
     timewarp_ticks++;

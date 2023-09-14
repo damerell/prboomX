@@ -25,6 +25,7 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
 * Time Warp: Travel forward and backwards in time while playing.
     * Time travel even if you died or made it to a new level.
     * Enable Time Warp in the PrBoomX options screen
+    * May cause performance issues on older machines or on large levels.
     * Press '[' (default) to travel back in time
     * Press ']' (default) to travel forward in time
     * Stay too long in the past, and your old future will no longer be reachable.
