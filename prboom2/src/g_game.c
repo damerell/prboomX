@@ -359,7 +359,7 @@ dboolean skip_quicksaveload_confirmation;
 dboolean enable_time_warping;
 
 /* jds: time warp parameters */
-#define TIMEWARP_TICK_LIMIT (175)
+#define TIMEWARP_TICK_LIMIT (210)
 #define TIMEWARP_SLOTS (64)
        int  timewarp_position = -1;
 static int  timewarp_ticks = -1;
@@ -4817,7 +4817,7 @@ static void G_TimeWarpReset()
     timewarp_position = -1;
     timewarp_future_limit = -1;
     timewarp_past_limit = -1;
-    timewarp_ticks = -1;
+    timewarp_ticks = TIMEWARP_TICK_LIMIT - 1;
     /* free any used slots */
     for (i = 0; i < TIMEWARP_SLOTS; i++)
         if (timewarp_array[i])
@@ -4854,17 +4854,24 @@ static dboolean G_CheckTimeWarpingIsOK()
 /* assumes val > 0 !*/
 /* yes, GREATER THAN ZERO! */
 #define WRAP_MINUS(val, dec, limit)\
-    (((val)-(dec) < 0) ? (limit) : (val)-(dec))
+    (((val)-(dec) < 0) ? (limit-1) : (val)-(dec))
 
 static void G_TimeWarpSetNextAnchorPoint()
 {
+    int new_timeline_check = timewarp_future_limit;
     if (timewarp_position < 0) {
         timewarp_position = 0;
         timewarp_future_limit = 0;
+        new_timeline_check = -1;
     }
+
 
     G_DoSetTimeWarp(timewarp_position);
     timewarp_future_limit = timewarp_position;
+
+    if (new_timeline_check > 0 &&
+            WRAP_PLUS(new_timeline_check, 1, TIMEWARP_SLOTS) != timewarp_future_limit)
+        doom_printf("Timewarp: Your future has changed...");
 
     /* the array wraps around, so if we just overwrote
      * the past limit, we need to advance the past limit
@@ -4898,12 +4905,9 @@ void G_TimeWarpForward()
         return;
     }
 
-
-    if (timewarp_position != timewarp_future_limit)
-        timewarp_position = WRAP_PLUS(timewarp_position, 1, TIMEWARP_SLOTS);
-
     /* if we made it here, the time warp is valid */
     G_DoLoadTimeWarp(timewarp_position);
+    timewarp_position = WRAP_PLUS(timewarp_position, 1, TIMEWARP_SLOTS);
 
     doom_printf("Timewarp: You have warped to the future!");
     timewarp_ticks = -1;
@@ -4936,9 +4940,10 @@ static void G_TimeWarpLoadAnchorPoint(int position)
 
 static void G_TimeWarpTicker()
 {
-    /* FIXME remove */
-    if (timewarp_ticks % 35 == 0 )
+    /*
+     if (timewarp_ticks % 2*35 == 35)
         doom_printf("tw_tick: [ %d %d %d ] (%d)", timewarp_past_limit, timewarp_position, timewarp_future_limit, timewarp_ticks/35);
+    */
 
     if (!enable_time_warping || !G_CheckTimeWarpingIsOK())
         return;
