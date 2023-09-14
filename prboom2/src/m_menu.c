@@ -2401,6 +2401,7 @@ static void M_DrawInstructions(void)
 // Definitions of the (in this case) four key binding screens.
 
 setup_menu_t keys_settings1[];
+setup_menu_t keys_settings_prboomx[];
 setup_menu_t keys_settings2[];
 setup_menu_t keys_settings3[];
 setup_menu_t keys_settings4[];
@@ -2413,6 +2414,7 @@ setup_menu_t keys_settings7[];
 setup_menu_t* keys_settings[] =
 {
   keys_settings1,
+  keys_settings_prboomx,
   keys_settings2,
   keys_settings3,
   keys_settings4,
@@ -2481,11 +2483,28 @@ setup_menu_t keys_settings1[] =  // Key Binding screen strings
   // Button for resetting to defaults
   {0,S_RESET,m_null,X_BUTTON,Y_BUTTON},
 
-  {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {keys_settings2}},
+  {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {keys_settings_prboomx}},
 
   // Final entry
   {0,S_SKIP|S_END,m_null}
 
+};
+
+setup_menu_t keys_settings_prboomx[] =  // Key Binding screen strings
+{
+  {"PRBOOMX"                ,S_SKIP|S_TITLE,m_null,KB_X   ,KB_Y}    ,
+  {"CONSOLE"                ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 1*8,{&key_console}},
+  {"TIME WARP FORWARD"      ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 2*8,{&key_timewarp_forward}},
+  {"TIME WARP BACKWARD"     ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 3*8,{&key_timewarp_backward}},
+
+  {"TAG FINDER (automap)"   ,S_KEY         ,m_map ,KB_X   ,KB_Y+ 18*8,{&key_map_magicsector}},
+
+  {"<- PREV"                , S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8,{keys_settings1}}      ,
+  {"NEXT ->"                , S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8,{keys_settings2}}      ,
+
+  // Final entry
+
+  {0,S_SKIP|S_END,m_null}
 };
 
 setup_menu_t keys_settings2[] =  // Key Binding screen strings
@@ -2524,7 +2543,7 @@ setup_menu_t keys_settings2[] =  // Key Binding screen strings
   {"END GAME"    ,S_KEY       ,m_scrn,KB_X,KB_Y+17*8,{&key_endgame}},
   {"QUIT"        ,S_KEY       ,m_scrn,KB_X,KB_Y+18*8,{&key_quit}},
   {"CONSOLE"     ,S_KEY       ,m_scrn,KB_X,KB_Y+19*8,{&key_console}},
-  {"<- PREV", S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8, {keys_settings1}},
+  {"<- PREV", S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8, {keys_settings_prboomx}},
   {"NEXT ->", S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {keys_settings3}},
 
   // Final entry
@@ -2577,7 +2596,7 @@ setup_menu_t keys_settings4[] =  // Key Binding screen strings
 #ifdef GL_DOOM
   {"TEXTURED"   ,S_KEY       ,m_map ,KB_X,KB_Y+14*8,{&key_map_textured}},
 #endif
-  {"MAGIC SECTOR"   ,S_KEY       ,m_map ,KB_X,KB_Y+15*8,{&key_map_magicsector}},
+  {"TAG FINDER"  ,S_KEY       ,m_map ,KB_X,KB_Y+15*8,{&key_map_magicsector}},
 
   {"<- PREV" ,S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8, {keys_settings3}},
   {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {keys_settings5}},
@@ -3314,6 +3333,7 @@ setup_menu_t gen_settings_prboomx[] = { // prboomX General Settings
   {"Organize Save files by loaded WAD",S_YESNO       ,m_null, G_X, G_Y+2*8, {"organize_saves"}, 0, 0, D_AdjustSaveLocation},
   {"Enhanced allmap power up"         ,S_YESNO       ,m_null,G_X,G_Y+3*8, {"map_enhanced_allmap"}},
   {"Skip QuickSave/Load confirmation" ,S_YESNO       ,m_null,G_X,G_Y+4*8, {"skip_quicksaveload_confirmation"}},
+  {"Enable Time Warping"              ,S_YESNO       ,m_null,G_X,G_Y+5*8, {"enable_time_warping"}},
 
   {"<- PREV",S_SKIP|S_PREV, m_null,KB_PREV, KB_Y+20*8, {gen_settings1}},
   {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {gen_settings2}},
@@ -4876,6 +4896,18 @@ dboolean M_Responder (event_t* ev) {
       {
       S_StartSound(NULL,sfx_swtchn);
       M_QuickSave();
+      return true;
+      }
+
+    if (ch == key_timewarp_backward)
+      {
+      G_TimeWarpBackward();
+      return true;
+      }
+
+    if (ch == key_timewarp_forward)
+      {
+      G_TimeWarpForward();
       return true;
       }
 

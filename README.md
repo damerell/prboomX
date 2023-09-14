@@ -22,6 +22,14 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
     * Jot down quick notes while playtesting. Notes go into a dated text file in the current working directory.
     * Each note lists the time, all loaded WAD files, player position, and an optional user-supplied message on the console.
     * Example: `note demon is stuck in the wall here`.
+* Time Warp: Travel forward and backwards in time while playing.
+    * Time travel even if you died or made it to a new level.
+    * Enable Time Warp in the PrBoomX options screen
+    * May cause performance issues on older machines or on large levels.
+    * Press '[' (default) to travel back in time
+    * Press ']' (default) to travel forward in time
+    * Stay too long in the past, and your old future will no longer be reachable.
+    * Be warned! Time travel can be quite disorienting...
 * Optional enhancements to the allmap powerup:
     * Secrets in undiscovered parts of the map are bright yellow
     * Secrets in discovered parts of the map are bright purple

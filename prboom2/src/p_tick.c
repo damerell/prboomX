@@ -295,5 +295,5 @@ void P_Ticker (void)
   P_RespawnSpecials();
   P_MapEnd();
   leveltime++;                       // for par times
-}
 
+}

@@ -333,6 +333,7 @@ default_t defaults[] =
    def_int,ss_stat},
   {"boom_autoswitch", {(int*)&boom_autoswitch}, {1}, 0, 1, def_bool, ss_none},
   {"skip_quicksaveload_confirmation", {(int*)&skip_quicksaveload_confirmation}, {0},0,1,def_bool,ss_auto},
+  {"enable_time_warping", {(int*)&enable_time_warping}, {0},0,1,def_bool,ss_auto},
    
   {"Files",{NULL},{0},UL,UL,def_none,ss_none},
   /* cph - MBF-like wad/deh/bex autoload code */
@@ -784,6 +785,12 @@ default_t defaults[] =
 
   {"key_console",     {&key_console},         {'~'}            ,
    0,MAX_KEY,def_key,ss_keys}, // key to toggle console
+                               //
+  {"key_timewarp_forward",     {&key_timewarp_forward},         {']'}  ,
+   0,MAX_KEY,def_key,ss_keys}, // key to move forward in time
+                               //
+  {"key_timewarp_backward",     {&key_timewarp_backward},         {'['}  ,
+   0,MAX_KEY,def_key,ss_keys}, // key to move forward in time
 
   {"Joystick settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"use_joystick",{&usejoystick},{0},0,2,
