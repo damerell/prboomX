@@ -362,7 +362,7 @@ dboolean enable_time_warping;
 #define TIMEWARP_TICK_LIMIT (210)
 #define TIMEWARP_SLOTS (64)
        int  timewarp_position = -1;
-static int  timewarp_ticks = TIMEWARP_TICK_LIMIT - 1;
+static int  timewarp_ticks = TIMEWARP_TICK_LIMIT;
 static int  timewarp_future_limit = -1;
 static int  timewarp_past_limit = -1;
 static byte *timewarp_array[TIMEWARP_SLOTS] = { 0 };
@@ -2372,7 +2372,7 @@ void G_DoLoadGame(void)
       if (demorecording)
         G_BeginRecording();
 
-  G_TimeWarpReset();
+  timewarp_ticks = TIMEWARP_TICK_LIMIT;
 }
 
 //
@@ -2847,7 +2847,7 @@ void G_DoNewGame (void)
   ST_Start();
   walkcamera.type=0; //e6y
 
-  G_TimeWarpReset();
+  timewarp_ticks = TIMEWARP_TICK_LIMIT;
 }
 
 // killough 4/10/98: New function to fix bug which caused Doom
@@ -4817,7 +4817,7 @@ static void G_TimeWarpReset()
     timewarp_position = -1;
     timewarp_future_limit = -1;
     timewarp_past_limit = -1;
-    timewarp_ticks = TIMEWARP_TICK_LIMIT - 1;
+    timewarp_ticks = TIMEWARP_TICK_LIMIT;
     /* free any used slots */
     for (i = 0; i < TIMEWARP_SLOTS; i++)
         free(timewarp_array[i]);
