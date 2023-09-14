@@ -362,6 +362,7 @@ dboolean enable_time_warping;
 #define TIMEWARP_TICK_LIMIT (175)
 #define TIMEWARP_SLOTS (64)
        int  timewarp_position = -1;
+static int  timewarp_ticks = -1;
 static int  timewarp_future_limit = -1;
 static int  timewarp_past_limit = -1;
 static byte *timewarp_array[TIMEWARP_SLOTS] = { 0 };
@@ -4816,6 +4817,7 @@ static void G_TimeWarpReset()
     timewarp_position = -1;
     timewarp_future_limit = -1;
     timewarp_past_limit = -1;
+    timewarp_ticks = -1;
     /* free any used slots */
     for (i = 0; i < TIMEWARP_SLOTS; i++)
         if (timewarp_array[i])
@@ -4867,15 +4869,15 @@ static void G_TimeWarpSetNextAnchorPoint()
     /* the array wraps around, so if we just overwrote
      * the past limit, we need to advance the past limit
      * 1 slot into the future */
-    if (timewarp_position == timewarp_past_limit) {
-        timewarp_past_limit = WRAP_PLUS(timewarp_past_limit, 1, TIMEWARP_SLOTS);
-    } else if (timewarp_past_limit < 0) {
+    if (timewarp_past_limit < 0) {
         timewarp_past_limit = timewarp_position;
-    }
+    } 
 
     timewarp_position = WRAP_PLUS(timewarp_position, 1, TIMEWARP_SLOTS);
 
-    doom_printf("tw_anch: [ %d %d %d ]", timewarp_past_limit, timewarp_position, timewarp_future_limit);
+    if (timewarp_position == timewarp_past_limit) {
+        timewarp_past_limit = WRAP_PLUS(timewarp_past_limit, 1, TIMEWARP_SLOTS);
+    }
 }
 
 void G_TimeWarpForward()
@@ -4896,12 +4898,15 @@ void G_TimeWarpForward()
         return;
     }
 
+
+    if (timewarp_position != timewarp_future_limit)
+        timewarp_position = WRAP_PLUS(timewarp_position, 1, TIMEWARP_SLOTS);
+
     /* if we made it here, the time warp is valid */
     G_DoLoadTimeWarp(timewarp_position);
 
-    /* now, adjust the timeline */
-    timewarp_position = WRAP_PLUS(timewarp_position, 1, TIMEWARP_SLOTS);
     doom_printf("Timewarp: You have warped to the future!");
+    timewarp_ticks = -1;
 }
 
 void G_TimeWarpBackward()
@@ -4911,15 +4916,17 @@ void G_TimeWarpBackward()
 
     /* if current timewarp position is at
      * the past limit, don't warp further back */
-    if (timewarp_position < 0 || timewarp_position == timewarp_past_limit) {
+    if (timewarp_position < 0) {
         doom_printf("Timewarp: No past to warp to!\n");
         return;
     }
 
-    timewarp_position = WRAP_MINUS(timewarp_position, 1, TIMEWARP_SLOTS);
+    if (timewarp_position != timewarp_past_limit)
+        timewarp_position = WRAP_MINUS(timewarp_position, 1, TIMEWARP_SLOTS);
 
     G_DoLoadTimeWarp(timewarp_position);
     doom_printf("Timewarp: You are transported to the past!");
+    timewarp_ticks = -1;
 }
 
 static void G_TimeWarpLoadAnchorPoint(int position)
@@ -4929,11 +4936,9 @@ static void G_TimeWarpLoadAnchorPoint(int position)
 
 static void G_TimeWarpTicker()
 {
-    static int timewarp_ticks = -1;
-
     /* FIXME remove */
     if (timewarp_ticks % 35 == 0 )
-        doom_printf("tw_tick: [ %d %d %d ]", timewarp_past_limit, timewarp_position, timewarp_future_limit);
+        doom_printf("tw_tick: [ %d %d %d ] (%d)", timewarp_past_limit, timewarp_position, timewarp_future_limit, timewarp_ticks/35);
 
     if (!enable_time_warping || !G_CheckTimeWarpingIsOK())
         return;
