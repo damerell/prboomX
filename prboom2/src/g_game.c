@@ -362,7 +362,7 @@ dboolean enable_time_warping;
 #define TIMEWARP_TICK_LIMIT (210)
 #define TIMEWARP_SLOTS (64)
        int  timewarp_position = -1;
-static int  timewarp_ticks = -1;
+static int  timewarp_ticks = TIMEWARP_TICK_LIMIT - 1;
 static int  timewarp_future_limit = -1;
 static int  timewarp_past_limit = -1;
 static byte *timewarp_array[TIMEWARP_SLOTS] = { 0 };
@@ -4820,8 +4820,7 @@ static void G_TimeWarpReset()
     timewarp_ticks = TIMEWARP_TICK_LIMIT - 1;
     /* free any used slots */
     for (i = 0; i < TIMEWARP_SLOTS; i++)
-        if (timewarp_array[i])
-            free(timewarp_array[i]);
+        free(timewarp_array[i]);
     memset(timewarp_array, 0, sizeof(timewarp_array));
 }
 
