@@ -2497,7 +2497,7 @@ setup_menu_t keys_settings_prboomx[] =  // Key Binding screen strings
   {"TIME WARP FORWARD"      ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 2*8,{&key_timewarp_forward}},
   {"TIME WARP BACKWARD"     ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 3*8,{&key_timewarp_backward}},
 
-  {"MAGIC SECTOR (automap)" ,S_KEY         ,m_map ,KB_X   ,KB_Y+ 18*8,{&key_map_magicsector}},
+  {"TAG FINDER (automap)"   ,S_KEY         ,m_map ,KB_X   ,KB_Y+ 18*8,{&key_map_magicsector}},
 
   {"<- PREV"                , S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8,{keys_settings1}}      ,
   {"NEXT ->"                , S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8,{keys_settings2}}      ,
@@ -2596,7 +2596,7 @@ setup_menu_t keys_settings4[] =  // Key Binding screen strings
 #ifdef GL_DOOM
   {"TEXTURED"   ,S_KEY       ,m_map ,KB_X,KB_Y+14*8,{&key_map_textured}},
 #endif
-  {"MAGIC SECTOR"   ,S_KEY       ,m_map ,KB_X,KB_Y+15*8,{&key_map_magicsector}},
+  {"TAG FINDER"  ,S_KEY       ,m_map ,KB_X,KB_Y+15*8,{&key_map_magicsector}},
 
   {"<- PREV" ,S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8, {keys_settings3}},
   {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {keys_settings5}},
@@ -3333,6 +3333,7 @@ setup_menu_t gen_settings_prboomx[] = { // prboomX General Settings
   {"Organize Save files by loaded WAD",S_YESNO       ,m_null, G_X, G_Y+2*8, {"organize_saves"}, 0, 0, D_AdjustSaveLocation},
   {"Enhanced allmap power up"         ,S_YESNO       ,m_null,G_X,G_Y+3*8, {"map_enhanced_allmap"}},
   {"Skip QuickSave/Load confirmation" ,S_YESNO       ,m_null,G_X,G_Y+4*8, {"skip_quicksaveload_confirmation"}},
+  {"Enable Time Warping"              ,S_YESNO       ,m_null,G_X,G_Y+5*8, {"enable_time_warping"}},
 
   {"<- PREV",S_SKIP|S_PREV, m_null,KB_PREV, KB_Y+20*8, {gen_settings1}},
   {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {gen_settings2}},
@@ -4900,15 +4901,13 @@ dboolean M_Responder (event_t* ev) {
 
     if (ch == key_timewarp_backward)
       {
-      S_StartSound(NULL,sfx_swtchn);
-      doom_printf("rewind time");
+      G_TimeWarpBackward();
       return true;
       }
 
     if (ch == key_timewarp_forward)
       {
-      S_StartSound(NULL,sfx_swtchn);
-      doom_printf("forward time");
+      G_TimeWarpForward();
       return true;
       }
 
