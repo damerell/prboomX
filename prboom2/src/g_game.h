@@ -87,10 +87,8 @@ void G_MakeSpecialEvent(buttoncode_t bc, ...); /* cph - new event stuff */
 int G_ValidateMapName(const char *mapname, int *pEpi, int *pMap);
 
 // jds - time warping
-extern int timewarp_position;
 void G_TimeWarpForward();
 void G_TimeWarpBackward();
-static void G_TimeWarpTicker();
 
 //e6y
 extern dboolean democontinue;
