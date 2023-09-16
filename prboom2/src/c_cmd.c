@@ -30,6 +30,8 @@ extern const char * const ActorNames[];
 static char* command_history[CONSOLE_COMMAND_HISTORY_LEN] = { 0 };
 static char console_message[HU_MSGWIDTH];
 
+static int KeyNameToKeyCode(const char* name);
+
 dboolean c_drawpsprites = true;
 
 static int C_SendCheat(const char* cheat)
@@ -388,6 +390,63 @@ static void C_mdk(char* cmd)
     P_LineAttack(plyr->mo, plyr->mo->angle, MISSILERANGE, bulletslope, 1000000);
 }
 
+
+static void C_bind(char* cmd)
+{
+    char* key_to_bind;
+    char* bind_command;
+    int keycode_to_bind;
+
+    if (!cmd || !*cmd) {
+        doom_printf("bind [key] [command]");
+        return;
+    }
+
+    key_to_bind = cmd;
+    bind_command = strchr(cmd, ' ');
+
+    if (!key_to_bind || !bind_command) {
+        doom_printf("bind [key] [command]");
+        return;
+    }
+
+    *bind_command = '\0';
+    bind_command++;
+
+    while (isspace(*bind_command))
+        bind_command++;
+
+    if (!bind_command) {
+        doom_printf("bind [key] [command]");
+        return;
+    }
+
+    keycode_to_bind = KeyNameToKeyCode(key_to_bind);
+    if (keycode_to_bind < 0) {
+        doom_printf("Bind failed; invalid key: %s", key_to_bind);
+    } else {
+        if (C_RegisterBind(keycode_to_bind,bind_command)) {
+            doom_printf("Bound %s", key_to_bind);
+        } else {
+            doom_printf("Could not bind %s", key_to_bind);
+        }
+    }
+}
+
+static void C_unbind(char* cmd)
+{
+    int keycode_to_unbind = KeyNameToKeyCode(cmd);
+    if (keycode_to_unbind < 0) {
+        doom_printf("Bind failed; invalid key: %s", cmd);
+    } else {
+        if (C_UnregisterBind(keycode_to_unbind)) {
+            doom_printf("Unbound %s", cmd);
+        } else {
+            doom_printf("No bind found for %s", cmd);
+        }
+    }
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -408,6 +467,8 @@ command command_list[] = {
     {"give", C_give},
     {"note", C_note},
     {"mdk", C_mdk},
+    {"bind", C_bind},
+    {"unbind", C_unbind},
 
     /* aliases */
     {"snd", C_sndvol},
@@ -503,4 +564,251 @@ dboolean C_HasMessage()
 void C_ClearMessage()
 {
     console_message[0] = '\0';
+}
+
+
+/* keybind system */
+static int KeyNameToKeyCode(const char* name)
+{
+    int i;
+    static const char* keynames[] = {
+        "RIGHTARROW",
+        "LEFTARROW",
+        "UPARROW",
+        "DOWNARROW",
+        "ESCAPE",
+        "ENTER",
+        "TAB",
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7",
+        "F8",
+        "F9",
+        "F10",
+        "F11",
+        "F12",
+        "BACKSPACE",
+        "PAUSE",
+        "EQUALS",
+        "MINUS",
+        "RSHIFT",
+        "RCTRL",
+        "RALT",
+        "LALT",
+        "CAPSLOCK",
+        "PRINTSC",
+        "INSERT",
+        "HOME",
+        "PAGEUP",
+        "PAGEDOWN",
+        "DEL",
+        "END",
+        "SCROLLLOCK",
+        "SPACEBAR",
+        "NUMLOCK",
+        "KEYPAD0",
+        "KEYPAD1",
+        "KEYPAD2",
+        "KEYPAD3",
+        "KEYPAD4",
+        "KEYPAD5",
+        "KEYPAD6",
+        "KEYPAD7",
+        "KEYPAD8",
+        "KEYPAD9",
+        "KEYPADENTER",
+        "KEYPADDIVIDE",
+        "KEYPADMULTIPLY",
+        "KEYPADMINUS",
+        "KEYPADPLUS",
+        "KEYPADPERIOD",
+        "MOUSE1",
+        "MOUSE2",
+        "MOUSE3",
+        "MWHEELUP",
+        "MWHEELDOWN",
+        NULL
+    };
+
+    static const int keycodes[] = {
+        0xae,
+        0xac,
+        0xad,
+        0xaf,
+        27,
+        13,
+        9,
+        (0x80+0x3b),
+        (0x80+0x3c),
+        (0x80+0x3d),
+        (0x80+0x3e),
+        (0x80+0x3f),
+        (0x80+0x40),
+        (0x80+0x41),
+        (0x80+0x42),
+        (0x80+0x43),
+        (0x80+0x44),
+        (0x80+0x57),
+        (0x80+0x58),
+        127,
+        0xff,
+        0x3d,
+        0x2d,
+        (0x80+0x36),
+        (0x80+0x1d),
+        (0x80+0x38),
+        KEYD_RALT,
+        0xba,
+        0xfe,
+        0xd2,
+        0xc7,
+        0xc9,
+        0xd1,
+        0xc8,
+        0xcf,
+        0xc6,
+        0x20,
+        0xC5,
+        (0x100 + '0'),
+        (0x100 + '1'),
+        (0x100 + '2'),
+        (0x100 + '3'),
+        (0x100 + '4'),
+        (0x100 + '5'),
+        (0x100 + '6'),
+        (0x100 + '7'),
+        (0x100 + '8'),
+        (0x100 + '9'),
+        (0x100 + KEYD_ENTER),
+        (0x100 + '/'),
+        (0x100 + '*'),
+        (0x100 + '-'),
+        (0x100 + '+'),
+        (0x100 + '.'),
+        (0x80 + 0x60),
+        (0x80 + 0x61),
+        (0x80 + 0x62),
+        (0x80 + 0x6b),
+        (0x80 + 0x6c)
+    };
+
+    /* FIXME: Handle "uppercase" characters */
+    /* printable ascii chars go out as-is */
+    if (strlen(name) == 1 &&
+            name[0] > '0' &&
+            name[0] < 'z')
+        return tolower(name[0]);
+
+    for (i=0; keynames[i]; i++) {
+        if (stricmp(name, keynames[i]) == 0)
+            return keycodes[i];
+    }
+
+    return -1;
+}
+
+typedef struct keybind_t
+{
+    int keycode;
+    char* cmd;
+    struct keybind_t* next;
+} keybind_t;
+
+static keybind_t* keybind_head = NULL;
+
+dboolean C_RegisterBind(int keycode, char* cmd)
+{
+    keybind_t* kb = keybind_head;
+    keybind_t* new_bind = malloc(sizeof(keybind_t));
+
+    if (!new_bind)
+        I_Error("Out of space for keybind");
+
+    /* note: multi-bind allowed! */
+    /* no need to search for existing binds */
+    while (kb && kb->next)
+        kb = kb->next;
+
+    new_bind->keycode = keycode;
+    new_bind->cmd = strdup(cmd);
+    new_bind->next = NULL;
+
+    if (kb)
+        kb->next = new_bind;
+    else
+        keybind_head = new_bind;
+
+    return true;
+}
+
+dboolean C_UnregisterBind(int keycode)
+{
+    keybind_t* kb = keybind_head;
+    keybind_t* prev = NULL;
+    dboolean found = false;
+
+    while (kb) {
+        if (kb->keycode == keycode) {
+            found = true;
+            if (prev) {
+                prev->next = kb->next;
+                free(kb->cmd);
+                free(kb);
+                kb = prev->next;
+            } else if (kb->next) {
+                keybind_head = kb->next;
+                free(kb->cmd);
+                free(kb);
+                kb = keybind_head;
+            } else {
+                free(kb->cmd);
+                free(kb);
+                kb = NULL;
+                keybind_head = NULL;
+            }
+        } else {
+            prev = kb;
+            kb = kb->next;
+        }
+    }
+
+    /* returns true if one or more unbind(s) occur */
+    return found;
+}
+
+dboolean C_ExecuteBind(int keycode)
+{
+    keybind_t* kb = keybind_head;
+    dboolean executed = false;
+
+    if (netgame) {
+        doom_printf("Binds not allowed during net play.");
+        return false;
+    } else if (demorecording || demoplayback) {
+        doom_printf("Binds not allowed during demos.");
+        return false;
+    }
+
+    while (kb) {
+        if (kb->keycode == keycode) {
+            C_ConsoleCommand(kb->cmd);
+            executed = true;
+        }
+        kb = kb->next;
+    }
+
+    return executed;
+}
+
+dboolean C_Responder(event_t* ev)
+{
+    if (ev && ev->type == ev_keydown) {
+        C_ExecuteBind(ev->data1);
+    }
+    /* key binds never consume the key */
+    return false;
 }
