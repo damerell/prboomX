@@ -489,42 +489,47 @@ void C_AddCommandToHistory(const char* cmd)
     command_wrptr = (command_wrptr + 1) % CONSOLE_COMMAND_HISTORY_LEN;
 }
 
+static dboolean C_ConsoleCommandHandler(char* cmd)
+{
+    /* tokenize based on first space */
+    dboolean found = false;
+    int i = 0;
+    char* cptr = cmd;
+    char* fullcmd = strdup(cmd);
+    const char* sendcmd = NULL;
+    while(cptr && *cptr && !isspace(*cptr)) cptr++;
+    if(*cptr) {
+        *cptr = '\0';
+        sendcmd = cptr+1;
+    } else {
+        sendcmd = cptr;
+    }
+
+    for (i=0; command_list[i].name; i++) {
+        if (stricmp(command_list[i].name, cmd) == 0) {
+            command_list[i].func(cptr+1);
+            found = true;
+            break;
+        }
+    }
+    free(fullcmd);
+    return found;
+}
+
+static dboolean C_ConsoleCheatHandler(char* cmd)
+{
+    return C_SendCheat(cmd);
+}
+
 void C_ConsoleCommand(char* cmd)
 {
-    /* try cheats first */
-    int ch = 0;
     if(!cmd || !cmd[0]) return;
-    int cmdlen = strlen(cmd);
-    /* send a bogus space to clear out any cached
-     * cheat keystrokes */
-    ch = C_SendCheat(cmd);
 
-    if (ch) {
+    if (C_ConsoleCommandHandler(cmd) ||
+            C_ConsoleCheatHandler(cmd)) {
         C_AddCommandToHistory(cmd);
     } else {
-        /* tokenize based on first space */
-        int i = 0;
-        char* cptr = cmd;
-        char* fullcmd = strdup(cmd);
-        const char* sendcmd = NULL;
-        while(cptr && *cptr && !isspace(*cptr)) cptr++;
-        if(*cptr) {
-            *cptr = '\0';
-            sendcmd = cptr+1;
-        } else {
-            sendcmd = cptr;
-        }
-
-        for (i=0; command_list[i].name; i++) {
-            if (stricmp(command_list[i].name, cmd) == 0) {
-                command_list[i].func(cptr+1);
-                C_AddCommandToHistory(fullcmd);
-                break;
-            }
-        }
-        free(fullcmd);
-        if(!command_list[i].name)
-            doom_printf("Command not found: %s", cmd);
+        doom_printf("Command not found: %s", cmd);
     }
 }
 
