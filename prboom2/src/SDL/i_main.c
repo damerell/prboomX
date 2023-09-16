@@ -70,6 +70,7 @@ typedef BOOL (WINAPI *SetAffinityFunc)(HANDLE hProcess, DWORD mask);
 #include "i_main.h"
 #include "r_fps.h"
 #include "lprintf.h"
+#include "c_cmd.h"
 
 #include <signal.h>
 #include <stdio.h>
@@ -461,6 +462,7 @@ static void I_Quit (void)
   if (demorecording)
     G_CheckDemoStatus();
   M_SaveDefaults ();
+  C_SaveSettings();
   I_DemoExShutdown();
 }
 

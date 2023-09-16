@@ -18,6 +18,7 @@
 #include "hu_stuff.h"
 #include "lprintf.h"
 #include "m_io.h"
+#include "i_system.h"
 
 #include <time.h>
 
@@ -525,12 +526,15 @@ void C_ConsoleCommand(char* cmd)
 {
     if(!cmd || !cmd[0]) return;
 
+    /* cmd will be modified, so work on a duplicate */
+    cmd = strdup(cmd);
     if (C_ConsoleCommandHandler(cmd) ||
             C_ConsoleCheatHandler(cmd)) {
         C_AddCommandToHistory(cmd);
     } else {
         doom_printf("Command not found: %s", cmd);
     }
+    free(cmd);
 }
 
 void C_ResetCommandHistoryPosition()
@@ -573,139 +577,137 @@ void C_ClearMessage()
 
 
 /* keybind system */
+static const char* keynames[] = {
+    "RIGHTARROW",
+    "LEFTARROW",
+    "UPARROW",
+    "DOWNARROW",
+    "ESCAPE",
+    "ENTER",
+    "TAB",
+    "F1",
+    "F2",
+    "F3",
+    "F4",
+    "F5",
+    "F6",
+    "F7",
+    "F8",
+    "F9",
+    "F10",
+    "F11",
+    "F12",
+    "BACKSPACE",
+    "PAUSE",
+    "EQUALS",
+    "MINUS",
+    "RSHIFT",
+    "RCTRL",
+    "RALT",
+    "LALT",
+    "CAPSLOCK",
+    "PRINTSC",
+    "INSERT",
+    "HOME",
+    "PAGEUP",
+    "PAGEDOWN",
+    "DEL",
+    "END",
+    "SCROLLLOCK",
+    "SPACEBAR",
+    "NUMLOCK",
+    "KEYPAD0",
+    "KEYPAD1",
+    "KEYPAD2",
+    "KEYPAD3",
+    "KEYPAD4",
+    "KEYPAD5",
+    "KEYPAD6",
+    "KEYPAD7",
+    "KEYPAD8",
+    "KEYPAD9",
+    "KEYPADENTER",
+    "KEYPADDIVIDE",
+    "KEYPADMULTIPLY",
+    "KEYPADMINUS",
+    "KEYPADPLUS",
+    "KEYPADPERIOD",
+    "MOUSE1",
+    "MOUSE2",
+    "MOUSE3",
+    "MWHEELUP",
+    "MWHEELDOWN",
+    NULL
+};
+
+static const int keycodes[] = {
+    0xae,
+    0xac,
+    0xad,
+    0xaf,
+    27,
+    13,
+    9,
+    (0x80+0x3b),
+    (0x80+0x3c),
+    (0x80+0x3d),
+    (0x80+0x3e),
+    (0x80+0x3f),
+    (0x80+0x40),
+    (0x80+0x41),
+    (0x80+0x42),
+    (0x80+0x43),
+    (0x80+0x44),
+    (0x80+0x57),
+    (0x80+0x58),
+    127,
+    0xff,
+    0x3d,
+    0x2d,
+    (0x80+0x36),
+    (0x80+0x1d),
+    (0x80+0x38),
+    KEYD_RALT,
+    0xba,
+    0xfe,
+    0xd2,
+    0xc7,
+    0xc9,
+    0xd1,
+    0xc8,
+    0xcf,
+    0xc6,
+    0x20,
+    0xC5,
+    (0x100 + '0'),
+    (0x100 + '1'),
+    (0x100 + '2'),
+    (0x100 + '3'),
+    (0x100 + '4'),
+    (0x100 + '5'),
+    (0x100 + '6'),
+    (0x100 + '7'),
+    (0x100 + '8'),
+    (0x100 + '9'),
+    (0x100 + KEYD_ENTER),
+    (0x100 + '/'),
+    (0x100 + '*'),
+    (0x100 + '-'),
+    (0x100 + '+'),
+    (0x100 + '.'),
+    (0x80 + 0x60),
+    (0x80 + 0x61),
+    (0x80 + 0x62),
+    (0x80 + 0x6b),
+    (0x80 + 0x6c),
+    0 /* "null" terminator */
+};
+
 static int KeyNameToKeyCode(const char* name)
 {
     int i;
-    static const char* keynames[] = {
-        "RIGHTARROW",
-        "LEFTARROW",
-        "UPARROW",
-        "DOWNARROW",
-        "ESCAPE",
-        "ENTER",
-        "TAB",
-        "F1",
-        "F2",
-        "F3",
-        "F4",
-        "F5",
-        "F6",
-        "F7",
-        "F8",
-        "F9",
-        "F10",
-        "F11",
-        "F12",
-        "BACKSPACE",
-        "PAUSE",
-        "EQUALS",
-        "MINUS",
-        "RSHIFT",
-        "RCTRL",
-        "RALT",
-        "LALT",
-        "CAPSLOCK",
-        "PRINTSC",
-        "INSERT",
-        "HOME",
-        "PAGEUP",
-        "PAGEDOWN",
-        "DEL",
-        "END",
-        "SCROLLLOCK",
-        "SPACEBAR",
-        "NUMLOCK",
-        "KEYPAD0",
-        "KEYPAD1",
-        "KEYPAD2",
-        "KEYPAD3",
-        "KEYPAD4",
-        "KEYPAD5",
-        "KEYPAD6",
-        "KEYPAD7",
-        "KEYPAD8",
-        "KEYPAD9",
-        "KEYPADENTER",
-        "KEYPADDIVIDE",
-        "KEYPADMULTIPLY",
-        "KEYPADMINUS",
-        "KEYPADPLUS",
-        "KEYPADPERIOD",
-        "MOUSE1",
-        "MOUSE2",
-        "MOUSE3",
-        "MWHEELUP",
-        "MWHEELDOWN",
-        NULL
-    };
-
-    static const int keycodes[] = {
-        0xae,
-        0xac,
-        0xad,
-        0xaf,
-        27,
-        13,
-        9,
-        (0x80+0x3b),
-        (0x80+0x3c),
-        (0x80+0x3d),
-        (0x80+0x3e),
-        (0x80+0x3f),
-        (0x80+0x40),
-        (0x80+0x41),
-        (0x80+0x42),
-        (0x80+0x43),
-        (0x80+0x44),
-        (0x80+0x57),
-        (0x80+0x58),
-        127,
-        0xff,
-        0x3d,
-        0x2d,
-        (0x80+0x36),
-        (0x80+0x1d),
-        (0x80+0x38),
-        KEYD_RALT,
-        0xba,
-        0xfe,
-        0xd2,
-        0xc7,
-        0xc9,
-        0xd1,
-        0xc8,
-        0xcf,
-        0xc6,
-        0x20,
-        0xC5,
-        (0x100 + '0'),
-        (0x100 + '1'),
-        (0x100 + '2'),
-        (0x100 + '3'),
-        (0x100 + '4'),
-        (0x100 + '5'),
-        (0x100 + '6'),
-        (0x100 + '7'),
-        (0x100 + '8'),
-        (0x100 + '9'),
-        (0x100 + KEYD_ENTER),
-        (0x100 + '/'),
-        (0x100 + '*'),
-        (0x100 + '-'),
-        (0x100 + '+'),
-        (0x100 + '.'),
-        (0x80 + 0x60),
-        (0x80 + 0x61),
-        (0x80 + 0x62),
-        (0x80 + 0x6b),
-        (0x80 + 0x6c)
-    };
-
-    /* FIXME: Handle "uppercase" characters */
     /* printable ascii chars go out as-is */
-    if (strlen(name) == 1 &&
-            name[0] > '0' &&
-            name[0] < 'z')
+    if (strlen(name) == 1 && isprint(name[0]))
         return tolower(name[0]);
 
     for (i=0; keynames[i]; i++) {
@@ -714,6 +716,16 @@ static int KeyNameToKeyCode(const char* name)
     }
 
     return -1;
+}
+
+static const char* KeyCodeToKeyName(const int keycode)
+{
+    int i;
+    for (i=0; keycodes[i]; i++) {
+        if (keycodes[i] == keycode)
+            return keynames[i];
+    }
+    return NULL;
 }
 
 typedef struct keybind_t
@@ -816,4 +828,80 @@ dboolean C_Responder(event_t* ev)
     }
     /* key binds never consume the key */
     return false;
+}
+
+static char* C_GetConsoleSettingsFile()
+{
+    static char* console_settings_file = NULL;
+#define PRBOOMX_CONSOLE_CFG "prboomx_console.cfg"
+    if (!console_settings_file) {
+        int i;
+        i = M_CheckParm ("-consoleconfig");
+        if (i && i < myargc-1)
+        {
+            console_settings_file = strdup(myargv[i+1]);
+        }
+        else
+        {
+            const char* exedir = strdup(I_DoomExeDir());
+            /* get config file from same directory as executable */
+            int len = doom_snprintf(NULL, 0, "%s/" PRBOOMX_CONSOLE_CFG, exedir);
+            console_settings_file = malloc(len+1);
+            doom_snprintf(console_settings_file, len+1, "%s/" PRBOOMX_CONSOLE_CFG, exedir);
+        }
+
+        lprintf (LO_CONFIRM, " console settings file: %s\n",console_settings_file);
+    }
+    return console_settings_file;
+}
+
+#define CONSOLE_CONFIG_LINE_MAX (256)
+void C_SaveSettings()
+{
+    keybind_t* kb = keybind_head;
+    FILE* bindfile = M_fopen (C_GetConsoleSettingsFile(), "w");
+
+    if (bindfile) {
+        while (kb) {
+            const char* keyname = KeyCodeToKeyName(kb->keycode);
+            if (keyname) {
+                fprintf(bindfile, "bind %s %s\n", keyname, kb->cmd);
+            } else if (isprint(kb->keycode)) {
+                fprintf(bindfile, "bind %c %s\n", kb->keycode, kb->cmd);
+            } else {
+                lprintf(LO_WARN, " bad keybind found: %x (bound to: %s)\n",kb->keycode, kb->cmd);
+            }
+            kb = kb->next;
+        }
+        fclose(bindfile);
+    }
+}
+
+void C_LoadSettings()
+{
+    FILE* bindfile = NULL;
+    char* linebuffer = malloc(sizeof(char)*CONSOLE_CONFIG_LINE_MAX);
+
+    bindfile = M_fopen(C_GetConsoleSettingsFile(), "r");
+    if (bindfile) {
+        while (!feof(bindfile)) {
+            char* line = linebuffer;
+            line = fgets(line, CONSOLE_CONFIG_LINE_MAX, bindfile);
+            /* strip leading whitespace */
+            while (line && isspace(*line))
+                line++;
+            /* if there's any line left, execute it */
+            /* comment lines start with '#' */
+            if (line && *line != '\0' && *line != '#') {
+                /* strip ending newline, if there */
+                char* end = strrchr(line, '\n');
+                if (end) *end = '\0';
+                C_ConsoleCommand(line);
+            }
+        }
+        fclose (bindfile);
+        C_printcmd("");
+    }
+
+    free(linebuffer);
 }
