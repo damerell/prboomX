@@ -303,6 +303,7 @@ static cheat_map_t cheatmap[] = {
     {NULL, NULL}
 };
 
+
 static void C_give(char* cmd)
 {
     char* giveme = strtok(cmd, " ");
@@ -379,6 +380,14 @@ static void C_note(char* cmd)
     free(notefile);
 }
 
+
+static void C_mdk(char* cmd)
+{
+    extern void P_LineAttack(mobj_t* t1, angle_t angle, fixed_t distance, fixed_t slope, int damage);
+    fixed_t bulletslope = finetangent[(ANG90 - plyr->mo->pitch) >> ANGLETOFINESHIFT];
+    P_LineAttack(plyr->mo, plyr->mo->angle, MISSILERANGE, bulletslope, 1000000);
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -398,6 +407,7 @@ command command_list[] = {
     {"warp", C_map},
     {"give", C_give},
     {"note", C_note},
+    {"mdk", C_mdk},
 
     /* aliases */
     {"snd", C_sndvol},
