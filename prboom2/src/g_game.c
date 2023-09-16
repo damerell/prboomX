@@ -86,6 +86,7 @@
 #include "r_fps.h"
 #include "e6y.h"//e6y
 #include "statdump.h"
+#include "SDL.h"
 
 #include "m_io.h"
 
