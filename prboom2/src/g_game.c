@@ -359,6 +359,7 @@ dboolean skip_quicksaveload_confirmation;
 dboolean enable_time_warping;
 
 /* jds: time warp parameters */
+#define TIMEWARP_ANCHOR_TICK_LIMIT (175)
 #define TIMEWARP_TICK_LIMIT (7*TICRATE)
 #define TIMEWARP_SLOTS (64)
 /* extra time (in ticks) applied post-warp before the timeline is lost */
@@ -4965,12 +4966,24 @@ static void G_TimeWarpLoadAnchorPoint(int position)
 
 static void G_TimeWarpTicker()
 {
+    static dboolean first = true;
+    unsigned int tick_a;
+    unsigned int tick_b;
     if (!G_CheckTimeWarpingIsOK(false))
         return;
 
+    tick_a = SDL_GetTicks();
     timewarp_ticks++;
     if (timewarp_ticks > TIMEWARP_TICK_LIMIT) {
         timewarp_ticks = 0;
         G_TimeWarpSetNextAnchorPoint();
+    }
+    tick_b = SDL_GetTicks();
+
+    if (tick_b - tick_a > TIMEWARP_ANCHOR_TICK_LIMIT) {
+        if (first)
+            first = false;
+        else
+            doom_printf("Warning: Timewarp is causing lag on this map.");
     }
 }
