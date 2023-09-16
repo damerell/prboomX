@@ -30,6 +30,13 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
     * Press ']' (default) to travel forward in time
     * Stay too long in the past, and your old future will no longer be reachable.
     * Be warned! Time travel can be quite disorienting...
+* Bind keys to console commands
+    * Console command: `bind [key] [command]`
+    * To unbind: `unbind [key]`
+    * Binds stored in `prboomx_console.cfg`
+    * Keys can be bound to multiple actions (just bind the same key more than once)
+    * No key modifiers can be used for key binds; e.g., Ctrl-X not possible, Shift-X not possible, etc.
+    * Only "lowercase" keys (nothing with "SHIFT" pressed) can be bound
 * Optional enhancements to the allmap powerup:
     * Secrets in undiscovered parts of the map are bright yellow
     * Secrets in discovered parts of the map are bright purple

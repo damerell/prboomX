@@ -495,25 +495,25 @@ static dboolean C_ConsoleCommandHandler(char* cmd)
     /* tokenize based on first space */
     dboolean found = false;
     int i = 0;
-    char* cptr = cmd;
-    char* fullcmd = strdup(cmd);
-    const char* sendcmd = NULL;
+    char* cptr = strdup(cmd);
+    char* command = cptr;
+    char* arguments = NULL;
     while(cptr && *cptr && !isspace(*cptr)) cptr++;
     if(*cptr) {
         *cptr = '\0';
-        sendcmd = cptr+1;
+        arguments = cptr+1;
     } else {
-        sendcmd = cptr;
+        arguments = cptr;
     }
 
     for (i=0; command_list[i].name; i++) {
-        if (stricmp(command_list[i].name, cmd) == 0) {
-            command_list[i].func(cptr+1);
+        if (stricmp(command_list[i].name, command) == 0) {
+            command_list[i].func(arguments);
             found = true;
             break;
         }
     }
-    free(fullcmd);
+    free(command);
     return found;
 }
 
@@ -526,15 +526,12 @@ void C_ConsoleCommand(char* cmd)
 {
     if(!cmd || !cmd[0]) return;
 
-    /* cmd will be modified, so work on a duplicate */
-    cmd = strdup(cmd);
     if (C_ConsoleCommandHandler(cmd) ||
             C_ConsoleCheatHandler(cmd)) {
         C_AddCommandToHistory(cmd);
     } else {
         doom_printf("Command not found: %s", cmd);
     }
-    free(cmd);
 }
 
 void C_ResetCommandHistoryPosition()
