@@ -61,3 +61,6 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
 - `kill <class>`
 - `give <thing>`
 - `note <message>` (write notes to a dated text file, useful for quick notes while playtesting)
+- `mdk`
+- `bind [key] [command]`
+- `unbind [key]`
