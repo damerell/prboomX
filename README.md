@@ -35,7 +35,7 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
     * To unbind: `unbind [key]`
     * Binds stored in `prboomx_console.cfg`
     * Keys can be bound to multiple actions (just bind the same key more than once)
-    * No key modifiers can be used for key binds; e.g., Ctrl-X not possible, Shift-X not possible, etc.
+    * Key modifiers can NOT be used for key binds; e.g., Ctrl-X not possible, Shift-X not possible, etc.
     * Only "lowercase" keys (nothing with "SHIFT" pressed) can be bound
 * Optional enhancements to the allmap powerup:
     * Secrets in undiscovered parts of the map are bright yellow
@@ -64,3 +64,65 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
 - `mdk`
 - `bind [key] [command]`
 - `unbind [key]`
+
+# Bindable Special Key Names
+
+* RIGHTARROW
+* LEFTARROW
+* UPARROW
+* DOWNARROW
+* ESCAPE
+* ENTER
+* TAB
+* F1
+* F2
+* F3
+* F4
+* F5
+* F6
+* F7
+* F8
+* F9
+* F10
+* F11
+* F12
+* BACKSPACE
+* PAUSE
+* EQUALS
+* MINUS
+* RSHIFT
+* RCTRL
+* RALT
+* LALT
+* CAPSLOCK
+* PRINTSC
+* INSERT
+* HOME
+* PAGEUP
+* PAGEDOWN
+* DEL
+* END
+* SCROLLLOCK
+* SPACEBAR
+* NUMLOCK
+* KEYPAD0
+* KEYPAD1
+* KEYPAD2
+* KEYPAD3
+* KEYPAD4
+* KEYPAD5
+* KEYPAD6
+* KEYPAD7
+* KEYPAD8
+* KEYPAD9
+* KEYPADENTER
+* KEYPADDIVIDE
+* KEYPADMULTIPLY
+* KEYPADMINUS
+* KEYPADPLUS
+* KEYPADPERIOD
+* MOUSE1
+* MOUSE2
+* MOUSE3
+* MWHEELUP
+* MWHEELDOWN

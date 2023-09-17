@@ -19,6 +19,7 @@
 #include "lprintf.h"
 #include "m_io.h"
 #include "i_system.h"
+#include "m_menu.h"
 
 #include <time.h>
 
@@ -426,8 +427,31 @@ static void C_bind(char* cmd)
     if (keycode_to_bind < 0) {
         doom_printf("Bind failed; invalid key: %s", key_to_bind);
     } else {
+        extern setup_menu_t* keys_settings[];
+        setup_menu_t* keys_to_check = NULL;
+        const char* already_bound_to = NULL;
+        dboolean already_bound = false;
+        int i;
+
+        /* see if already bound and warn the user */
+        for (i = 0; !already_bound && keys_settings[i]; i++) {
+            for (keys_to_check = keys_settings[i] ; !(keys_to_check->m_flags & S_END) ; keys_to_check++) {
+                if ((keys_to_check->m_flags & S_KEY) &&
+                        (keys_to_check->var.m_key) &&
+                        (*(keys_to_check->var.m_key) == keycode_to_bind)) {
+                    already_bound = true;
+                    already_bound_to = strdup(keys_to_check->m_text);
+                    break;
+                }
+            }
+        }
+
         if (C_RegisterBind(keycode_to_bind,bind_command)) {
-            doom_printf("Bound %s", key_to_bind);
+            if (already_bound && already_bound_to) {
+                doom_printf("Bound %s; WARNING: Already bound to %s", key_to_bind, already_bound_to);
+            } else {
+                doom_printf("Bound %s", key_to_bind);
+            }
         } else {
             doom_printf("Could not bind %s", key_to_bind);
         }
@@ -495,8 +519,8 @@ static dboolean C_ConsoleCommandHandler(char* cmd)
     /* tokenize based on first space */
     dboolean found = false;
     int i = 0;
-    char* cptr = strdup(cmd);
-    char* command = cptr;
+    char* command = strdup(cmd);
+    char* cptr = command;
     char* arguments = NULL;
     while(cptr && *cptr && !isspace(*cptr)) cptr++;
     if(*cptr) {
