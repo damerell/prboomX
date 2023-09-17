@@ -1570,6 +1570,7 @@ void M_LoadDefaults (void)
   char* strparm = malloc(CFG_BUFFERMAX);
   char* cfgline = malloc(CFG_BUFFERMAX);
   char* newstring = NULL;   // killough
+  char* prboomx_wad = strdup(PACKAGE_TARNAME ".wad");
   int   parm;
   dboolean isstring;
   // e6y: arrays
@@ -1757,8 +1758,12 @@ void M_LoadDefaults (void)
   /* proff 2001/7/1 - added prboom.wad as last entry so it's always loaded and
      doesn't overlap with the cfg settings */
   //e6y: Check on existence of prboom.wad
-  if (!(wad_files[0] = I_FindFile(PACKAGE_TARNAME ".wad", "")))
-    I_Error("PrBoomX.wad not found. Can't continue.");
+  //jds: use lowercased package name for case-sensitive filesystems
+  for (i=0; i<strlen(prboomx_wad); i++)
+      prboomx_wad[i] = tolower(prboomx_wad[i]);
+  if (!(wad_files[0] = I_FindFile(prboomx_wad, "")))
+    I_Error("prboomx.wad not found. Can't continue.");
+  free(prboomx_wad);
 }
 
 

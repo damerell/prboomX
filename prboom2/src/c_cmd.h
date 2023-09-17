@@ -10,6 +10,11 @@ void C_ConsolePrintf(const char *s, ...);
 const char* C_GetMessage();
 void C_ClearMessage();
 dboolean C_HasMessage();
+dboolean C_Responder();
+dboolean C_RegisterBind(int keycode, char* cmd);
+dboolean C_UnregisterBind(int keycode);
+void C_SaveSettings();
+void C_LoadSettings();
 
 typedef struct _command {
     const char* name;

@@ -88,6 +88,7 @@
 #include "statdump.h"
 #include "zip/zip.h"
 #include "md5.h"
+#include "c_cmd.h"
 
 //e6y
 #include "r_demo.h"
@@ -289,7 +290,8 @@ void D_PostEvent(event_t *ev)
 	  (gamestate == GS_LEVEL && (
 				     HU_Responder(ev) ||
 				     ST_Responder(ev) ||
-				     AM_Responder(ev)
+				     AM_Responder(ev) ||
+                     C_Responder(ev)
 				     )
 	  ) ||
 	G_Responder(ev);
@@ -2408,6 +2410,8 @@ static void D_DoomMainSetup(void)
 
   // do not try to interpolate during timedemo
   M_ChangeUncappedFrameRate();
+
+  C_LoadSettings();
 }
 
 //
