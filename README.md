@@ -37,6 +37,7 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
     * Keys can be bound to multiple actions (just bind the same key more than once)
     * Key modifiers can NOT be used for key binds; e.g., Ctrl-X not possible, Shift-X not possible, etc.
     * Only "lowercase" keys (nothing with "SHIFT" pressed) can be bound
+    * Keys already bound to other actions may or may not work (a warning will appear when you first bind it)
 * Optional enhancements to the allmap powerup:
     * Secrets in undiscovered parts of the map are bright yellow
     * Secrets in discovered parts of the map are bright purple
