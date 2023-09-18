@@ -122,8 +122,13 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
 * KEYPADMINUS
 * KEYPADPLUS
 * KEYPADPERIOD
+* MWHEELUP
+* MWHEELDOWN
 * MOUSE1
 * MOUSE2
 * MOUSE3
-* MWHEELUP
-* MWHEELDOWN
+* MOUSE4
+* MOUSE5
+* MOUSE6
+* MOUSE7
+* MOUSE8

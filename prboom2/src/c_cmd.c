@@ -33,6 +33,7 @@ static char* command_history[CONSOLE_COMMAND_HISTORY_LEN] = { 0 };
 static char console_message[HU_MSGWIDTH];
 
 static int KeyNameToKeyCode(const char* name);
+static int MouseNameToMouseCode(const char* name);
 
 dboolean c_drawpsprites = true;
 
@@ -48,8 +49,8 @@ static int C_SendCheat(const char* cheat)
 
 static void C_noclip(char* cmd)
 {
-  plyr->message = (plyr->cheats ^= CF_NOCLIP) & CF_NOCLIP ?
-    s_STSTR_NCON : s_STSTR_NCOFF;
+    plyr->message = (plyr->cheats ^= CF_NOCLIP) & CF_NOCLIP ?
+        s_STSTR_NCON : s_STSTR_NCOFF;
 }
 
 static void C_noclip2(char* cmd)
@@ -73,53 +74,53 @@ static void C_noclip2(char* cmd)
 
 static void C_resurrect(char* cmd)
 {
-  if (plyr->playerstate == PST_DEAD) {
-      plyr->message = "You live...again!";
-      plyr->playerstate = PST_LIVE;
-      plyr->health = initial_health;
-      plyr->mo->health = initial_health;
-      plyr->readyweapon = wp_fist;
-      plyr->pendingweapon = wp_fist;
-      plyr->mo->flags = MF_SOLID|MF_SHOOTABLE|MF_DROPOFF|MF_PICKUP|MF_NOTDMATCH;
-      plyr->mo->radius = 16*FRACUNIT;
-      plyr->mo->height = 56*FRACUNIT;
-  } else {
-      plyr->message = "Your life force throbs on...";
-  }
+    if (plyr->playerstate == PST_DEAD) {
+        plyr->message = "You live...again!";
+        plyr->playerstate = PST_LIVE;
+        plyr->health = initial_health;
+        plyr->mo->health = initial_health;
+        plyr->readyweapon = wp_fist;
+        plyr->pendingweapon = wp_fist;
+        plyr->mo->flags = MF_SOLID|MF_SHOOTABLE|MF_DROPOFF|MF_PICKUP|MF_NOTDMATCH;
+        plyr->mo->radius = 16*FRACUNIT;
+        plyr->mo->height = 56*FRACUNIT;
+    } else {
+        plyr->message = "Your life force throbs on...";
+    }
 }
 
 static void C_god(char* cmd)
 {
-  if (plyr->playerstate == PST_DEAD)
+    if (plyr->playerstate == PST_DEAD)
     {
-      signed int an;
-      mapthing_t mt = {0};
+        signed int an;
+        mapthing_t mt = {0};
 
-      P_MapStart();
-      mt.x = plyr->mo->x >> FRACBITS;
-      mt.y = plyr->mo->y >> FRACBITS;
-      mt.angle = (plyr->mo->angle + ANG45/2)*(uint_64_t)45/ANG45;
-      mt.type = consoleplayer + 1;
-      mt.options = 1; // arbitrary non-zero value
-      P_SpawnPlayer(consoleplayer, &mt);
+        P_MapStart();
+        mt.x = plyr->mo->x >> FRACBITS;
+        mt.y = plyr->mo->y >> FRACBITS;
+        mt.angle = (plyr->mo->angle + ANG45/2)*(uint_64_t)45/ANG45;
+        mt.type = consoleplayer + 1;
+        mt.options = 1; // arbitrary non-zero value
+        P_SpawnPlayer(consoleplayer, &mt);
 
-      // spawn a teleport fog
-      an = plyr->mo->angle >> ANGLETOFINESHIFT;
-      P_SpawnMobj(plyr->mo->x+20*finecosine[an], plyr->mo->y+20*finesine[an], plyr->mo->z, MT_TFOG);
-      S_StartSound(plyr, sfx_slop);
-      P_MapEnd();
+        // spawn a teleport fog
+        an = plyr->mo->angle >> ANGLETOFINESHIFT;
+        P_SpawnMobj(plyr->mo->x+20*finecosine[an], plyr->mo->y+20*finesine[an], plyr->mo->z, MT_TFOG);
+        S_StartSound(plyr, sfx_slop);
+        P_MapEnd();
     }
-  plyr->cheats ^= CF_GODMODE;
-  if (plyr->cheats & CF_GODMODE)
+    plyr->cheats ^= CF_GODMODE;
+    if (plyr->cheats & CF_GODMODE)
     {
-      if (plyr->mo)
-        plyr->mo->health = god_health;  // Ty 03/09/98 - deh
+        if (plyr->mo)
+            plyr->mo->health = god_health;  // Ty 03/09/98 - deh
 
-      plyr->health = god_health;
-      plyr->message = s_STSTR_DQDON; // Ty 03/27/98 - externalized
+        plyr->health = god_health;
+        plyr->message = s_STSTR_DQDON; // Ty 03/27/98 - externalized
     }
-  else
-    plyr->message = s_STSTR_DQDOFF; // Ty 03/27/98 - externalized
+    else
+        plyr->message = s_STSTR_DQDOFF; // Ty 03/27/98 - externalized
 }
 
 static void C_nextlevel(char* cmd)
@@ -398,6 +399,7 @@ static void C_bind(char* cmd)
     char* key_to_bind;
     char* bind_command;
     int keycode_to_bind;
+    evtype_t bind_type;
 
     if (!cmd || !*cmd) {
         doom_printf("bind [key] [command]");
@@ -424,51 +426,77 @@ static void C_bind(char* cmd)
     }
 
     keycode_to_bind = KeyNameToKeyCode(key_to_bind);
-    if (keycode_to_bind < 0) {
-        doom_printf("Bind failed; invalid key: %s", key_to_bind);
+    if (keycode_to_bind > 0) {
+        bind_type = ev_keydown;
     } else {
-        extern setup_menu_t* keys_settings[];
-        setup_menu_t* keys_to_check = NULL;
-        const char* already_bound_to = NULL;
-        dboolean already_bound = false;
-        int i;
+        keycode_to_bind = MouseNameToMouseCode(key_to_bind);
+        if (keycode_to_bind > 0) {
+            bind_type = ev_mouse;
+        }
+    }
 
-        /* see if already bound and warn the user */
-        for (i = 0; !already_bound && keys_settings[i]; i++) {
-            for (keys_to_check = keys_settings[i] ; !(keys_to_check->m_flags & S_END) ; keys_to_check++) {
-                if ((keys_to_check->m_flags & S_KEY) &&
-                        (keys_to_check->var.m_key) &&
-                        (*(keys_to_check->var.m_key) == keycode_to_bind)) {
-                    already_bound = true;
-                    already_bound_to = strdup(keys_to_check->m_text);
-                    break;
-                }
+    /* if we reach here and keycode is not set, the nour attempts 
+     * to match this bind to an event type have failed */
+    if (keycode_to_bind <= 0) {
+        doom_printf("Bind failed; invalid key: %s", key_to_bind);
+        return;
+    }
+
+    extern setup_menu_t* keys_settings[];
+    setup_menu_t* keys_to_check = NULL;
+    const char* already_bound_to = NULL;
+    dboolean already_bound = false;
+    int i;
+
+    /* see if already bound and warn the user */
+    for (i = 0; !already_bound && keys_settings[i]; i++) {
+        for (keys_to_check = keys_settings[i] ; !(keys_to_check->m_flags & S_END) ; keys_to_check++) {
+            if ((keys_to_check->m_flags & S_KEY) &&
+                    (keys_to_check->var.m_key) &&
+                    (*(keys_to_check->var.m_key) == keycode_to_bind) &&
+                    ((bind_type == ev_mouse && keys_to_check->m_mouse) ||
+                     (bind_type != ev_mouse && !keys_to_check->m_mouse)
+                     )) {
+                already_bound = true;
+                already_bound_to = strdup(keys_to_check->m_text);
+                break;
             }
         }
+    }
 
-        if (C_RegisterBind(keycode_to_bind,bind_command)) {
-            if (already_bound && already_bound_to) {
-                doom_printf("Bound %s; WARNING: Already bound to %s", key_to_bind, already_bound_to);
-            } else {
-                doom_printf("Bound %s", key_to_bind);
-            }
+    if (C_RegisterBind(keycode_to_bind,bind_command,bind_type)) {
+        if (already_bound && already_bound_to) {
+            doom_printf("Bound %s; WARNING: Already bound to %s", key_to_bind, already_bound_to);
         } else {
-            doom_printf("Could not bind %s", key_to_bind);
+            doom_printf("Bound %s", key_to_bind);
         }
+    } else {
+        doom_printf("Could not bind %s", key_to_bind);
     }
 }
 
 static void C_unbind(char* cmd)
 {
+    evtype_t bind_type;
     int keycode_to_unbind = KeyNameToKeyCode(cmd);
-    if (keycode_to_unbind < 0) {
-        doom_printf("Bind failed; invalid key: %s", cmd);
+    if (keycode_to_unbind > 0) {
+        bind_type = ev_keydown;
     } else {
-        if (C_UnregisterBind(keycode_to_unbind)) {
-            doom_printf("Unbound %s", cmd);
-        } else {
-            doom_printf("No bind found for %s", cmd);
+        keycode_to_unbind = MouseNameToMouseCode(cmd);
+        if (keycode_to_unbind > 0) {
+            bind_type = ev_mouse;
         }
+    }
+
+    if (keycode_to_unbind <= 0) {
+        doom_printf("Unbind failed; invalid key: %s", cmd);
+        return;
+    }
+
+    if (C_UnregisterBind(keycode_to_unbind, bind_type)) {
+        doom_printf("Unbound %s", cmd);
+    } else {
+        doom_printf("No bind found for %s", cmd);
     }
 }
 
@@ -653,9 +681,6 @@ static const char* keynames[] = {
     "KEYPADMINUS",
     "KEYPADPLUS",
     "KEYPADPERIOD",
-    "MOUSE1",
-    "MOUSE2",
-    "MOUSE3",
     "MWHEELUP",
     "MWHEELDOWN",
     NULL
@@ -716,12 +741,33 @@ static const int keycodes[] = {
     (0x100 + '-'),
     (0x100 + '+'),
     (0x100 + '.'),
-    (0x80 + 0x60),
-    (0x80 + 0x61),
-    (0x80 + 0x62),
     (0x80 + 0x6b),
     (0x80 + 0x6c),
     0 /* "null" terminator */
+};
+
+static char* mousenames[] = {
+    "MOUSE1",
+    "MOUSE2",
+    "MOUSE3",
+    "MOUSE4",
+    "MOUSE5",
+    "MOUSE6",
+    "MOUSE7",
+    "MOUSE8",
+    NULL
+};
+
+static int mousecodes[] = {
+    1,
+    2,
+    4,
+    32,
+    64,
+    8,
+    16,
+    128,
+    0,
 };
 
 static int KeyNameToKeyCode(const char* name)
@@ -730,12 +776,10 @@ static int KeyNameToKeyCode(const char* name)
     /* printable ascii chars go out as-is */
     if (strlen(name) == 1 && isprint(name[0]))
         return tolower(name[0]);
-
     for (i=0; keynames[i]; i++) {
         if (stricmp(name, keynames[i]) == 0)
             return keycodes[i];
     }
-
     return -1;
 }
 
@@ -749,16 +793,37 @@ static const char* KeyCodeToKeyName(const int keycode)
     return NULL;
 }
 
+static int MouseNameToMouseCode(const char* name)
+{
+    int i;
+    for (i=0; mousenames[i]; i++) {
+        if (stricmp(name, mousenames[i]) == 0)
+            return mousecodes[i];
+    }
+    return -1;
+}
+
+static const char* MouseCodeToMouseName(const int mousecode)
+{
+    int i;
+    for (i=0; mousecodes[i]; i++) {
+        if (mousecodes[i] == mousecode)
+            return mousenames[i];
+    }
+    return NULL;
+}
+
 typedef struct keybind_t
 {
     int keycode;
     char* cmd;
+    evtype_t type;
     struct keybind_t* next;
 } keybind_t;
 
 static keybind_t* keybind_head = NULL;
 
-dboolean C_RegisterBind(int keycode, char* cmd)
+dboolean C_RegisterBind(int keycode, char* cmd, evtype_t type)
 {
     keybind_t* kb = keybind_head;
     keybind_t* new_bind = malloc(sizeof(keybind_t));
@@ -773,6 +838,7 @@ dboolean C_RegisterBind(int keycode, char* cmd)
 
     new_bind->keycode = keycode;
     new_bind->cmd = strdup(cmd);
+    new_bind->type = type;
     new_bind->next = NULL;
 
     if (kb)
@@ -783,14 +849,14 @@ dboolean C_RegisterBind(int keycode, char* cmd)
     return true;
 }
 
-dboolean C_UnregisterBind(int keycode)
+dboolean C_UnregisterBind(int keycode, evtype_t type)
 {
     keybind_t* kb = keybind_head;
     keybind_t* prev = NULL;
     dboolean found = false;
 
     while (kb) {
-        if (kb->keycode == keycode) {
+        if (kb->keycode == keycode && kb->type == type) {
             found = true;
             if (prev) {
                 prev->next = kb->next;
@@ -818,11 +884,8 @@ dboolean C_UnregisterBind(int keycode)
     return found;
 }
 
-dboolean C_ExecuteBind(int keycode)
+dboolean C_ExecuteBind(int keycode, evtype_t evtype)
 {
-    keybind_t* kb = keybind_head;
-    dboolean executed = false;
-
     if (netgame) {
         doom_printf("Binds not allowed during net play.");
         return false;
@@ -831,8 +894,10 @@ dboolean C_ExecuteBind(int keycode)
         return false;
     }
 
+    keybind_t* kb = keybind_head;
+    dboolean executed = false;
     while (kb) {
-        if (kb->keycode == keycode) {
+        if (kb->keycode == keycode && kb->type == evtype) {
             C_ConsoleCommand(kb->cmd);
             executed = true;
         }
@@ -844,8 +909,8 @@ dboolean C_ExecuteBind(int keycode)
 
 dboolean C_Responder(event_t* ev)
 {
-    if (ev && ev->type == ev_keydown) {
-        C_ExecuteBind(ev->data1);
+    if (ev && (ev->type == ev_keydown || ev->type == ev_mouse)) { 
+        C_ExecuteBind(ev->data1, ev->type);
     }
     /* key binds never consume the key */
     return false;
@@ -884,13 +949,25 @@ void C_SaveSettings()
 
     if (bindfile) {
         while (kb) {
-            const char* keyname = KeyCodeToKeyName(kb->keycode);
-            if (keyname) {
-                fprintf(bindfile, "bind %s %s\n", keyname, kb->cmd);
-            } else if (isprint(kb->keycode)) {
-                fprintf(bindfile, "bind %c %s\n", kb->keycode, kb->cmd);
+            if (kb->type == ev_keydown) {
+                const char* keyname = KeyCodeToKeyName(kb->keycode);
+                if (keyname) {
+                    fprintf(bindfile, "bind %s %s\n", keyname, kb->cmd);
+                } else if (isprint(kb->keycode)) {
+                    fprintf(bindfile, "bind %c %s\n", kb->keycode, kb->cmd);
+                } else {
+                    lprintf(LO_WARN, " bad keybind found: %x (bound to: %s)\n",kb->keycode, kb->cmd);
+                }
+            } else if (kb->type == ev_mouse) {
+                const char* mousename = MouseCodeToMouseName(kb->keycode);
+                if (mousename) {
+                    fprintf(bindfile, "bind %s %s\n", mousename, kb->cmd);
+                } else {
+                    lprintf(LO_WARN, " bad mouse bind found: %x (bound to: %s)\n",kb->keycode, kb->cmd);
+                }
+
             } else {
-                lprintf(LO_WARN, " bad keybind found: %x (bound to: %s)\n",kb->keycode, kb->cmd);
+                lprintf(LO_WARN, " bad bind found: %x (bound to: %s, event type: %d)\n",kb->keycode, kb->cmd, kb->type);
             }
             kb = kb->next;
         }
