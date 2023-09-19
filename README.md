@@ -18,6 +18,7 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
 * Option to organize save games based on loaded content (WAD, DEH, etc.)
     * Note the order in which content is loaded matters
 * Option to skip QuickSave/QuickLoad confirmation prompt
+* Option to fix the Blockmap bug (uses blockmap bug fix from Terry Hearst, adapted from similar PR for Woof)
 * Note-taking console command
     * Jot down quick notes while playtesting. Notes go into a dated text file in the current working directory.
     * Each note lists the time, all loaded WAD files, player position, and an optional user-supplied message on the console.

@@ -3334,6 +3334,7 @@ setup_menu_t gen_settings_prboomx[] = { // prboomX General Settings
   {"Enhanced allmap power up"         ,S_YESNO       ,m_null,G_X,G_Y+3*8, {"map_enhanced_allmap"}},
   {"Skip QuickSave/Load confirmation" ,S_YESNO       ,m_null,G_X,G_Y+4*8, {"skip_quicksaveload_confirmation"}},
   {"Enable Time Warping"              ,S_YESNO       ,m_null,G_X,G_Y+5*8, {"enable_time_warping"}},
+  {"Fix Blockmap bug"                 ,S_YESNO       ,m_null,G_X,G_Y+6*8, {"comp_fix_blockmap"}},
 
   {"<- PREV",S_SKIP|S_PREV, m_null,KB_PREV, KB_Y+20*8, {gen_settings1}},
   {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {gen_settings2}},
@@ -3688,6 +3689,7 @@ enum
   compat_maxhealth,
   compat_translucency,
   compat_skytransfers,
+  compat_fixblockmap
 };
 
 setup_menu_t comp_settings1[] =  // Compatibility Settings screen #1
@@ -3799,6 +3801,10 @@ setup_menu_t comp_settings3[] =  // Compatibility Settings screen #3
    // [FG]
   {"allow MBF sky transfers in all complevels", S_YESNO, m_null, C_X,
    C_Y + compat_skytransfers * COMP_SPC, {"comp_skytransfers"}},
+
+  {"fix blockmap bug", S_YESNO, m_null, C_X,
+   C_Y + compat_fixblockmap * COMP_SPC, {"comp_fix_blockmap"}},
+
   {"<- PREV", S_SKIP|S_PREV, m_null, KB_PREV, C_Y+C_NEXTPREV,{comp_settings2}},
   {0,S_SKIP|S_END,m_null}
 };
