@@ -85,5 +85,6 @@ void D_AdjustSaveLocation();
    doesn't overlap with the cfg settings */
 #define MAXLOADFILES 3
 extern const char *wad_files[MAXLOADFILES], *deh_files[MAXLOADFILES];
+extern char* savegame_wadlist;
 
 #endif

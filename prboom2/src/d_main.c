@@ -171,6 +171,8 @@ const char *const standard_iwads[]=
 //e6y static 
 const int nstandard_iwads = sizeof standard_iwads/sizeof*standard_iwads;
 
+char* savegame_wadlist = NULL;
+
 void D_AdjustSaveLocation()
 {
     static char* base_folder;
@@ -181,9 +183,10 @@ void D_AdjustSaveLocation()
 
     if (organize_saves) {
         struct MD5Context wads_md5 = {0};
-        char* wadlist = malloc(sizeof(char));
+        free(savegame_wadlist);
+        savegame_wadlist = malloc(sizeof(char));
         int wadlen = 0;
-        wadlist[0] = '\0';
+        savegame_wadlist[0] = '\0';
         MD5Init(&wads_md5);
         unsigned char digest[16];
         for (int j = 0; j < numwadfiles; j++) {
@@ -194,10 +197,10 @@ void D_AdjustSaveLocation()
                     wad[k] = tolower(wad[k]);
                 }
                 wadlen += strlen(wad) + 1;
-                wadlist = realloc(wadlist, sizeof(char)*(wadlen + 1));
-                strcat(wadlist, wad);
-                wadlist[wadlen-1] = '\n';
-                wadlist[wadlen] = '\0';
+                savegame_wadlist = realloc(savegame_wadlist, sizeof(char)*(wadlen + 1));
+                strcat(savegame_wadlist, wad);
+                savegame_wadlist[wadlen-1] = '\n';
+                savegame_wadlist[wadlen] = '\0';
                 MD5Update(&wads_md5, (md5byte const *)wad, strlen(wad));
                 free(wad);
             }
@@ -218,29 +221,10 @@ void D_AdjustSaveLocation()
             strcat(newsavedir, b);
         }
 
-        /* create folder if it doesn't exist */
-        if (M_access(newsavedir, W_OK) && -1 == M_mkdir(newsavedir)) {
-            lprintf(LO_WARN, "Could not make save game folder: %s, defaulting to regular save game location.\n", newsavedir);
-        } else {
-            FILE *f;
-            char* saveinfo = "saveinfo.txt";
-            int filenamelen = strlen(newsavedir) + strlen(saveinfo) + 2;
-            char* filename = malloc(sizeof(char)*(filenamelen));
-            snprintf(filename, filenamelen, "%s/%s", newsavedir, saveinfo);
-            f=M_fopen(filename,"w");
-            if (f) {
-                free(basesavegame);
-                basesavegame = newsavedir;
-                fprintf(f,"Saves in this folder are for the following content, as loaded in the following order:\n");
-                fprintf(f,"%s", wadlist);
-                fclose(f);
-                lprintf(LO_INFO, "Organizing saves into folder: %s\n", newsavedir);
-            } else {
-                lprintf(LO_WARN, "Could not write to save game folder: %s, defaulting to regular save game location.\n", newsavedir);
-            }
-            free(filename);
-        }
-        free(wadlist);
+        if (basesavegame != base_folder)
+            free(basesavegame);
+
+        basesavegame = newsavedir;
     } else {
         basesavegame = base_folder;
     }

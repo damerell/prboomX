@@ -2567,6 +2567,36 @@ static void G_DoSaveGame (dboolean menu)
   *save_p++ = 0xe6;   // consistancy marker
 
   Z_CheckHeap();
+
+  if (organize_saves) {
+      /* create folder if it doesn't exist */
+      if (M_access(basesavegame, W_OK) != 0) {
+          if (-1 == M_mkdir(basesavegame)) {
+              lprintf(LO_WARN, "Could not make save game folder: %s, defaulting to regular save game location.\n", basesavegame);
+              organize_saves = false;
+              D_AdjustSaveLocation();
+          } else {
+              FILE *f;
+              char* saveinfo = "saveinfo.txt";
+              int filenamelen = strlen(basesavegame) + strlen(saveinfo) + 2;
+              char* filename = malloc(sizeof(char)*(filenamelen));
+              snprintf(filename, filenamelen, "%s/%s", basesavegame, saveinfo);
+              f=M_fopen(filename,"w");
+              if (f) {
+                  fprintf(f,"Saves in this folder are for the following content, as loaded in the following order:\n");
+                  fprintf(f,"%s", savegame_wadlist);
+                  fclose(f);
+                  lprintf(LO_INFO, "Organizing saves into folder: %s\n", basesavegame);
+              } else {
+                  lprintf(LO_WARN, "Could not write to save game folder: %s, defaulting to regular save game location.\n", basesavegame);
+                  organize_saves = false;
+                  D_AdjustSaveLocation();
+              }
+              free(filename);
+          }
+      }
+  }
+
   doom_printf( "%s", M_WriteFile(name, savebuffer, save_p - savebuffer)
          ? s_GGSAVED /* Ty - externalised */
          : "Game save failed!"); // CPhipps - not externalised
