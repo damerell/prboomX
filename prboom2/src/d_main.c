@@ -175,7 +175,7 @@ char* savegame_wadlist = NULL;
 
 void D_AdjustSaveLocation()
 {
-    static char* base_folder;
+    static char* base_folder = 0;
 
     if (!base_folder) {
         base_folder = strdup(basesavegame);

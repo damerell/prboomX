@@ -20,6 +20,7 @@
 #include "m_io.h"
 #include "i_system.h"
 #include "m_menu.h"
+#include "m_misc.h"
 
 #include <time.h>
 
@@ -150,7 +151,7 @@ static void C_kill(char* cmd)
 
     /* find actor matching cmd */
     for (i=0; ActorNames[i]; i++)
-        if (stricmp(cmd,ActorNames[i]) == 0)
+        if (strcasecmp(cmd,ActorNames[i]) == 0)
             break;
 
     if (!ActorNames[i]) {
@@ -315,7 +316,7 @@ static void C_give(char* cmd)
     int i = 0;
     while (giveme) {
         for (i = 0; cheatmap[i].cheat; i++) {
-            if (stricmp(giveme, cheatmap[i].give) == 0) {
+            if (strcasecmp(giveme, cheatmap[i].give) == 0) {
                 C_SendCheat(cheatmap[i].cheat);
                 break;
             }
@@ -347,7 +348,7 @@ static void C_note(char* cmd)
                 fprintf(f, "=== %02d:%02d:%02d\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
                 for (int j = 0; j < numwadfiles; j++) {
                     /* ignore GWA files */
-                    if (stricmp(strrchr(wadfiles[j].name,'.'), ".gwa")) {
+                    if (strcasecmp(strrchr(wadfiles[j].name,'.'), ".gwa")) {
                         fprintf(f, "%s\n", wadfiles[j].name);
                     }
                 }
@@ -559,7 +560,7 @@ static dboolean C_ConsoleCommandHandler(char* cmd)
     }
 
     for (i=0; command_list[i].name; i++) {
-        if (stricmp(command_list[i].name, command) == 0) {
+        if (strcasecmp(command_list[i].name, command) == 0) {
             command_list[i].func(arguments);
             found = true;
             break;
@@ -574,12 +575,86 @@ static dboolean C_ConsoleCheatHandler(char* cmd)
     return C_SendCheat(cmd);
 }
 
+static dboolean C_ConsoleSettingHandler(char* cmd)
+{
+    dboolean found = false;
+    dboolean write = false;
+    int i = 0;
+    char* command = strdup(cmd);
+    char* argument = NULL;
+    char* hold = command;
+    default_t* setting = NULL;
+
+    if(!command || !*command)
+        return false;
+
+    /* strip whitespace */
+    while(isspace(*command)) command++;
+    argument = command;
+    while(*argument && !isspace(*argument)) argument++;
+    while(isspace(*argument)) argument++;
+    if (strlen(argument) > 0) {
+        argument = M_StrRTrim(argument);
+        write = true;
+    }
+
+    for (i = 0 ; i < numdefaults ; i++) {
+        if ((defaults[i].type != def_none) && !strcasecmp(command, defaults[i].name)) {
+            setting = &defaults[i];
+            found = true;
+            break;
+        }
+    }
+
+    if (found) {
+        switch (setting->type) {
+            case def_str:
+                if (setting->location.ppsz) {
+                    doom_printf("%s=%s",setting->name, *setting->location.ppsz);
+                } else {
+                    doom_printf("%s=(bad value)",setting->name);
+                }
+                break;
+            case def_int:
+                if (setting->location.pi) {
+                    doom_printf("%s=%d",setting->name, *setting->location.pi);
+                } else {
+                    doom_printf("%s=(bad value)",setting->name);
+                }
+                break;
+            case def_hex:
+                if (setting->location.pi) {
+                    doom_printf("%s=0x%x",setting->name, *setting->location.pi);
+                } else {
+                    doom_printf("%s=(bad value)",setting->name);
+                }
+                break;
+            case def_arr:
+                if (write) { 
+                    doom_printf("%s=(can't write arrays)",setting->name);
+                } else {
+                    doom_printf("%s=(array)",setting->name);
+                }
+                break;
+            case def_none:
+            default:
+                doom_printf("%s=???",setting->name);
+                break;
+        }
+    }
+
+    free(hold);
+    return found;
+}
+
 void C_ConsoleCommand(char* cmd)
 {
     if(!cmd || !cmd[0]) return;
 
     if (C_ConsoleCommandHandler(cmd) ||
-            C_ConsoleCheatHandler(cmd)) {
+            C_ConsoleSettingHandler(cmd) ||
+            C_ConsoleCheatHandler(cmd)
+            ) {
         C_AddCommandToHistory(cmd);
     } else {
         doom_printf("Command not found: %s", cmd);
@@ -777,7 +852,7 @@ static int KeyNameToKeyCode(const char* name)
     if (strlen(name) == 1 && isprint(name[0]))
         return tolower(name[0]);
     for (i=0; keynames[i]; i++) {
-        if (stricmp(name, keynames[i]) == 0)
+        if (strcasecmp(name, keynames[i]) == 0)
             return keycodes[i];
     }
     return -1;
@@ -797,7 +872,7 @@ static int MouseNameToMouseCode(const char* name)
 {
     int i;
     for (i=0; mousenames[i]; i++) {
-        if (stricmp(name, mousenames[i]) == 0)
+        if (strcasecmp(name, mousenames[i]) == 0)
             return mousecodes[i];
     }
     return -1;
