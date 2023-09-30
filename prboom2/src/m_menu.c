@@ -2978,11 +2978,12 @@ setup_menu_t auto_settings1[] =  // 1st AutoMap Settings screen
 #ifdef GL_DOOM
   {"Enable textured display",                 S_YESNO,m_null,AU_X,AU_Y+8*8, {"map_textured"}, 0, 0, M_ChangeMapTextured},
   {"Things appearance",                       S_CHOICE,m_null,AU_X,AU_Y+9*8, {"map_things_appearance"}, 0, 0, NULL, map_things_appearance_list},
-  {"Enhanced allmap power up",                S_YESNO,m_null,AU_X,AU_Y+10*8, {"map_enhanced_allmap"}},
-  {"Translucency percentage",                 S_SKIP|S_TITLE,m_null,AU_X,AU_Y+11*8},
-  {"Textured automap",                        S_NUM,  m_null,AU_X,AU_Y+12*8, {"map_textured_trans"}},
-  {"Textured automap in overlay mode",        S_NUM,  m_null,AU_X,AU_Y+13*8, {"map_textured_overlay_trans"}},
-  {"Lines in overlay mode",                   S_NUM,  m_null,AU_X,AU_Y+14*8, {"map_lines_overlay_trans"}},
+  {"Player arrow appearance",                 S_CHOICE,m_null,AU_X,AU_Y+10*8, {"map_player_arrow_appearance"}, 0, 0, NULL, map_player_arrow_appearance_list},
+  {"Enhanced allmap power up",                S_YESNO,m_null,AU_X,AU_Y+11*8, {"map_enhanced_allmap"}},
+  {"Translucency percentage",                 S_SKIP|S_TITLE,m_null,AU_X,AU_Y+12*8},
+  {"Textured automap",                        S_NUM,  m_null,AU_X,AU_Y+13*8, {"map_textured_trans"}},
+  {"Textured automap in overlay mode",        S_NUM,  m_null,AU_X,AU_Y+14*8, {"map_textured_overlay_trans"}},
+  {"Lines in overlay mode",                   S_NUM,  m_null,AU_X,AU_Y+15*8, {"map_lines_overlay_trans"}},
 #endif
 
   // Button for resetting to defaults
@@ -3332,9 +3333,10 @@ setup_menu_t gen_settings_prboomx[] = { // prboomX General Settings
   {"PrBoomX Settings"                 ,S_SKIP|S_TITLE,m_null, G_X, G_Y+ 1*8},
   {"Organize Save files by loaded WAD",S_YESNO       ,m_null, G_X, G_Y+2*8, {"organize_saves"}, 0, 0, D_AdjustSaveLocation},
   {"Enhanced allmap power up"         ,S_YESNO       ,m_null,G_X,G_Y+3*8, {"map_enhanced_allmap"}},
-  {"Skip QuickSave/Load confirmation" ,S_YESNO       ,m_null,G_X,G_Y+4*8, {"skip_quicksaveload_confirmation"}},
-  {"Enable Time Warping"              ,S_YESNO       ,m_null,G_X,G_Y+5*8, {"enable_time_warping"}},
-  {"Fix Blockmap bug"                 ,S_YESNO       ,m_null,G_X,G_Y+6*8, {"comp_fix_blockmap"}},
+  {"Player map arrow appearance",     S_CHOICE       ,m_null,G_X,G_Y+4*8, {"map_player_arrow_appearance"}, 0, 0, NULL, map_player_arrow_appearance_list},
+  {"Skip QuickSave/Load confirmation" ,S_YESNO       ,m_null,G_X,G_Y+5*8, {"skip_quicksaveload_confirmation"}},
+  {"Enable Time Warping"              ,S_YESNO       ,m_null,G_X,G_Y+6*8, {"enable_time_warping"}},
+  {"Fix Blockmap bug"                 ,S_YESNO       ,m_null,G_X,G_Y+7*8, {"comp_fix_blockmap"}},
 
   {"<- PREV",S_SKIP|S_PREV, m_null,KB_PREV, KB_Y+20*8, {gen_settings1}},
   {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {gen_settings2}},

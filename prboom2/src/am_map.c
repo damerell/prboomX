@@ -124,6 +124,13 @@ const char *map_things_appearance_list[map_things_appearance_max] =
 #endif
 };
 
+map_player_arrow_appearance_t map_player_arrow_appearance;
+const char *map_player_arrow_appearance_list[map_player_arrow_appearance_max] =
+{
+  "classic",
+  "chevron"
+};
+
 // drawing stuff
 #define FB    0
 
@@ -165,18 +172,29 @@ typedef struct
 //   starting from the middle.
 //
 #define R ((8*PLAYERRADIUS)/7)
-mline_t player_arrow[] =
+/* FIXME: should not use hardcoding here */
+mline_t player_arrows[map_player_arrow_appearance_max][7] =
 {
-  { { -R+R/8, 0 }, { R, 0 } }, // -----
-  { { R, 0 }, { R-R/2, R/4 } },  // ----->
-  { { R, 0 }, { R-R/2, -R/4 } },
-  { { -R+R/8, 0 }, { -R-R/8, R/4 } }, // >---->
-  { { -R+R/8, 0 }, { -R-R/8, -R/4 } },
-  { { -R+3*R/8, 0 }, { -R+R/8, R/4 } }, // >>--->
-  { { -R+3*R/8, 0 }, { -R+R/8, -R/4 } }
+    {
+        { { -R+R/8, 0 }, { R, 0 } }, // -----
+        { { R, 0 }, { R-R/2, R/4 } },  // ----->
+        { { R, 0 }, { R-R/2, -R/4 } },
+        { { -R+R/8, 0 }, { -R-R/8, R/4 } }, // >---->
+        { { -R+R/8, 0 }, { -R-R/8, -R/4 } },
+        { { -R+3*R/8, 0 }, { -R+R/8, R/4 } }, // >>--->
+        { { -R+3*R/8, 0 }, { -R+R/8, -R/4 } },
+    },
+    /* JDC: Draw big triangle so it's easier to see */
+    {
+        { { -R+R/8, -3*R/4 }, { R, 0 } },
+        { { -R+R/8, -3*R/4 }, { -R/4, 0 } },
+        { { -R+R/8, 3*R/4 }, { -R/4, 0 } },
+        { { -R+R/8,  3*R/4 }, { R, 0 } }
+    }
 };
 #undef R
-#define NUMPLYRLINES (sizeof(player_arrow)/sizeof(mline_t))
+/* FIXME: hardcoded number of lines in the arrays above */
+unsigned int numplyrlines[] = { 7, 4 };
 
 #define R ((8*PLAYERRADIUS)/7)
 mline_t cheat_player_arrow[] =
@@ -1776,7 +1794,7 @@ static void AM_drawPlayers(void)
     if (ddt_cheating)
       AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, scale, viewangle, mapcolor_sngl, pt.x, pt.y);
     else
-      AM_drawLineCharacter(player_arrow, NUMPLYRLINES, scale, viewangle, mapcolor_sngl, pt.x, pt.y);
+      AM_drawLineCharacter(player_arrows[map_player_arrow_appearance], numplyrlines[map_player_arrow_appearance], scale, viewangle, mapcolor_sngl, pt.x, pt.y);
     return;
   }
 
@@ -1795,7 +1813,7 @@ static void AM_drawPlayers(void)
       else
         AM_SetMPointFloatValue(&pt);
 
-      AM_drawLineCharacter (player_arrow, NUMPLYRLINES, scale, angle,
+      AM_drawLineCharacter (player_arrows[map_player_arrow_appearance], numplyrlines[map_player_arrow_appearance], scale, angle,
           p->powers[pw_invisibility] ? 246 /* *close* to black */
           : mapcolor_plyr[i], //jff 1/6/98 use default color
           pt.x, pt.y);

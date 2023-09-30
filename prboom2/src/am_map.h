@@ -191,4 +191,13 @@ typedef enum
 extern map_things_appearance_t map_things_appearance;
 extern const char *map_things_appearance_list[];
 
+
+typedef enum
+{
+  map_player_arrow_appearance_classic,
+  map_player_arrow_appearance_chevron,
+  map_player_arrow_appearance_max
+} map_player_arrow_appearance_t;
+extern map_player_arrow_appearance_t map_player_arrow_appearance;
+extern const char *map_player_arrow_appearance_list[];
 #endif

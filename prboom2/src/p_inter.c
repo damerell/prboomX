@@ -268,6 +268,7 @@ static void P_GiveCard(player_t *player, card_t card)
 // Rewritten by Lee Killough
 //
 
+extern dboolean allmap_always;
 dboolean P_GivePower(player_t *player, int power)
 {
   static const int tics[NUMPOWERS] = {
@@ -281,7 +282,7 @@ dboolean P_GivePower(player_t *player, int power)
         player->mo->flags |= MF_SHADOW;
         break;
       case pw_allmap:
-        if (player->powers[pw_allmap])
+        if (player->powers[pw_allmap] && !allmap_always)
           return false;
         break;
       case pw_strength:

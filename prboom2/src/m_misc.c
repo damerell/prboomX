@@ -939,6 +939,8 @@ default_t defaults[] =
    def_int,ss_auto},
   {"map_enhanced_allmap", {&map_enhanced_allmap}, {1},0,1,
    def_bool,ss_auto},
+  {"map_player_arrow_appearance", {(int*)&map_player_arrow_appearance}, {map_player_arrow_appearance_max-1},0,map_player_arrow_appearance_max-1,
+   def_int,ss_auto},
 
 
   {"Heads-up display settings",{NULL},{0},UL,UL,def_none,ss_none},

@@ -240,6 +240,7 @@ static void C_jds(char* cmd)
 static void C_platskip(char* cmd)
 {
     plat_skip = !plat_skip;
+    doom_printf("Platform wait skipping %s", plat_skip ? "enabled" : "disabled");
 }
 
 static void C_map(char* cmd)
@@ -501,6 +502,18 @@ static void C_unbind(char* cmd)
     }
 }
 
+extern void AM_Start();
+extern void AM_Stop();
+static void C_mapfollow(char* cmd)
+{
+  if (!(automapmode & am_active)) {
+      automapmode |= am_follow;
+      AM_Start();
+  } else {
+      AM_Stop();
+  }
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -523,6 +536,7 @@ command command_list[] = {
     {"mdk", C_mdk},
     {"bind", C_bind},
     {"unbind", C_unbind},
+    {"mapfollow", C_mapfollow},
 
     /* aliases */
     {"snd", C_sndvol},
