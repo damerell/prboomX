@@ -172,8 +172,12 @@ typedef struct
 //   starting from the middle.
 //
 #define R ((8*PLAYERRADIUS)/7)
-/* FIXME: should not use hardcoding here */
-mline_t player_arrows[map_player_arrow_appearance_max][7] =
+/* FIXME: migrate all this to an initialization function */
+#define NUM_PLAYER_ARROWS (2)
+#define PLAYER_ARROW_MAX_SIZE (7)
+#define PLAYER_ARROW_0_SIZE (7)
+#define PLAYER_ARROW_1_SIZE (4)
+mline_t player_arrows[map_player_arrow_appearance_max][PLAYER_ARROW_MAX_SIZE] =
 {
     {
         { { -R+R/8, 0 }, { R, 0 } }, // -----
@@ -193,8 +197,7 @@ mline_t player_arrows[map_player_arrow_appearance_max][7] =
     }
 };
 #undef R
-/* FIXME: hardcoded number of lines in the arrays above */
-unsigned int numplyrlines[] = { 7, 4 };
+unsigned int numplyrlines[] = { PLAYER_ARROW_0_SIZE, PLAYER_ARROW_1_SIZE };
 
 #define R ((8*PLAYERRADIUS)/7)
 mline_t cheat_player_arrow[] =

@@ -4,6 +4,17 @@
 
 This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrades that I like and you may or may not.
 
+# Installation
+
+* [Latest release](https://github.com/JadingTsunami/prboomX/releases/tag/prboomX-1.0.0)
+* [Development builds](https://github.com/JadingTsunami/prboomX/actions)
+
+Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the binaries for prboomX alongside your `prboom-plus` executable. Run the `prboomX` executable to launch prboomX instead. Your PrBoom-Plus configuration and save data will not be affected; you can run both in parallel.
+
+**Windows users**: You need the dependencies [here](https://github.com/coelckers/prboom-plus/releases/tag/windows_dependencies) for Windows. The DLLs are in the bin/ folder. Copy them somewhere in your PATH or alongside the other DLLs in your PrBoom-Plus/PrBoomX folder.
+
+# Features
+
 * Zip file support
     * Note all WAD/DEH/BEX in the zip will be loaded
 * Drop-down console (default key bind: `~`)
@@ -19,6 +30,7 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
     * Note the order in which content is loaded matters
 * Option to skip QuickSave/QuickLoad confirmation prompt
 * Option to fix the Blockmap bug (uses blockmap bug fix from Terry Hearst, adapted from similar PR for Woof)
+* Option to change player automap arrow to a chevron shape (easier to see direction at a distance)
 * Note-taking console command
     * Jot down quick notes while playtesting. Notes go into a dated text file in the current working directory.
     * Each note lists the time, all loaded WAD files, player position, and an optional user-supplied message on the console.
@@ -64,8 +76,10 @@ This is my own personal fork of PrBoom-Plus. It contains quality-of-play upgrade
 - `give <thing>`
 - `note <message>` (write notes to a dated text file, useful for quick notes while playtesting)
 - `mdk`
+- `plat_skip` (when enabled, press the "use" key to trigger a lift you're standing in to raise immediately)
 - `bind [key] [command]`
 - `unbind [key]`
+- `[config file setting]` (read config file settings from the console)
 
 # Bindable Special Key Names
 
