@@ -173,13 +173,10 @@ typedef struct
 //
 #define R ((8*PLAYERRADIUS)/7)
 /* FIXME: migrate all this to an initialization function */
-#define NUM_PLAYER_ARROWS (2)
-#define PLAYER_ARROW_MAX_SIZE (7)
-#define PLAYER_ARROW_0_SIZE (7)
-#define PLAYER_ARROW_1_SIZE (4)
-mline_t player_arrows[map_player_arrow_appearance_max][PLAYER_ARROW_MAX_SIZE] =
+mline_t* player_arrows[map_player_arrow_appearance_max] =
 {
-    {
+#define PLAYER_ARROW_0_SIZE (7)
+    (mline_t[]){
         { { -R+R/8, 0 }, { R, 0 } }, // -----
         { { R, 0 }, { R-R/2, R/4 } },  // ----->
         { { R, 0 }, { R-R/2, -R/4 } },
@@ -189,7 +186,8 @@ mline_t player_arrows[map_player_arrow_appearance_max][PLAYER_ARROW_MAX_SIZE] =
         { { -R+3*R/8, 0 }, { -R+R/8, -R/4 } },
     },
     /* JDC: Draw big triangle so it's easier to see */
-    {
+#define PLAYER_ARROW_1_SIZE (4)
+    (mline_t[]){
         { { -R+R/8, -3*R/4 }, { R, 0 } },
         { { -R+R/8, -3*R/4 }, { -R/4, 0 } },
         { { -R+R/8, 3*R/4 }, { -R/4, 0 } },
