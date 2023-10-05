@@ -2483,7 +2483,7 @@ void AM_Drawer (void)
   AM_drawWalls();
   AM_drawPlayers();
   AM_drawThings(); //jff 1/5/98 default double IDDT sprite
-  if (selecting_magic_sector && (map_enhanced_allmap && (players+consoleplayer)->powers[pw_allmap])) {
+  if (selecting_magic_sector && (map_enhanced_allmap && (ddt_cheating || (players+consoleplayer)->powers[pw_allmap]))) {
       AM_drawCrosshair(mapcolor_hai2);
 
       fixed_t tmapx = (m_x + m_w/2);
