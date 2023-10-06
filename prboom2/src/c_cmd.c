@@ -514,6 +514,11 @@ static void C_mapfollow(char* cmd)
   }
 }
 
+static void C_complevel(char* cmd)
+{
+    doom_printf("Compatibility level: %d (%s)", compatibility_level, comp_lev_str[compatibility_level]);
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -537,6 +542,7 @@ command command_list[] = {
     {"bind", C_bind},
     {"unbind", C_unbind},
     {"mapfollow", C_mapfollow},
+    {"complevel", C_complevel},
 
     /* aliases */
     {"snd", C_sndvol},

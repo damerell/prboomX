@@ -31,6 +31,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 * Option to skip QuickSave/QuickLoad confirmation prompt
 * Option to fix the Blockmap bug (uses blockmap bug fix from Terry Hearst, adapted from similar PR for Woof)
 * Option to change player automap arrow to a chevron shape (easier to see direction at a distance)
+* [COMPLVL](https://doomwiki.org/wiki/COMPLVL) lump support for supported compatibility levels
 * Note-taking console command
     * Jot down quick notes while playtesting. Notes go into a dated text file in the current working directory.
     * Each note lists the time, all loaded WAD files, player position, and an optional user-supplied message on the console.
@@ -81,6 +82,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `bind [key] [command]`
 - `unbind [key]`
 - `[config file setting]` (read config file settings from the console)
+- `complevel` (show current compatibility level)
 
 # Bindable Special Key Names
 

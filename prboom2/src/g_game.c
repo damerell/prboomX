@@ -378,6 +378,8 @@ static void G_TimeWarpLoadAnchorPoint(int position);
 static void G_TimeWarpReset();
 static void G_TimeWarpTicker();
 
+static int G_GetWADCompatibilityLevel();
+
 static void G_DoSaveGame (dboolean menu);
 
 //e6y: save/restore all data which could be changed by G_ReadDemoHeader
@@ -2577,7 +2579,7 @@ static void G_DoSaveGame (dboolean menu)
               D_AdjustSaveLocation();
           } else {
               FILE *f;
-              char* saveinfo = "saveinfo.txt";
+              const char* saveinfo = "saveinfo.txt";
               int filenamelen = strlen(basesavegame) + strlen(saveinfo) + 2;
               char* filename = malloc(sizeof(char)*(filenamelen));
               snprintf(filename, filenamelen, "%s/%s", basesavegame, saveinfo);
@@ -2841,7 +2843,11 @@ void G_ReloadDefaults(void)
 
   consoleplayer = 0;
 
-  compatibility_level = default_compatibility_level;
+  compatibility_level = G_GetWADCompatibilityLevel();
+
+  if (compatibility_level == -1)
+      compatibility_level = default_compatibility_level;
+
   {
     int i = M_CheckParm("-complevel");
     if (i && (1+i) < myargc) {
@@ -4550,6 +4556,35 @@ void G_CheckDemoContinue(void)
       usergame = true;
     }
   }
+}
+
+//jds
+// COMPLVL Lump support
+static int G_GetWADCompatibilityLevel()
+{
+    int resolved_complevel = -1;
+    int lumpnum = W_CheckNumForName("COMPLVL");
+
+    if (lumpnum != -1) {
+        int size = W_LumpLength(lumpnum);
+        const char *p = W_CacheLumpNum(lumpnum);
+
+        if (size == 7 && !strncasecmp(p, "vanilla", 7)) {
+            if (gamemode == retail || gamemission == chex)
+                resolved_complevel = 3;
+            else if (gamemode == commercial && (gamemission == pack_plut || gamemission == pack_tnt))
+                resolved_complevel = 4;
+            else
+                resolved_complevel = 2;
+        } else if (size == 4 && !strncasecmp(p, "boom", 4)) {
+            resolved_complevel = 9;
+        } else if (size == 3 && !strncasecmp(p, "mbf", 3)) {
+            resolved_complevel = 11;
+        }
+        W_UnlockLumpNum(lumpnum);
+    }
+
+    return resolved_complevel;
 }
 
 //jds

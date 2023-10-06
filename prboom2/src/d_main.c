@@ -1942,9 +1942,6 @@ static void D_DoomMainSetup(void)
 
   // init subsystems
 
-  G_ReloadDefaults();    // killough 3/4/98: set defaults just loaded.
-  // jff 3/24/98 this sets startskill if it was -1
-
 #ifdef GL_DOOM
   // proff 04/05/2000: for GL-specific switches
   gld_InitCommandLine();
@@ -2121,6 +2118,11 @@ static void D_DoomMainSetup(void)
   W_Init(); // CPhipps - handling of wadfiles init changed
 
   lprintf(LO_INFO,"\n");     // killough 3/6/98: add a newline, by popular demand :)
+
+  // Moved after WAD initialization for COMPLVL lump support
+  G_ReloadDefaults();    // killough 3/4/98: set defaults just loaded.
+  // jff 3/24/98 this sets startskill if it was -1
+
 
   // e6y 
   // option to disable automatic loading of dehacked-in-wad lump
