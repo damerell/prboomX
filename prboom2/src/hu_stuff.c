@@ -2884,6 +2884,7 @@ dboolean HU_Responder(event_t *ev)
   const char*   macromessage; // CPhipps - const char*
   dboolean   eatkey = false;
   static dboolean  shiftdown = false;
+  static dboolean  ctrldown = false;
   static dboolean  altdown = false;
   unsigned char   c;
   int     i;
@@ -2903,6 +2904,11 @@ dboolean HU_Responder(event_t *ev)
   else if (ev->data1 == key_alt)
   {
     altdown = ev->type == ev_keydown;
+    return false;
+  }
+  else if (ev->data1 == KEYD_RCTRL)
+  {
+    ctrldown = ev->type == ev_keydown;
     return false;
   }
   else if (ev->data1 == key_backspace)
@@ -3012,6 +3018,9 @@ dboolean HU_Responder(event_t *ev)
                   cmd++;
               }
           }
+      } else if (c == 'U' && ctrldown) {
+          /* special case for ctrl-u to erase line */
+          HUlib_resetIText(&w_console);
       } else {
           if (c >= ' ' && c <= '~') {
               HUlib_addCharToTextLine(&w_console.l, (char) c);
