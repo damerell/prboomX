@@ -210,6 +210,8 @@ int     key_zoomout;
 int     key_chat;
 int     key_console;
 int     key_console_complete;
+int     key_console_history_up;
+int     key_console_history_down;
 int     key_backspace;
 int     key_enter;
 int     key_map_right;

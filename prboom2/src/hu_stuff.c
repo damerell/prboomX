@@ -2995,7 +2995,7 @@ dboolean HU_Responder(event_t *ev)
         console_on = false;
         paused = false;
       } else if (c == key_console_complete) {
-          char* completion = C_CommandComplete(w_console.l.l);
+          const char* completion = C_CommandComplete(w_console.l.l);
           if (completion) {
               HUlib_resetIText(&w_console);
               while (*completion) {
@@ -3003,8 +3003,8 @@ dboolean HU_Responder(event_t *ev)
                   completion++;
               }
           }
-      } else if (c == KEYD_UPARROW || c == KEYD_DOWNARROW) {
-          const char* cmd = C_NavigateCommandHistory((c == KEYD_UPARROW ? -1 : 1));
+      } else if (c == key_console_history_up || c == key_console_history_down) {
+          const char* cmd = C_NavigateCommandHistory((c == key_console_history_up ? -1 : 1));
           if (cmd) {
               HUlib_resetIText(&w_console);
               while (*cmd) {

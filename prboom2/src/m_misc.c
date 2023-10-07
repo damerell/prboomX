@@ -781,10 +781,10 @@ default_t defaults[] =
    0,MAX_KEY,def_key,ss_keys}, // key to cycle to the previous weapon
 
   // killough 2/22/98: screenshot key
-  {"key_screenshot",  {&key_screenshot},      {'*'}            ,
+  {"key_screenshot",  {&key_screenshot},      {'*'},
    0,MAX_KEY,def_key,ss_keys}, // key to take a screenshot
 
-  {"key_console",     {&key_console},         {'~'}            ,
+  {"key_console",     {&key_console},         {'~'},
    0,MAX_KEY,def_key,ss_keys}, // key to toggle console
                                //
   {"key_timewarp_forward",     {&key_timewarp_forward},         {']'},
@@ -794,6 +794,12 @@ default_t defaults[] =
    0,MAX_KEY,def_key,ss_keys}, // key to move forward in time
                                //
   {"key_console_complete",     {&key_console_complete},         {KEYD_TAB},
+   0,MAX_KEY,def_key,ss_keys},
+
+  {"key_console_history_up",   {&key_console_history_up},         {KEYD_UPARROW},
+   0,MAX_KEY,def_key,ss_keys},
+
+  {"key_console_history_down", {&key_console_history_down},         {KEYD_DOWNARROW},
    0,MAX_KEY,def_key,ss_keys},
 
   {"Joystick settings",{NULL},{0},UL,UL,def_none,ss_none},
