@@ -141,6 +141,7 @@ extern int  key_zoomin;
 extern int  key_zoomout;
 extern int  key_chat;
 extern int  key_console;
+extern int  key_console_complete;
 extern int  key_backspace;
 extern int  key_enter;
 extern int  key_help;

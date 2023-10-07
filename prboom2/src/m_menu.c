@@ -2492,19 +2492,20 @@ setup_menu_t keys_settings1[] =  // Key Binding screen strings
 
 setup_menu_t keys_settings_prboomx[] =  // Key Binding screen strings
 {
-  {"PRBOOMX"                ,S_SKIP|S_TITLE,m_null,KB_X   ,KB_Y}    ,
-  {"CONSOLE"                ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 1*8,{&key_console}},
-  {"TIME WARP FORWARD"      ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 2*8,{&key_timewarp_forward}},
-  {"TIME WARP BACKWARD"     ,S_KEY         ,m_scrn,KB_X   ,KB_Y+ 3*8,{&key_timewarp_backward}},
+    {"PRBOOMX"                   ,S_SKIP|S_TITLE,m_null,KB_X   ,KB_Y}     ,
+    {"CONSOLE"                   ,S_KEY         ,m_scrn,KB_X   ,KB_Y+1*8 ,{&key_console}}          ,
+    {"CONSOLE COMMAND COMPLETION",S_KEY         ,m_scrn,KB_X   ,KB_Y+2*8 ,{&key_console_complete}} ,
+    {"TIME WARP FORWARD"         ,S_KEY         ,m_scrn,KB_X   ,KB_Y+3*8 ,{&key_timewarp_forward}} ,
+    {"TIME WARP BACKWARD"        ,S_KEY         ,m_scrn,KB_X   ,KB_Y+4*8 ,{&key_timewarp_backward}},
 
-  {"TAG FINDER (automap)"   ,S_KEY         ,m_map ,KB_X   ,KB_Y+ 18*8,{&key_map_magicsector}},
+    {"TAG FINDER (automap)"      ,S_KEY         ,m_map ,KB_X   ,KB_Y+18*8,{&key_map_magicsector}}  ,
 
-  {"<- PREV"                , S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8,{keys_settings1}}      ,
-  {"NEXT ->"                , S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8,{keys_settings2}}      ,
+    {"<- PREV"                   , S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8,{keys_settings1}}        ,
+    {"NEXT ->"                   , S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8,{keys_settings2}}        ,
 
-  // Final entry
+    // Final entry
 
-  {0,S_SKIP|S_END,m_null}
+    {0,S_SKIP|S_END,m_null}
 };
 
 setup_menu_t keys_settings2[] =  // Key Binding screen strings

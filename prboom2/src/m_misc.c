@@ -787,11 +787,14 @@ default_t defaults[] =
   {"key_console",     {&key_console},         {'~'}            ,
    0,MAX_KEY,def_key,ss_keys}, // key to toggle console
                                //
-  {"key_timewarp_forward",     {&key_timewarp_forward},         {']'}  ,
+  {"key_timewarp_forward",     {&key_timewarp_forward},         {']'},
    0,MAX_KEY,def_key,ss_keys}, // key to move forward in time
                                //
-  {"key_timewarp_backward",     {&key_timewarp_backward},         {'['}  ,
+  {"key_timewarp_backward",     {&key_timewarp_backward},         {'['},
    0,MAX_KEY,def_key,ss_keys}, // key to move forward in time
+                               //
+  {"key_console_complete",     {&key_console_complete},         {KEYD_TAB},
+   0,MAX_KEY,def_key,ss_keys},
 
   {"Joystick settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"use_joystick",{&usejoystick},{0},0,2,

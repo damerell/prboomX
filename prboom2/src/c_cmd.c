@@ -1098,3 +1098,52 @@ void C_LoadSettings()
 
     free(linebuffer);
 }
+
+
+/* Complete a partial command with the nearest match
+ * If successful, returns the string match
+ * Returns NULL if no match was found.
+ */
+const char* C_CommandComplete(const char* partial)
+{
+    /* check order:
+     * 1. Console Commands
+     * 2. Settings
+     * 3. Cheats */
+    int i;
+    int partial_len;
+    cheatseq_t* cht;
+
+    if (partial && *partial) {
+        partial_len = strlen(partial);
+    } else {
+        return NULL;
+    }
+
+    /*         C_ConsoleCheatHandler(cmd) */
+
+    /* console command check */
+    for (i = 0; command_list[i].name; i++) {
+        if (!strncasecmp(command_list[i].name, partial, partial_len)) {
+            return command_list[i].name;
+        }
+    }
+
+    /* settings check */
+    for (i = 0; i < numdefaults; i++) {
+        if ((defaults[i].type != def_none) && !strncasecmp(defaults[i].name, partial, partial_len)) {
+            return defaults[i].name;
+        }
+    }
+
+    /* cheat check */
+    /* ensure cheats are initialized */
+    M_FindCheats(' ');
+    for (cht = cheat; cht->cheat; cht++) {
+        if (cht && cht->cheat && !strncasecmp(cht->cheat, partial, partial_len)) {
+            return cht->cheat;
+        }
+    }
+
+    return NULL;
+}

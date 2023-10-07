@@ -16,6 +16,7 @@ dboolean C_RegisterBind(int keycode, char* cmd, evtype_t type);
 dboolean C_UnregisterBind(int keycode, evtype_t type);
 void C_SaveSettings();
 void C_LoadSettings();
+const char* C_CommandComplete(const char* partial);
 
 typedef struct _command {
     const char* name;
