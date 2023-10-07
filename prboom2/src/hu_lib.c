@@ -503,8 +503,14 @@ void HUlib_addMessageToMText(hu_mtext_t* m, const char* prefix, const char* msg)
     while (*prefix)
       HUlib_addCharToTextLine(&m->l[m->cl], *(prefix++));
 
-  while (*msg)
-    HUlib_addCharToTextLine(&m->l[m->cl], *(msg++));
+  while (*msg) {
+      if (*msg == '\n') {
+          HUlib_addCharToTextLine(&m->l[m->cl], ' ');
+          msg++;
+      } else {
+          HUlib_addCharToTextLine(&m->l[m->cl], *(msg++));
+      }
+  }
 }
 
 //
