@@ -20,6 +20,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 * Drop-down console (default key bind: `~`)
     * 16-command history, use up/down arrows
     * Cheats work in the console
+    * Tab completion for commands/settings/cheats
     * Command listing below
 * "Buddha" cheat similar to GZDoom
     * Also adds regeneration if you stand still, similar to modern FPS games
