@@ -84,6 +84,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `unbind [key]`
 - `[config file setting]` (read config file settings from the console)
 - `complevel` (show current compatibility level)
+- `complevel N` (change compatibility level to N where N is 0-17)
 
 # Bindable Special Key Names
 

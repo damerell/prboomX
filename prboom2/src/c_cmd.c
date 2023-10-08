@@ -516,7 +516,22 @@ static void C_mapfollow(char* cmd)
 
 static void C_complevel(char* cmd)
 {
-    doom_printf("Compatibility level: %d (%s)", compatibility_level, comp_lev_str[compatibility_level]);
+    int newcl;
+    if (cmd && *cmd) {
+        char* endptr = cmd;
+        int clarg = -1;
+        clarg = strtoul(cmd, &endptr, 0);
+        if (cmd != endptr)
+            newcl = clarg;
+    }
+
+    if (newcl > 0 && newcl < MAX_COMPATIBILITY_LEVEL) {
+        char cl_change[8];
+        snprintf(cl_change, 8, "TNTCL%02d", newcl);
+        C_SendCheat(cl_change);
+    } else { 
+        doom_printf("Compatibility level: %d (%s)", compatibility_level, comp_lev_str[compatibility_level]);
+    }
 }
 
 command command_list[] = {
