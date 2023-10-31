@@ -85,6 +85,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `[config file setting]` (read config file settings from the console)
 - `complevel` (show current compatibility level)
 - `complevel N` (change compatibility level to N where N is 0-17)
+- `switchweapon N` (switch weapon to N where N 0-8 or weapon name)
 
 # Bindable Special Key Names
 
