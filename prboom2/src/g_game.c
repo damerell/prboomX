@@ -5007,7 +5007,9 @@ void G_TimeWarpBackward()
      * mark it in the timeline so we can return
      */
     int timewarp_position_save = timewarp_position;
-    if (timewarp_future_limit == WRAP_PLUS(timewarp_position, 1, TIMEWARP_SLOTS) && timewarp_ticks > TIMEWARP_NEAR_WARP_START) {
+    if (timewarp_future_limit == WRAP_PLUS(timewarp_position, 1, TIMEWARP_SLOTS)
+            && timewarp_ticks > TIMEWARP_NEAR_WARP_START
+            && players[consoleplayer].playerstate != PST_DEAD) {
         G_TimeWarpSetNextAnchorPoint();
     }
     timewarp_position = timewarp_position_save;
@@ -5015,11 +5017,8 @@ void G_TimeWarpBackward()
     if (timewarp_position != timewarp_past_limit) {
         if (timewarp_ticks < TIMEWARP_NEAR_WARP_START) {
             timewarp_position = WRAP_MINUS(timewarp_position, 1, TIMEWARP_SLOTS);
-            G_DoLoadTimeWarp(timewarp_position);
-        } else {
-            G_DoLoadTimeWarp(timewarp_position);
-            timewarp_position = WRAP_MINUS(timewarp_position, 1, TIMEWARP_SLOTS);
         }
+        G_DoLoadTimeWarp(timewarp_position);
     } else {
         G_DoLoadTimeWarp(timewarp_position);
     } 
@@ -5045,7 +5044,9 @@ static void G_TimeWarpTicker()
     timewarp_ticks++;
     if (timewarp_ticks > TIMEWARP_TICK_LIMIT) {
         timewarp_ticks = 0;
-        G_TimeWarpSetNextAnchorPoint();
+        /* don't store dead player timewarp ticks */
+        if (players[consoleplayer].playerstate != PST_DEAD)
+            G_TimeWarpSetNextAnchorPoint();
     }
     tick_b = SDL_GetTicks();
 

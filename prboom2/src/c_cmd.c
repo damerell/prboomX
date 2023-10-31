@@ -38,6 +38,169 @@ static int MouseNameToMouseCode(const char* name);
 
 dboolean c_drawpsprites = true;
 
+/* Parses arguments out from a string using spaces as separators.
+ * Returns the number of arguments successfully parsed.
+ *
+ * WARNING: This will MODIFY the input string (similar to strtok)!
+ *
+ * Parameters:
+ *  arg = string to parse out arguments from
+ *  arglist = array of lenth max_args to deposit args into
+ *  max_args = array length of arglist and the max number of args to parse.
+ *
+ *  if more arguments are found beyond max_args, the last element in arglist
+ *  contains the remainder of the string, with any trailing separators removed.
+ */
+static int C_ParseArgs(char* arg, char** arglist, const int max_args)
+{
+    int cc = 0; /* current char */
+    int ca = 0; /* current arg  */
+    int total_len = 0;
+
+    /* bail out on bad inputs */
+    if (!arg || !arglist || max_args <= 0) return 0;
+
+    total_len = strlen(arg);
+
+    for (cc = 0; cc < total_len && ca < max_args;) {
+        /* fast forward over leading separators */
+        while (cc < total_len && isspace(arg[cc]))
+            cc++;
+
+        /* we are at a token */
+        if (arg[cc])
+            arglist[ca++] = &arg[cc];
+
+        /* move forward until we hit a separator */
+        while (cc < total_len && !isspace(arg[cc]))
+            cc++;
+
+        /* we hit a separator OR already at null terminator in
+         * which case this does nothing */
+        if (ca < max_args)
+            arg[cc++] = '\0';
+        else if (isspace(arg[total_len-1])) {
+            /* else, if the end of the string contains separators,
+             * strip them out. otherwise, we're done */
+            int i = total_len-1;
+
+            while (isspace(arg[i]) && i >= cc)
+                i--;
+
+            arg[i+1] = '\0';
+        }
+
+    }
+
+    return ca;
+}
+
+static char* C_StripSpaces(char* s)
+{
+    char* end;
+    char* start;
+    int len;
+
+    if (!s) return NULL;
+
+    start = s;
+    len = strlen(s);
+
+    if (len > 0) {
+        end = start + strlen(s) - 1;
+        if (end < start) end = start;
+
+        while (start < end && isspace(*start)) start++;
+        while (end >= start && isspace(*end)) end--;
+
+        *++end = '\0';
+    }
+
+    return start;
+}
+
+static int C_SendCheatKey(int key)
+{
+  static uint_64_t sr;
+  static char argbuf[CHEAT_ARGS_MAX+1], *arg;
+  static int init, argsleft, cht;
+  int i, ret, matchedbefore;
+
+  // If we are expecting arguments to a cheat
+  // (e.g. idclev), put them in the arg buffer
+
+  if (argsleft)
+    {
+      *arg++ = tolower(key);             // store key in arg buffer
+      if (!--argsleft)                   // if last key in arg list,
+        cheat[cht].func(argbuf);         // process the arg buffer
+      return 1;                          // affirmative response
+    }
+
+  key = tolower(key) - 'a';
+  if (key < 0 || key >= 32)              // ignore most non-alpha cheat letters
+    {
+      sr = 0;        // clear shift register
+      return 0;
+    }
+
+  if (!init)                             // initialize aux entries of table
+    {
+      init = 1;
+      for (i=0;cheat[i].orig_cheat;i++)
+        {
+          uint_64_t c=0, m=0;
+          const char *p;
+
+          for (p=cheat[i].orig_cheat; *p; p++)
+            {
+              unsigned key = tolower(*p)-'a';  // convert to 0-31
+              if (key >= 32)            // ignore most non-alpha cheat letters
+                continue;
+              c = (c<<5) + key;         // shift key into code
+              m = (m<<5) + 31;          // shift 1's into mask
+            }
+          cheat[i].code = c;            // code for this cheat key
+          cheat[i].mask = m;            // mask for this cheat key
+        }
+    }
+
+  sr = (sr<<5) + key;                   // shift this key into shift register
+
+  for (matchedbefore = ret = i = 0; cheat[i].orig_cheat; i++)
+    if ((sr & cheat[i].mask) == cheat[i].code &&      // if match found
+        !(cheat[i].when & not_dm   && deathmatch) &&  // and if cheat allowed
+        !(cheat[i].when & not_coop && netgame && !deathmatch) &&
+        !(cheat[i].when & not_demo && (demorecording || demoplayback)) &&
+        !(cheat[i].when & not_menu && menuactive) &&
+        !(cheat[i].when & not_deh  && M_CheckParm("-deh"))) {
+      if (cheat[i].arg < 0)               // if additional args are required
+        {
+          cht = i;                        // remember this cheat code
+          arg = argbuf;                   // point to start of arg buffer
+          argsleft = -cheat[i].arg;       // number of args expected
+          ret = 1;                        // responder has eaten key
+        }
+      else
+        if (!matchedbefore)               // allow only one cheat at a time
+          {
+            matchedbefore = ret = 1;      // responder has eaten key
+            cheat[i].func(cheat[i].arg);  // call cheat handler
+          }
+    }
+  return ret;
+}
+
+static int C_SendCheatConsole(const char* cheat)
+{
+    int ch = 0;
+    C_SendCheatKey(' ');
+    for (int i=0; i < strlen(cheat); i++) {
+        ch |= C_SendCheatKey(tolower(cheat[i]));
+    }
+    return ch;
+}
+
 static int C_SendCheat(const char* cheat)
 {
     int ch = 0;
@@ -92,36 +255,7 @@ static void C_resurrect(char* cmd)
 
 static void C_god(char* cmd)
 {
-    if (plyr->playerstate == PST_DEAD)
-    {
-        signed int an;
-        mapthing_t mt = {0};
-
-        P_MapStart();
-        mt.x = plyr->mo->x >> FRACBITS;
-        mt.y = plyr->mo->y >> FRACBITS;
-        mt.angle = (plyr->mo->angle + ANG45/2)*(uint_64_t)45/ANG45;
-        mt.type = consoleplayer + 1;
-        mt.options = 1; // arbitrary non-zero value
-        P_SpawnPlayer(consoleplayer, &mt);
-
-        // spawn a teleport fog
-        an = plyr->mo->angle >> ANGLETOFINESHIFT;
-        P_SpawnMobj(plyr->mo->x+20*finecosine[an], plyr->mo->y+20*finesine[an], plyr->mo->z, MT_TFOG);
-        S_StartSound(plyr, sfx_slop);
-        P_MapEnd();
-    }
-    plyr->cheats ^= CF_GODMODE;
-    if (plyr->cheats & CF_GODMODE)
-    {
-        if (plyr->mo)
-            plyr->mo->health = god_health;  // Ty 03/09/98 - deh
-
-        plyr->health = god_health;
-        plyr->message = s_STSTR_DQDON; // Ty 03/27/98 - externalized
-    }
-    else
-        plyr->message = s_STSTR_DQDOFF; // Ty 03/27/98 - externalized
+    C_SendCheatConsole("iddqd");
 }
 
 static void C_nextlevel(char* cmd)
@@ -143,10 +277,15 @@ static void C_printcmd(char* cmd)
 static void C_kill(char* cmd)
 {
     int i;
+    int killcount=0;
+    thinker_t *currentthinker = NULL;
+    extern void A_PainDie(mobj_t *);
+    char* end;
+
     if (!cmd) return;
     /* strip spaces */
     while(isspace(*cmd)) cmd++;
-    char* end = &cmd[strlen(cmd)];
+    end = &cmd[strlen(cmd)];
     while(isspace(*(end-1))) end--;
 
     /* find actor matching cmd */
@@ -158,10 +297,6 @@ static void C_kill(char* cmd)
         doom_printf("Actor type %s not found.", cmd);
         return;
     }
-
-    int killcount=0;
-    thinker_t *currentthinker = NULL;
-    extern void A_PainDie(mobj_t *);
 
     P_MapStart();
     while ((currentthinker = P_NextThinker(currentthinker,th_all)) != NULL) {
@@ -178,7 +313,6 @@ static void C_kill(char* cmd)
     // killough 3/22/98: make more intelligent about plural
     // Ty 03/27/98 - string(s) *not* externalized
     doom_printf("%d thing%s of type %s Killed", killcount, killcount==1 ? "" : "s", ActorNames[i]);
-
 }
 
 static void C_quit(char* cmd)
@@ -259,14 +393,14 @@ static void C_map(char* cmd)
     if (buf[bufwr+1]) {
         char clev[18];
         snprintf(clev, 18, "IDCLEV%s", &buf[bufwr+1]);
-        C_SendCheat(clev);
+        C_SendCheatConsole(clev);
     }
 }
 
 typedef struct
 {
-    char* give;
-    char* cheat;
+    const char* give;
+    const char* cheat;
 } cheat_map_t;
 
 /* map of give to cheat */
@@ -318,7 +452,7 @@ static void C_give(char* cmd)
     while (giveme) {
         for (i = 0; cheatmap[i].cheat; i++) {
             if (strcasecmp(giveme, cheatmap[i].give) == 0) {
-                C_SendCheat(cheatmap[i].cheat);
+                C_SendCheatConsole(cheatmap[i].cheat);
                 break;
             }
         }
@@ -398,10 +532,16 @@ static void C_mdk(char* cmd)
 
 static void C_bind(char* cmd)
 {
+    extern setup_menu_t* keys_settings[];
     char* key_to_bind;
     char* bind_command;
     int keycode_to_bind;
     evtype_t bind_type;
+    setup_menu_t* keys_to_check = NULL;
+    const char* already_bound_to = NULL;
+    dboolean already_bound = false;
+    int i;
+
 
     if (!cmd || !*cmd) {
         doom_printf("bind [key] [command]");
@@ -443,12 +583,6 @@ static void C_bind(char* cmd)
         doom_printf("Bind failed; invalid key: %s", key_to_bind);
         return;
     }
-
-    extern setup_menu_t* keys_settings[];
-    setup_menu_t* keys_to_check = NULL;
-    const char* already_bound_to = NULL;
-    dboolean already_bound = false;
-    int i;
 
     /* see if already bound and warn the user */
     for (i = 0; !already_bound && keys_settings[i]; i++) {
@@ -528,9 +662,84 @@ static void C_complevel(char* cmd)
     if (newcl > 0 && newcl < MAX_COMPATIBILITY_LEVEL) {
         char cl_change[8];
         snprintf(cl_change, 8, "TNTCL%02d", newcl);
-        C_SendCheat(cl_change);
+        C_SendCheatConsole(cl_change);
     } else { 
         doom_printf("Compatibility level: %d (%s)", compatibility_level, comp_lev_str[compatibility_level]);
+    }
+}
+
+typedef struct weapon_names_s {
+    const char* name;
+    unsigned int slot;
+} weapon_names_t;
+
+static weapon_names_t weapon_names[] = {
+    {"fist", 0},
+
+    {"pistol", 1},
+
+    {"shotgun", 2},
+
+    {"supershotgun", 8},
+    {"super shotgun", 8},
+    {"ssg", 8},
+    {"shotgun2", 8},
+
+    {"chaingun", 3},
+    {"minigun", 3},
+
+    {"rocket launcher", 4},
+    {"rocketlauncher", 4},
+    {"rl", 4},
+
+    {"plasma rifle", 5},
+    {"plasmarifle", 5},
+    {"plasmagun", 5},
+    {"plasma gun", 5},
+
+    {"bfg", 6},
+    {"bfg9000", 6},
+    {"bfg-9000", 6},
+    {"bfg 9000", 6},
+
+    {"chainsaw", 7},
+    {NULL, NUMWEAPONS}
+};
+
+static void C_switchweapon(char* cmd)
+{
+    int newweapon = NUMWEAPONS;
+    if (cmd && *cmd) {
+        unsigned int weaponarg = NUMWEAPONS;
+        char* endptr = cmd;
+        weaponarg = strtoul(cmd, &endptr, 0);
+        if (cmd != endptr)
+            newweapon = weaponarg;
+    }
+
+    /* try string matching */
+    if (newweapon == NUMWEAPONS) {
+        int i;
+        char* cmd_arg = C_StripSpaces(cmd);
+        for (i = 0; weapon_names[i].name; i++) {
+            if (strcasecmp(weapon_names[i].name,cmd_arg) == 0) {
+                newweapon = weapon_names[i].slot;
+                break;
+            }
+        }
+    }
+
+    /* newweapon unsigned so it must be >= 0 */
+    if (newweapon == plyr->readyweapon) {
+        doom_printf("Weapon %u already selected", newweapon);
+    } else if (newweapon < NUMWEAPONS) {
+        if (plyr->weaponowned[newweapon]) {
+            plyr->pendingweapon = newweapon;
+        } else {
+            doom_printf("Weapon %u not owned", newweapon);
+        }
+    } else {
+        doom_printf("Invalid weapon: %s", cmd);
     }
 }
 
@@ -558,6 +767,7 @@ command command_list[] = {
     {"unbind", C_unbind},
     {"mapfollow", C_mapfollow},
     {"complevel", C_complevel},
+    {"switchweapon", C_switchweapon},
 
     /* aliases */
     {"snd", C_sndvol},
@@ -856,7 +1066,7 @@ static const int keycodes[] = {
     0 /* "null" terminator */
 };
 
-static char* mousenames[] = {
+static const char* mousenames[] = {
     "MOUSE1",
     "MOUSE2",
     "MOUSE3",
@@ -996,6 +1206,9 @@ dboolean C_UnregisterBind(int keycode, evtype_t type)
 
 dboolean C_ExecuteBind(int keycode, evtype_t evtype)
 {
+    keybind_t* kb = keybind_head;
+    dboolean executed = false;
+
     if (netgame) {
         doom_printf("Binds not allowed during net play.");
         return false;
@@ -1004,8 +1217,6 @@ dboolean C_ExecuteBind(int keycode, evtype_t evtype)
         return false;
     }
 
-    keybind_t* kb = keybind_head;
-    dboolean executed = false;
     while (kb) {
         if (kb->keycode == keycode && kb->type == evtype) {
             C_ConsoleCommand(kb->cmd);
@@ -1022,6 +1233,7 @@ dboolean C_Responder(event_t* ev)
     if (ev && (ev->type == ev_keydown || ev->type == ev_mouse)) { 
         C_ExecuteBind(ev->data1, ev->type);
     }
+
     /* key binds never consume the key */
     return false;
 }
@@ -1108,7 +1320,9 @@ void C_LoadSettings()
             }
         }
         fclose (bindfile);
-        C_printcmd("");
+        /* flush console display */
+        linebuffer[0] = '\0';
+        C_printcmd(linebuffer);
     }
 
     free(linebuffer);
