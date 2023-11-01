@@ -650,7 +650,7 @@ static void C_mapfollow(char* cmd)
 
 static void C_complevel(char* cmd)
 {
-    int newcl;
+    int newcl = -1;
     if (cmd && *cmd) {
         char* endptr = cmd;
         int clarg = -1;
