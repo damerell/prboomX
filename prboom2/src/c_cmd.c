@@ -526,7 +526,9 @@ static void C_mdk(char* cmd)
 {
     extern void P_LineAttack(mobj_t* t1, angle_t angle, fixed_t distance, fixed_t slope, int damage);
     fixed_t bulletslope = finetangent[(ANG90 - plyr->mo->pitch) >> ANGLETOFINESHIFT];
+    P_MapStart();
     P_LineAttack(plyr->mo, plyr->mo->angle, MISSILERANGE, bulletslope, 1000000);
+    P_MapEnd();
 }
 
 
