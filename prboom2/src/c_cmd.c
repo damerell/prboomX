@@ -710,7 +710,7 @@ static weapon_names_t weapon_names[] = {
 
 static void C_switchweapon(char* cmd)
 {
-    int newweapon = NUMWEAPONS;
+    unsigned int newweapon = NUMWEAPONS;
     if (cmd && *cmd) {
         unsigned int weaponarg = NUMWEAPONS;
         char* endptr = cmd;
