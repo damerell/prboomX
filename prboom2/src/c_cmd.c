@@ -21,6 +21,7 @@
 #include "i_system.h"
 #include "m_menu.h"
 #include "m_misc.h"
+#include "am_map.h"
 
 #include <time.h>
 
@@ -745,6 +746,20 @@ static void C_switchweapon(char* cmd)
     }
 }
 
+static void C_automapwarp(char* cmd)
+{
+    if (automapmode & am_active) {
+        fixed_t tmapx;
+        fixed_t tmapy;
+        AM_GetCrosshairPosition(&tmapx, &tmapy);
+        P_MapStart();
+        P_TeleportMove(plyr->mo,tmapx,tmapy,false);
+        P_MapEnd();
+    } else {
+        doom_printf("Must be in automap mode to use this command.");
+    }
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -770,6 +785,7 @@ command command_list[] = {
     {"mapfollow", C_mapfollow},
     {"complevel", C_complevel},
     {"switchweapon", C_switchweapon},
+    {"am_warpto", C_automapwarp},
 
     /* aliases */
     {"snd", C_sndvol},

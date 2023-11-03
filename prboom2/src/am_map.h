@@ -88,6 +88,8 @@ void AM_setMarkParams(int num);
 
 void AM_SetResolution(void);
 
+void AM_GetCrosshairPosition(fixed_t* x, fixed_t* y);
+
 typedef struct
 {
  fixed_t x,y;

@@ -2543,3 +2543,11 @@ void AM_Drawer (void)
 
   AM_drawMarks();
 }
+
+void AM_GetCrosshairPosition(fixed_t* x, fixed_t* y)
+{
+    if (!x || !y) return;
+
+    *x = (m_x + m_w/2) << FRACTOMAPBITS;
+    *y = (m_y + m_h/2) << FRACTOMAPBITS;
+}

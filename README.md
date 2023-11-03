@@ -86,6 +86,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `complevel` (show current compatibility level)
 - `complevel N` (change compatibility level to N where N is 0-17)
 - `switchweapon N` (switch weapon to N where N 0-8 or weapon name)
+- `am_warpto` (warp/teleport to automap crosshair position)
 
 # Bindable Special Key Names
 
