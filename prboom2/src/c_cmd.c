@@ -774,8 +774,10 @@ static void C_internal_summon(char* cmd, dboolean friendly)
 
     cmd = C_StripSpaces(cmd);
 
-    if (!cmd)
+    if (!cmd) {
+        doom_printf("Specify an actor type to summon.");
         return;
+    }
 
     for (i=0; ActorNames[i]; i++)
         if (strcasecmp(cmd,ActorNames[i]) == 0)

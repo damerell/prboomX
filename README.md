@@ -87,8 +87,8 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `complevel N` (change compatibility level to N where N is 0-17)
 - `switchweapon N` (switch weapon to N where N 0-8 or weapon name)
 - `am_warpto` (warp/teleport to automap crosshair position)
-- `am_summon` (summon enemy/thing/etc. to automap crosshair position)
-- `am_summonfriend` (summon friendly enemy/thing/etc. to automap crosshair position)
+- `am_summon <class>` (summon enemy/thing/etc. to automap crosshair position)
+- `am_summonfriend <class>` (summon friendly enemy/thing/etc. to automap crosshair position)
 
 # Bindable Special Key Names
 
