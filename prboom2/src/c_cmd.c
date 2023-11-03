@@ -760,6 +760,62 @@ static void C_automapwarp(char* cmd)
     }
 }
 
+static void C_internal_summon(char* cmd, dboolean friendly)
+{
+    int i;
+    mobj_t* newmobj;
+    fixed_t x;
+    fixed_t y;
+
+    if (!(automapmode & am_active)) {
+        doom_printf("Must be in automap mode to use this command.");
+        return;
+    }
+
+    cmd = C_StripSpaces(cmd);
+
+    if (!cmd)
+        return;
+
+    for (i=0; ActorNames[i]; i++)
+        if (strcasecmp(cmd,ActorNames[i]) == 0)
+            break;
+
+    if (!ActorNames[i]) {
+        doom_printf("Actor type %s not found.", cmd);
+        return;
+    }
+
+    AM_GetCrosshairPosition(&x, &y);
+    P_MapStart();
+
+    newmobj = P_SpawnMobj(x, y, 0, i);
+
+    /* don't count summoned objects toward kills */
+    newmobj->flags |= MF_RESSURECTED;
+
+    if (friendly)
+        newmobj->flags |= MF_FRIEND;
+
+
+    P_UpdateThinker(&newmobj->thinker);
+
+    /* telefrag anything in this spot */
+    P_TeleportMove(newmobj, newmobj->x, newmobj->y, false);
+
+    P_MapEnd();
+}
+
+static void C_automapsummon(char* cmd)
+{
+    C_internal_summon(cmd, false);
+}
+
+static void C_automapsummonfriend(char* cmd)
+{
+    C_internal_summon(cmd, true);
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -786,6 +842,8 @@ command command_list[] = {
     {"complevel", C_complevel},
     {"switchweapon", C_switchweapon},
     {"am_warpto", C_automapwarp},
+    {"am_summon", C_automapsummon},
+    {"am_summonfriend", C_automapsummonfriend},
 
     /* aliases */
     {"snd", C_sndvol},
