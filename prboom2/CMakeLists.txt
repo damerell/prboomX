@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
 project("PrBoomX"
-    VERSION 2.6.2
+    VERSION 2.7.0
     HOMEPAGE_URL "https://github.com/JadingTsunami/prboomX")
 
 # Set a default build type if none was specified
