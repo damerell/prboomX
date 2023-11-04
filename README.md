@@ -86,7 +86,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `mapfollow` (start/stop the automap in follow mode)
 - `complevel` (show current compatibility level)
 - `complevel N` (change compatibility level to N where N is 0-17)
-- `switchweapon N` (switch weapon to N where N 0-8 or weapon name)
+- `switchweapon N` (switch weapon to N where N 0-8 or [weapon name](https://github.com/JadingTsunami/prboomX#weapon-names))
 - `am_warpto` (warp/teleport to automap crosshair position)
 - `am_summon <class>` (summon [class](https://github.com/JadingTsunami/prboomX#actor-names) enemy/thing/etc. to automap crosshair position)
 - `am_summonfriend <class>` (summon [class](https://github.com/JadingTsunami/prboomX#actor-names) friendly enemy/thing/etc. to automap crosshair position)
