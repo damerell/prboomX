@@ -75,12 +75,12 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `toggle_psprites` (turns off player weapon sprites, good for screenshots)
 - `snd_sfxvolume` / `snd`
 - `snd_musicvolume` / `mus`
-- `kill <class>`
+- `kill <class>` (see also [Actor Names](https://github.com/JadingTsunami/prboomX#actor-names))
 - `give <thing>`
 - `note <message>` (write notes to a dated text file, useful for quick notes while playtesting)
 - `mdk`
 - `plat_skip` (when enabled, press the "use" key to trigger a lift you're standing in to raise immediately)
-- `bind [key] [command]`
+- `bind [key] [command]` (bind any [key](https://github.com/JadingTsunami/prboomX#bindable-special-key-names) to any one or more console commands)
 - `unbind [key]`
 - `[config file setting]` (read config file settings from the console)
 - `mapfollow` (start/stop the automap in follow mode)
@@ -88,11 +88,302 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `complevel N` (change compatibility level to N where N is 0-17)
 - `switchweapon N` (switch weapon to N where N 0-8 or weapon name)
 - `am_warpto` (warp/teleport to automap crosshair position)
-- `am_summon <class>` (summon enemy/thing/etc. to automap crosshair position)
-- `am_summonfriend <class>` (summon friendly enemy/thing/etc. to automap crosshair position)
+- `am_summon <class>` (summon [class](https://github.com/JadingTsunami/prboomX#actor-names) enemy/thing/etc. to automap crosshair position)
+- `am_summonfriend <class>` (summon [class](https://github.com/JadingTsunami/prboomX#actor-names) friendly enemy/thing/etc. to automap crosshair position)
 - `freeze` (toggle freeze mode on/off)
 
-# Bindable Special Key Names
+# Reference Material
+
+## Actor Names
+
+The relevant actor names are the same as [ZDoom](https://zdoom.org/wiki/Classes:Doom).
+
+### Base Doom Actors
+
+* DoomPlayer
+* ZombieMan
+* ShotgunGuy
+* Archvile
+* ArchvileFire
+* Revenant
+* RevenantTracer
+* RevenantTracerSmoke
+* Fatso
+* FatShot
+* ChaingunGuy
+* DoomImp
+* Demon
+* Spectre
+* Cacodemon
+* BaronOfHell
+* BaronBall
+* HellKnight
+* LostSoul
+* SpiderMastermind
+* Arachnotron
+* Cyberdemon
+* PainElemental
+* WolfensteinSS
+* CommanderKeen
+* BossBrain
+* BossEye
+* BossTarget
+* SpawnShot
+* SpawnFire
+* ExplosiveBarrel
+* DoomImpBall
+* CacodemonBall
+* Rocket
+* PlasmaBall
+* BFGBall
+* ArachnotronPlasma
+* BulletPuff
+* Blood
+* TeleportFog
+* ItemFog
+* TeleportDest
+* BFGExtra
+* GreenArmor
+* BlueArmor
+* HealthBonus
+* ArmorBonus
+* BlueCard
+* RedCard
+* YellowCard
+* YellowSkull
+* RedSkull
+* BlueSkull
+* Stimpack
+* Medikit
+* Soulsphere
+* InvulnerabilitySphere
+* Berserk
+* BlurSphere
+* RadSuit
+* Allmap
+* Infrared
+* Megasphere
+* Clip
+* ClipBox
+* RocketAmmo
+* RocketBox
+* Cell
+* CellPack
+* Shell
+* ShellBox
+* Backpack
+* BFG9000
+* Chaingun
+* Chainsaw
+* RocketLauncher
+* PlasmaRifle
+* Shotgun
+* SuperShotgun
+* TechLamp
+* TechLamp2
+* Column
+* TallGreenColumn
+* ShortGreenColumn
+* TallRedColumn
+* ShortRedColumn
+* SkullColumn
+* HeartColumn
+* EvilEye
+* FloatingSkull
+* TorchTree
+* BlueTorch
+* GreenTorch
+* RedTorch
+* ShortBlueTorch
+* ShortGreenTorch
+* ShortRedTorch
+* Stalagtite
+* TechPillar
+* CandleStick
+* Candelabra
+* BloodyTwitch
+* Meat2
+* Meat3
+* Meat4
+* Meat5
+* NonsolidMeat2
+* NonsolidMeat4
+* NonsolidMeat3
+* NonsolidMeat5
+* NonsolidTwitch
+* DeadCacodemon
+* DeadMarine
+* DeadZombieMan
+* DeadDemon
+* DeadLostSoul
+* DeadDoomImp
+* DeadShotgunGuy
+* GibbedMarine
+* GibbedMarineExtra
+* HeadsOnAStick
+* Gibs
+* HeadOnAStick
+* HeadCandles
+* DeadStick
+* LiveStick
+* BigTree
+* BurningBarrel
+* HangNoGuts
+* HangBNoBrain
+* HangTLookingDown
+* HangTSkull
+* HangTLookingUp
+* HangTNoBrain
+* ColonGibs
+* SmallBloodPool
+* BrainStem
+
+### Boom/MBF Additions
+
+* PointPusher
+* PointPuller
+* MBFHelperDog
+* PlasmaBall1
+* PlasmaBall2
+* EvilSceptre
+* UnholyBible
+* MusicChanger
+* Deh_Actor_145
+* Deh_Actor_146
+* Deh_Actor_147
+* Deh_Actor_148
+* Deh_Actor_149
+
+### DEHEXTRA Additions
+
+* Deh_Actor_150
+* Deh_Actor_151
+* Deh_Actor_152
+* Deh_Actor_153
+* Deh_Actor_154
+* Deh_Actor_155
+* Deh_Actor_156
+* Deh_Actor_157
+* Deh_Actor_158
+* Deh_Actor_159
+* Deh_Actor_160
+* Deh_Actor_161
+* Deh_Actor_162
+* Deh_Actor_163
+* Deh_Actor_164
+* Deh_Actor_165
+* Deh_Actor_166
+* Deh_Actor_167
+* Deh_Actor_168
+* Deh_Actor_169
+* Deh_Actor_170
+* Deh_Actor_171
+* Deh_Actor_172
+* Deh_Actor_173
+* Deh_Actor_174
+* Deh_Actor_175
+* Deh_Actor_176
+* Deh_Actor_177
+* Deh_Actor_178
+* Deh_Actor_179
+* Deh_Actor_180
+* Deh_Actor_181
+* Deh_Actor_182
+* Deh_Actor_183
+* Deh_Actor_184
+* Deh_Actor_185
+* Deh_Actor_186
+* Deh_Actor_187
+* Deh_Actor_188
+* Deh_Actor_189
+* Deh_Actor_190
+* Deh_Actor_191
+* Deh_Actor_192
+* Deh_Actor_193
+* Deh_Actor_194
+* Deh_Actor_195
+* Deh_Actor_196
+* Deh_Actor_197
+* Deh_Actor_198
+* Deh_Actor_199
+* Deh_Actor_200
+* Deh_Actor_201
+* Deh_Actor_202
+* Deh_Actor_203
+* Deh_Actor_204
+* Deh_Actor_205
+* Deh_Actor_206
+* Deh_Actor_207
+* Deh_Actor_208
+* Deh_Actor_209
+* Deh_Actor_210
+* Deh_Actor_211
+* Deh_Actor_212
+* Deh_Actor_213
+* Deh_Actor_214
+* Deh_Actor_215
+* Deh_Actor_216
+* Deh_Actor_217
+* Deh_Actor_218
+* Deh_Actor_219
+* Deh_Actor_220
+* Deh_Actor_221
+* Deh_Actor_222
+* Deh_Actor_223
+* Deh_Actor_224
+* Deh_Actor_225
+* Deh_Actor_226
+* Deh_Actor_227
+* Deh_Actor_228
+* Deh_Actor_229
+* Deh_Actor_230
+* Deh_Actor_231
+* Deh_Actor_232
+* Deh_Actor_233
+* Deh_Actor_234
+* Deh_Actor_235
+* Deh_Actor_236
+* Deh_Actor_237
+* Deh_Actor_238
+* Deh_Actor_239
+* Deh_Actor_240
+* Deh_Actor_241
+* Deh_Actor_242
+* Deh_Actor_243
+* Deh_Actor_244
+* Deh_Actor_245
+* Deh_Actor_246
+* Deh_Actor_247
+* Deh_Actor_248
+* Deh_Actor_249
+
+## Weapon Names
+
+Sub-bullets list accepted alternate names for weapons.
+
+* fist
+* chainsaw
+* pistol
+* shotgun
+* supershotgun
+    * super shotgun
+    * ssg
+    * shotgun2
+* chaingun
+    * minigun
+* rocket launcher
+    * rocketlauncher
+    * rl
+* plasma rifle
+    * plasmarifle
+    * plasmagun
+    * plasma gun
+* bfg
+    * bfg9000
+    * bfg-9000
+    * bfg 9000
+
+## Bindable Special Key Names
 
 * RIGHTARROW
 * LEFTARROW
