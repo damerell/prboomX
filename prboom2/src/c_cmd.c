@@ -762,10 +762,12 @@ static void C_automapwarp(char* cmd)
 
 static void C_internal_summon(char* cmd, dboolean friendly)
 {
-    int i;
-    mobj_t* newmobj;
-    fixed_t x;
-    fixed_t y;
+    int i = 0;
+    mobj_t* newmobj = NULL;
+    subsector_t* subsec = NULL;
+    fixed_t x = 0;
+    fixed_t y = 0;
+    fixed_t z = 0;
 
     if (!(automapmode & am_active)) {
         doom_printf("Must be in automap mode to use this command.");
@@ -789,9 +791,14 @@ static void C_internal_summon(char* cmd, dboolean friendly)
     }
 
     AM_GetCrosshairPosition(&x, &y);
+
     P_MapStart();
 
-    newmobj = P_SpawnMobj(x, y, 0, i);
+    subsec = R_PointInSubsector(x,y);
+    if (subsec && subsec->sector)
+        z = subsec->sector->floorheight;
+
+    newmobj = P_SpawnMobj(x, y, z, i);
 
     /* don't count summoned objects toward kills */
     newmobj->flags |= MF_RESSURECTED;
