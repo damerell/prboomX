@@ -818,6 +818,13 @@ static void C_automapsummonfriend(char* cmd)
     C_internal_summon(cmd, true);
 }
 
+static void C_freeze(char* cmd)
+{
+    extern dboolean freeze_mode;
+    freeze_mode = !freeze_mode;
+    doom_printf("Freeze mode %s", freeze_mode ? "on" : "off");
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -846,6 +853,7 @@ command command_list[] = {
     {"am_warpto", C_automapwarp},
     {"am_summon", C_automapsummon},
     {"am_summonfriend", C_automapsummonfriend},
+    {"freeze", C_freeze},
 
     /* aliases */
     {"snd", C_sndvol},
