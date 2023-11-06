@@ -760,7 +760,7 @@ static void C_automapwarp(char* cmd)
     }
 }
 
-static void C_internal_summon(char* cmd, dboolean friendly)
+static void C_internal_summon(char* cmd, dboolean friendly, dboolean am_pos)
 {
     int i = 0;
     mobj_t* newmobj = NULL;
@@ -769,7 +769,7 @@ static void C_internal_summon(char* cmd, dboolean friendly)
     fixed_t y = 0;
     fixed_t z = 0;
 
-    if (!(automapmode & am_active)) {
+    if (!(automapmode & am_active) && am_pos) {
         doom_printf("Must be in automap mode to use this command.");
         return;
     }
@@ -790,7 +790,16 @@ static void C_internal_summon(char* cmd, dboolean friendly)
         return;
     }
 
-    AM_GetCrosshairPosition(&x, &y);
+    if (am_pos) {
+        AM_GetCrosshairPosition(&x, &y);
+    } else {
+        x = plyr->mo->x;
+        y = plyr->mo->y;
+        z = plyr->mo->z;
+        
+        x += FixedMul((finecosine[(plyr->mo->angle)>>ANGLETOFINESHIFT]), (mobjinfo[i].radius + plyr->mo->radius));
+        y += FixedMul((finesine[(plyr->mo->angle)>>ANGLETOFINESHIFT]), (mobjinfo[i].radius + plyr->mo->radius));
+    }
 
     P_MapStart();
 
@@ -798,31 +807,47 @@ static void C_internal_summon(char* cmd, dboolean friendly)
     if (subsec && subsec->sector)
         z = subsec->sector->floorheight;
 
-    newmobj = P_SpawnMobj(x, y, z, i);
+    if (mobjinfo[i].flags & MF_MISSILE) {
+        P_SpawnPlayerMissile(plyr->mo,i);
+    } else {
+        newmobj = P_SpawnMobj(x, y, z, i);
 
-    /* don't count summoned objects toward kills */
-    newmobj->flags |= MF_RESSURECTED;
+        /* don't count summoned objects toward kills */
+        newmobj->flags |= MF_RESSURECTED;
 
-    if (friendly)
-        newmobj->flags |= MF_FRIEND;
+        if (friendly)
+            newmobj->flags |= MF_FRIEND;
 
 
-    P_UpdateThinker(&newmobj->thinker);
+        P_UpdateThinker(&newmobj->thinker);
 
-    /* telefrag anything in this spot */
-    P_TeleportMove(newmobj, newmobj->x, newmobj->y, false);
+        /* telefrag anything in this spot */
+        P_TeleportMove(newmobj, newmobj->x, newmobj->y, false);
+    }
+
+    doom_printf("Summoned %s at (%d,%d,%d)", ActorNames[i],x >> FRACBITS,y >> FRACBITS,z >> FRACBITS);
 
     P_MapEnd();
 }
 
 static void C_automapsummon(char* cmd)
 {
-    C_internal_summon(cmd, false);
+    C_internal_summon(cmd, false, true);
 }
 
 static void C_automapsummonfriend(char* cmd)
 {
-    C_internal_summon(cmd, true);
+    C_internal_summon(cmd, true, true);
+}
+
+static void C_summon(char* cmd)
+{
+    C_internal_summon(cmd, false, false);
+}
+
+static void C_summonfriend(char* cmd)
+{
+    C_internal_summon(cmd, true, false);
 }
 
 static void C_freeze(char* cmd)
@@ -860,6 +885,8 @@ command command_list[] = {
     {"am_warpto", C_automapwarp},
     {"am_summon", C_automapsummon},
     {"am_summonfriend", C_automapsummonfriend},
+    {"summon", C_summon},
+    {"summonfriend", C_summonfriend},
     {"freeze", C_freeze},
 
     /* aliases */

@@ -90,6 +90,8 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `am_warpto` (warp/teleport to automap crosshair position)
 - `am_summon <class>` (summon [class](https://github.com/JadingTsunami/prboomX#actor-names) enemy/thing/etc. to automap crosshair position)
 - `am_summonfriend <class>` (summon [class](https://github.com/JadingTsunami/prboomX#actor-names) friendly enemy/thing/etc. to automap crosshair position)
+- `summon <class>` (summon [class](https://github.com/JadingTsunami/prboomX#actor-names) enemy/thing/etc. to player's aim point position)
+- `summonfriend <class>` (summon [class](https://github.com/JadingTsunami/prboomX#actor-names) friendly enemy/thing/etc. to player's aim point position)
 - `freeze` (toggle freeze mode on/off)
 
 # Reference Material
