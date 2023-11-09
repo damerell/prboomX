@@ -919,7 +919,7 @@ static void C_set(char* cmd)
     status = C_CvarCreateOrOverwrite(key, svalue, type, 0);
 
     if (status == CVAR_STATUS_OK)
-        doom_printf("Set CVAR %s=%s (type %d)", key, svalue, type);
+        doom_printf("Set CVAR %s=%s", key, svalue);
     else
         doom_printf("Error setting CVAR %s: %s", key, C_CvarErrorToString(status));
 }

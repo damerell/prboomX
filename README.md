@@ -97,7 +97,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 
 # Default CVARs
 
-CVARs are saved on exit. `unset` a CVAR to remove it from your personal config. `set` a CVAR to 1 to enable it.
+Changes to any CVARs in this list are saved on exit. `set` to 0 or `unset` a CVAR to remove it from your personal config. `set` a CVAR to 1 to enable it.
 
 * `allmap_always` (default: off) - Always have the Computer Area Map powerup.
 * `regenerate` (default: off) - Regenerate health when standing still similar to modern FPS games.
