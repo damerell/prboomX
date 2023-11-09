@@ -97,6 +97,7 @@ void C_CvarInit()
     if (!initialized) {
         initialized = true;
         C_CvarCreateOrOverwrite("allmap_always", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
+        C_CvarCreateOrOverwrite("plat_skip", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
         C_CvarCreateOrOverwrite("regenerate", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
     }
 }

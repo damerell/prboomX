@@ -370,8 +370,6 @@ static void C_musvol(char* cmd)
     doom_printf("Music volume: %d/15", snd_MusicVolume);
 }
 
-extern dboolean plat_skip;
-dboolean allmap_always = false;
 static void C_jds(char* cmd)
 {
     extern dboolean buddha;
@@ -380,14 +378,14 @@ static void C_jds(char* cmd)
     jds = !jds;
     if (jds) {
         buddha = true;
-        plat_skip = true;
         had_allmap = plyr->powers[pw_allmap];
         plyr->powers[pw_allmap] = true;
-        allmap_always = true;
+        C_CvarSet("allmap_always");
+        C_CvarSet("plat_skip");
     } else {
         buddha = false;
-        plat_skip = false;
-        allmap_always = false;
+        C_CvarClear("plat_skip");
+        C_CvarClear("allmap_always");
         plyr->powers[pw_allmap] = had_allmap;
     }
     doom_printf("JDS mode %s", jds ? "on" : "off");
@@ -395,8 +393,9 @@ static void C_jds(char* cmd)
 
 static void C_platskip(char* cmd)
 {
-    plat_skip = !plat_skip;
-    doom_printf("Platform wait skipping %s", plat_skip ? "enabled" : "disabled");
+    dboolean plat_skip = C_CvarIsSet("plat_skip", NULL);
+    plat_skip ? C_CvarClear("plat_skip") : C_CvarSet("plat_skip");
+    doom_printf("Platform wait skipping %s", !plat_skip ? "enabled" : "disabled");
 }
 
 static void C_map(char* cmd)

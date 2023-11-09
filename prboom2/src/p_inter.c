@@ -41,6 +41,7 @@
 #include "d_deh.h"  // Ty 03/22/98 - externalized strings
 #include "p_tick.h"
 #include "lprintf.h"
+#include "c_cvar.h"
 
 #include "p_inter.h"
 #include "p_enemy.h"
@@ -268,7 +269,6 @@ static void P_GiveCard(player_t *player, card_t card)
 // Rewritten by Lee Killough
 //
 
-extern dboolean allmap_always;
 dboolean P_GivePower(player_t *player, int power)
 {
   static const int tics[NUMPOWERS] = {
@@ -282,7 +282,7 @@ dboolean P_GivePower(player_t *player, int power)
         player->mo->flags |= MF_SHADOW;
         break;
       case pw_allmap:
-        if (player->powers[pw_allmap] && !allmap_always)
+        if (player->powers[pw_allmap] && !C_CvarIsSet("allmap_always", NULL))
           return false;
         break;
       case pw_strength:

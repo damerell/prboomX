@@ -2372,6 +2372,9 @@ static void D_DoomMainSetup(void)
       G_CheckDemoContinue();
     }
 
+  /* initialize console and cvars before loading the map */
+  C_LoadSettings();
+
   if (slot && ++slot < myargc)
     {
       slot = atoi(myargv[slot]);        // killough 3/16/98: add slot info
@@ -2396,8 +2399,6 @@ static void D_DoomMainSetup(void)
 
   // do not try to interpolate during timedemo
   M_ChangeUncappedFrameRate();
-
-  C_LoadSettings();
 }
 
 //

@@ -87,6 +87,7 @@
 #include "e6y.h"//e6y
 #include "statdump.h"
 #include "SDL.h"
+#include "c_cvar.h"
 
 #include "m_io.h"
 
@@ -1343,7 +1344,6 @@ void G_Ticker (void)
 // Can when a player completes a level.
 //
 
-extern dboolean allmap_always;
 static void G_PlayerFinishLevel(int player)
 {
   player_t *p = &players[player];
@@ -1354,7 +1354,7 @@ static void G_PlayerFinishLevel(int player)
   p->fixedcolormap = 0;   // cancel ir gogles
   p->damagecount = 0;     // no palette changes
   p->bonuscount = 0;
-  if (allmap_always)
+  if (C_CvarIsSet("allmap_always", NULL))
       p->powers[pw_allmap] = true;
 }
 
@@ -1413,7 +1413,7 @@ void G_PlayerReborn (int player)
     int cheats = p->cheats;
     memset (p, 0, sizeof(*p));
     p->cheats = cheats;
-    if (allmap_always)
+    if (C_CvarIsSet("allmap_always", NULL))
         p->powers[pw_allmap] = true;
   }
 

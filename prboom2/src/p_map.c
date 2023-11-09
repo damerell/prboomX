@@ -50,6 +50,7 @@
 #include "g_overflow.h"
 #include "hu_tracers.h"
 #include "e6y.h"//e6y
+#include "c_cvar.h"
 
 static mobj_t    *tmthing;
 static fixed_t   tmx;
@@ -1822,7 +1823,6 @@ dboolean PTR_NoWayTraverse(intercept_t* in)
   );
 }
 
-dboolean plat_skip = false;
 //
 // P_UseLines
 // Looks for special lines in front of the player to activate.
@@ -1856,7 +1856,7 @@ void P_UseLines (player_t*  player)
       S_StartSound (usething, sfx_noway);
 
   /* JDS: check if we have plat-raise on space */
-  if (plat_skip) {
+  if (C_CvarIsSet("plat_skip", NULL)) {
       struct msecnode_s* ts = player->mo->touching_sectorlist;
       sector_t* s = ts->m_sector;
       while (s) {
