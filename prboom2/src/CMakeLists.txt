@@ -176,6 +176,8 @@ set(COMMON_SRC
     z_zone.h
     c_cmd.h
     c_cmd.c
+    c_cvar.h
+    c_cvar.c
     zip/zip.h
     zip/zip.c
 )

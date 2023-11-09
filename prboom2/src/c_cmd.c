@@ -1,3 +1,23 @@
+/*
+ * PrBoomX: PrBoomX is a fork of PrBoom-Plus with quality-of-play upgrades. 
+ *
+ * Copyright (C) 2023  JadingTsunami
+ * 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
 #include "c_cmd.h"
 #include "doomstat.h"
 #include "g_game.h"
@@ -22,6 +42,7 @@
 #include "m_menu.h"
 #include "m_misc.h"
 #include "am_map.h"
+#include "c_cvar.h"
 
 #include <time.h>
 
@@ -458,7 +479,7 @@ static void C_give(char* cmd)
             }
         }
         if (!cheatmap[i].cheat) {
-            C_ConsolePrintf("Did not find give cheat: %s", giveme);
+            doom_printf("Did not find give cheat: %s", giveme);
         }
         giveme = strtok(NULL, " ");
     }
@@ -825,9 +846,9 @@ static void C_internal_summon(char* cmd, dboolean friendly, dboolean am_pos)
         P_TeleportMove(newmobj, newmobj->x, newmobj->y, false);
     }
 
-    doom_printf("Summoned %s at (%d,%d,%d)", ActorNames[i],x >> FRACBITS,y >> FRACBITS,z >> FRACBITS);
-
     P_MapEnd();
+
+    doom_printf("Summoned %s at (%d,%d,%d)", ActorNames[i],x >> FRACBITS,y >> FRACBITS,z >> FRACBITS);
 }
 
 static void C_automapsummon(char* cmd)
@@ -855,6 +876,64 @@ static void C_freeze(char* cmd)
     extern dboolean freeze_mode;
     freeze_mode = !freeze_mode;
     doom_printf("Freeze mode %s", freeze_mode ? "on" : "off");
+}
+
+static void C_set(char* cmd)
+{
+    char* args[2];
+    float fvalue;
+    int ivalue;
+    char* key = NULL;
+    char* svalue = NULL;
+    char* endptr = NULL;
+    char* endarg = NULL;
+    cvartype_t type = CVAR_TYPE_STRING;
+    cvarstatus_t status;
+
+    int num_args = C_ParseArgs(cmd, args, 2);
+
+    if (num_args < 2) {
+        doom_printf("Usage: set <variable> <value>");
+        return;
+    }
+
+    key = args[0];
+    svalue = C_StripSpaces(args[1]);
+
+    endarg = svalue + strlen(svalue);
+
+    /* need to infer variable type */
+    ivalue = strtol(svalue, &endptr, 0);
+
+    if (endarg == endptr) {
+        type = CVAR_TYPE_INT;
+    } else {
+        fvalue = strtof(svalue, &endptr);
+
+        if (endarg == endptr) {
+            /* it's a float */
+            type = CVAR_TYPE_FLOAT;
+        }
+    }
+
+    /* it's a string */
+    status = C_CvarCreateOrOverwrite(key, svalue, type, 0);
+
+    if (status == CVAR_STATUS_OK)
+        doom_printf("Set CVAR %s=%s (type %d)", key, svalue, type);
+    else
+        doom_printf("Error setting CVAR %s: %s", key, C_CvarErrorToString(status));
+}
+
+static void C_unset(char* cmd)
+{
+    char* key = C_StripSpaces(cmd);
+    cvarstatus_t s = C_CvarDelete(key);
+
+    if (s != CVAR_STATUS_OK)
+        doom_printf("Error: %s %s", key, C_CvarErrorToString(s));
+    else
+        doom_printf("Deleted CVAR %s", key);
 }
 
 command command_list[] = {
@@ -888,6 +967,8 @@ command command_list[] = {
     {"summon", C_summon},
     {"summonfriend", C_summonfriend},
     {"freeze", C_freeze},
+    {"set", C_set},
+    {"unset", C_unset},
 
     /* aliases */
     {"snd", C_sndvol},
@@ -1012,12 +1093,40 @@ static dboolean C_ConsoleSettingHandler(char* cmd)
     return found;
 }
 
+static dboolean C_ConsoleCvarHandler(char* cmd)
+{
+    dboolean ret = false;
+
+    if (C_CvarExists(cmd)) {
+        switch (C_CvarGetType(cmd, NULL)) {
+            case CVAR_TYPE_INT:
+                doom_printf("(CVAR) %s is %d", cmd, C_CvarGetAsInt(cmd, NULL));
+                ret = true;
+                break;
+            case CVAR_TYPE_FLOAT:
+                doom_printf("(CVAR) %s is %f", cmd, C_CvarGetAsFloat(cmd, NULL));
+                ret = true;
+                break;
+            case CVAR_TYPE_STRING:
+                doom_printf("(CVAR) %s is \"%s\"", cmd, C_CvarGetAsString(cmd, NULL));
+                ret = true;
+                break;
+            default:
+                /* do nothing, should not happen */
+                break;
+        }
+    }
+
+    return ret;
+}
+
 void C_ConsoleCommand(char* cmd)
 {
     if(!cmd || !cmd[0]) return;
 
     if (C_ConsoleCommandHandler(cmd) ||
             C_ConsoleSettingHandler(cmd) ||
+            C_ConsoleCvarHandler(cmd) ||
             C_ConsoleCheatHandler(cmd)
             ) {
         C_AddCommandToHistory(cmd);
@@ -1041,6 +1150,7 @@ const char* C_NavigateCommandHistory(int direction)
     return command_history[command_rdptr];
 }
 
+/* print to console but NOT the player */
 void C_ConsolePrintf(const char *s, ...)
 {
     va_list v;
@@ -1413,6 +1523,9 @@ void C_SaveSettings()
             }
             kb = kb->next;
         }
+
+        C_CvarExportToFile(bindfile);
+
         fclose(bindfile);
     }
 }
@@ -1421,6 +1534,8 @@ void C_LoadSettings()
 {
     FILE* bindfile = NULL;
     char* linebuffer = malloc(sizeof(char)*CONSOLE_CONFIG_LINE_MAX);
+
+    C_CvarInit();
 
     bindfile = M_fopen(C_GetConsoleSettingsFile(), "r");
     if (bindfile) {
@@ -1494,5 +1609,6 @@ const char* C_CommandComplete(const char* partial)
         }
     }
 
-    return NULL;
+    /* CVAR completion returns null on failure */
+    return C_CvarComplete(partial);
 }
