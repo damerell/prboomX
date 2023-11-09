@@ -1354,7 +1354,7 @@ static void G_PlayerFinishLevel(int player)
   p->fixedcolormap = 0;   // cancel ir gogles
   p->damagecount = 0;     // no palette changes
   p->bonuscount = 0;
-  if (C_CvarIsSet("allmap_always", NULL))
+  if (C_CvarIsSet("allmap_always"))
       p->powers[pw_allmap] = true;
 }
 
@@ -1413,7 +1413,7 @@ void G_PlayerReborn (int player)
     int cheats = p->cheats;
     memset (p, 0, sizeof(*p));
     p->cheats = cheats;
-    if (C_CvarIsSet("allmap_always", NULL))
+    if (C_CvarIsSet("allmap_always"))
         p->powers[pw_allmap] = true;
   }
 

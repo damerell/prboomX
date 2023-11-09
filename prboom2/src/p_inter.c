@@ -282,7 +282,7 @@ dboolean P_GivePower(player_t *player, int power)
         player->mo->flags |= MF_SHADOW;
         break;
       case pw_allmap:
-        if (player->powers[pw_allmap] && !C_CvarIsSet("allmap_always", NULL))
+        if (player->powers[pw_allmap] && !C_CvarIsSet("allmap_always"))
           return false;
         break;
       case pw_strength:

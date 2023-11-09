@@ -23,7 +23,6 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
     * Tab completion for commands/settings/cheats
     * Command listing below
 * "Buddha" cheat similar to GZDoom
-    * Also adds regeneration if you stand still, similar to modern FPS games
 * Targeted massacre cheat: `tntsem`
     * Kills only monsters currently targeting the player
 * Optional uncapped framerate limiting
@@ -93,6 +92,16 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `summon <class>` (summon [class](https://github.com/JadingTsunami/prboomX#actor-names) enemy/thing/etc. to player's aim point position)
 - `summonfriend <class>` (summon [class](https://github.com/JadingTsunami/prboomX#actor-names) friendly enemy/thing/etc. to player's aim point position)
 - `freeze` (toggle freeze mode on/off)
+- `set [variable] [value]` (set or create CVAR with given value)
+- `unset [variable]` (delete CVAR)
+
+# Default CVARs
+
+CVARs are saved on exit. `unset` a CVAR to remove it from your personal config. `set` a CVAR to 1 to enable it.
+
+* `allmap_always` (default: off) - Always have the Computer Area Map powerup.
+* `regenerate` (default: off) - Regenerate health when standing still similar to modern FPS games.
+* `plat_skip` (default: off) - Platform wait skipping when use key is pressed.
 
 # Reference Material
 

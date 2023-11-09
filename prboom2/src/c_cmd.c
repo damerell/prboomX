@@ -393,7 +393,7 @@ static void C_jds(char* cmd)
 
 static void C_platskip(char* cmd)
 {
-    dboolean plat_skip = C_CvarIsSet("plat_skip", NULL);
+    dboolean plat_skip = C_CvarIsSet("plat_skip");
     plat_skip ? C_CvarClear("plat_skip") : C_CvarSet("plat_skip");
     doom_printf("Platform wait skipping %s", !plat_skip ? "enabled" : "disabled");
 }

@@ -329,15 +329,12 @@ void C_CvarExportToFile(FILE* f)
  *   and
  *  is a "nonzero"/non-null value, or is no-value type
  */
-dboolean C_CvarIsSet(const char* key, cvarstatus_t* status)
+dboolean C_CvarIsSet(const char* key)
 {
     cvarstatus_t s;
     cvar_t* cvar;
 
     cvar = C_CvarFind(key, &s);
-
-    if (status)
-        *status = s;
 
     return cvar && cvar->is_set;
 }

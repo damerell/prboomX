@@ -51,6 +51,7 @@
 #include "r_demo.h"
 #include "g_overflow.h"
 #include "e6y.h"//e6y
+#include "c_cvar.h"
 
 // [FG] colored blood and gibs
 dboolean colored_blood;
@@ -793,8 +794,7 @@ void P_MobjThinker (mobj_t* mobj)
 
   static unsigned int regen = 0;
 #define REGEN_STARTUP (35*2)
-  extern dboolean is_buddha();
-  if((mobj == players[consoleplayer].mo) && is_buddha()) {
+  if((mobj == players[consoleplayer].mo) && C_CvarIsSet("regenerate")) {
       if(mobj->momx == 0 && mobj->momy == 0) {
           regen++;
           if(players[consoleplayer].health < 100 && (regen > REGEN_STARTUP) && (regen % 6 == 0)) {

@@ -62,7 +62,7 @@ void C_CvarExportToFile(FILE* f);
  *   and
  *  is a "nonzero"/non-null value, or is no-value type
  */
-dboolean C_CvarIsSet(const char* key, cvarstatus_t* status);
+dboolean C_CvarIsSet(const char* key);
 
 /* Set/Clear a CVAR (boolean flag), create if it does not exist */
 cvarstatus_t C_CvarSet(const char* key);

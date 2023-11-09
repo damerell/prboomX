@@ -1856,7 +1856,7 @@ void P_UseLines (player_t*  player)
       S_StartSound (usething, sfx_noway);
 
   /* JDS: check if we have plat-raise on space */
-  if (C_CvarIsSet("plat_skip", NULL)) {
+  if (C_CvarIsSet("plat_skip")) {
       struct msecnode_s* ts = player->mo->touching_sectorlist;
       sector_t* s = ts->m_sector;
       while (s) {
