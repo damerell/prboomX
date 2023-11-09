@@ -23,6 +23,9 @@
 
 #include "doomtype.h"
 #include "d_event.h"
+#include "hu_stuff.h"
+
+#define CONSOLE_LINE_LENGTH_MAX (HU_MAXLINELENGTH)
 
 void C_ConsoleCommand(char* cmd);
 const char* C_NavigateCommandHistory(int direction);

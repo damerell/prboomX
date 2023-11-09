@@ -26,6 +26,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <math.h>
+#include "c_cmd.h"
 
 typedef struct cvar_s {
     char* key;
@@ -459,6 +460,16 @@ const char* C_CvarComplete(const char* partial)
 {
     int i;
     int partial_len;
+    /* because this handler can send back commands
+     * and not just references, it can send a reference
+     * to a static completion buffer also.
+     */
+    dboolean set_cmd = false;
+    dboolean unset_cmd = false;
+    static char* completion_buffer = NULL;
+
+    if (!completion_buffer)
+        completion_buffer = malloc(sizeof(char)*(CONSOLE_LINE_LENGTH_MAX+1));
 
     if (partial && *partial) {
         partial_len = strlen(partial);
@@ -466,10 +477,28 @@ const char* C_CvarComplete(const char* partial)
         return NULL;
     }
 
+    if (strncasecmp(partial, "set ", 4) == 0) {
+        set_cmd = true;
+        partial += 4;
+        partial_len -= 4;
+    } else if (strncasecmp(partial, "unset ", 6) == 0) {
+        unset_cmd = true;
+        partial += 6;
+        partial_len -= 6;
+    }
+
     for (i = 0; i < 256; i++) {
         if (cvar_map[i] &&
-            !strncasecmp(cvar_map[i]->key, partial, partial_len)) {
-            return cvar_map[i]->key;
+            strncasecmp(cvar_map[i]->key, partial, partial_len) == 0) {
+            if (set_cmd) {
+                snprintf(completion_buffer, CONSOLE_LINE_LENGTH_MAX, "set %s", cvar_map[i]->key);
+                return completion_buffer;
+            } else if (unset_cmd) {
+                snprintf(completion_buffer, CONSOLE_LINE_LENGTH_MAX, "unset %s", cvar_map[i]->key);
+                return completion_buffer;
+            } else {
+                return cvar_map[i]->key;
+            }
         }
     }
 
