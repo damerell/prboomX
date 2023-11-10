@@ -73,6 +73,7 @@ const char* cvarstatus_error_strings[] =
     "Invalid CVAR type",
     "Invalid CVAR value",
     "Wrong CVAR type supplied",
+    "CVAR already exists",
     "CVAR not found",
     NULL
 };
@@ -97,12 +98,12 @@ void C_CvarInit()
 
     if (!initialized) {
         initialized = true;
-        C_CvarCreateOrOverwrite("allmap_always", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
-        C_CvarCreateOrOverwrite("plat_skip", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
-        C_CvarCreateOrOverwrite("regenerate", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
-        C_CvarCreateOrOverwrite("hudadd_showfps", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
-        C_CvarCreateOrOverwrite("showfps", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
-        C_CvarCreateOrOverwrite("r_drawplayersprites", "1", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("allmap_always", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("plat_skip", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("regenerate", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("hudadd_showfps", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("showfps", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("r_drawplayersprites", "1", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
     }
 }
 
@@ -264,6 +265,25 @@ cvarstatus_t C_CvarCreateOrOverwrite(const char* key, const char* value, cvartyp
     }
 
     return CVAR_STATUS_OK;
+}
+
+cvarstatus_t C_CvarCreate(const char* key, const char* value, cvartype_t type, cvarflags_t flags)
+{
+    cvarstatus_t status;
+    cvar_t* cvar;
+    uint8_t hash;
+    char c;
+
+    if (key)
+        for (c = *key; c; c++)
+            c = tolower(c);
+
+    cvar = C_CvarFind(key, &status);
+
+    if (cvar)
+        return CVAR_STATUS_ALREADY_EXISTS;
+    else
+        return C_CvarCreateOrOverwrite(key, value, type, flags);
 }
 
 cvarstatus_t C_CvarDelete(const char* key)

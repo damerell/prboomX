@@ -38,6 +38,7 @@ typedef enum cvarstatus_e {
     CVAR_STATUS_INVALID_VALUE,
     CVAR_STATUS_WRONG_TYPE,
     CVAR_STATUS_KEY_NOT_FOUND,
+    CVAR_STATUS_ALREADY_EXISTS,
     CVAR_STATUS_MAX
 } cvarstatus_t;
 
@@ -74,6 +75,9 @@ char* C_CvarGetAsString(const char* key, cvarstatus_t* status);
 
 /* type is changed if it's something else */
 cvarstatus_t C_CvarCreateOrOverwrite(const char* key, const char* value, cvartype_t type, cvarflags_t flags);
+
+/* does NOT overwrite if exists; returns failure status */
+cvarstatus_t C_CvarCreate(const char* key, const char* value, cvartype_t type, cvarflags_t flags);
 cvarstatus_t C_CvarDelete(const char* key);
 
 const char* C_CvarComplete(const char* partial);

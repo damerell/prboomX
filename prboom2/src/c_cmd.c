@@ -1533,8 +1533,6 @@ void C_LoadSettings()
     FILE* bindfile = NULL;
     char* linebuffer = malloc(sizeof(char)*CONSOLE_CONFIG_LINE_MAX);
 
-    C_CvarInit();
-
     bindfile = M_fopen(C_GetConsoleSettingsFile(), "r");
     if (bindfile) {
         while (!feof(bindfile)) {
@@ -1558,9 +1556,10 @@ void C_LoadSettings()
         C_printcmd(linebuffer);
     }
 
+    C_CvarInit();
+
     free(linebuffer);
 }
-
 
 /* Complete a partial command with the nearest match
  * If successful, returns the string match
