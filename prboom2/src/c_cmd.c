@@ -58,8 +58,6 @@ static char console_message[HU_MSGWIDTH];
 static int KeyNameToKeyCode(const char* name);
 static int MouseNameToMouseCode(const char* name);
 
-dboolean c_drawpsprites = true;
-
 /* Parses arguments out from a string using spaces as separators.
  * Returns the number of arguments successfully parsed.
  *
@@ -344,8 +342,9 @@ static void C_quit(char* cmd)
 
 static void C_togglepsprites(char* cmd)
 {
-    c_drawpsprites = !c_drawpsprites;
-    doom_printf("Draw player sprites %s", (c_drawpsprites ? "on" : "off"));
+    dboolean draw = C_CvarIsSet("r_drawplayersprites");
+    draw ? C_CvarClear("r_drawplayersprites") : C_CvarSet("r_drawplayersprites");
+    doom_printf("Draw player sprites %s", (!draw ? "on" : "off"));
 }
 
 static void C_sndvol(char* cmd)

@@ -46,5 +46,4 @@ typedef struct _command {
     void (*func)(char*);
 } command;
 
-extern dboolean c_drawpsprites;
 #endif

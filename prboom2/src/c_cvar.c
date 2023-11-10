@@ -102,6 +102,7 @@ void C_CvarInit()
         C_CvarCreateOrOverwrite("regenerate", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
         C_CvarCreateOrOverwrite("hudadd_showfps", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
         C_CvarCreateOrOverwrite("showfps", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
+        C_CvarCreateOrOverwrite("r_drawplayersprites", "1", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
     }
 }
 

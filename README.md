@@ -104,6 +104,7 @@ Changes to any CVARs in this list are saved on exit. `set` to 0 or `unset` a CVA
 * `plat_skip` (default: off) - Platform wait skipping when use key is pressed.
 * `hudadd_showfps` (default: off) - Instead of game speed, show FPS above the small status hud with kills, items and secrets.
 * `showfps` (default: off) - Show current FPS in the upper-right corner.
+* `r_drawplayersprites` (default: on) - Same meaning as the same-named [GZDoom CVAR](https://zdoom.org/wiki/CVARs:Display#r_drawplayersprites)
 
 # Reference Material
 
