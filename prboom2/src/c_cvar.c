@@ -271,7 +271,6 @@ cvarstatus_t C_CvarCreate(const char* key, const char* value, cvartype_t type, c
 {
     cvarstatus_t status;
     cvar_t* cvar;
-    uint8_t hash;
     char c;
 
     if (key)
