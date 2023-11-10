@@ -55,6 +55,7 @@
 #include "g_overflow.h"
 #include "m_cheat.h"
 #include "c_cmd.h"
+#include "c_cvar.h"
 
 // global heads up display controls
 
@@ -77,6 +78,9 @@ int hud_num;
 // CPhipps - changed to ST_TY
 // proff - changed to 200-ST_HEIGHT for stretching
 #define HU_TITLEY ((200-ST_HEIGHT) - 1 - hu_font[0].height)
+
+#define HU_FPSX (320 - 8*hu_font2['A'-HU_FONTSTART].width)
+#define HU_FPSY (1 * hu_font['A'-HU_FONTSTART].height + 1)
 
 //jff 2/16/98 add coord text widget coordinates
 // proff - changed to SCREENWIDTH to 320 for stretching
@@ -166,6 +170,7 @@ static hu_textline_t  w_weapon; //jff 2/16/98 new weapon widget for hud
 static hu_textline_t  w_keys;   //jff 2/16/98 new keys widget for hud
 static hu_textline_t  w_gkeys;  //jff 3/7/98 graphic keys widget for hud
 static hu_textline_t  w_monsec; //jff 2/16/98 new kill/secret widget for hud
+static hu_textline_t  w_hudfps; //jds hud fps widget
 static hu_mtext_t     w_rtext;  //jff 2/26/98 text message refresh widget
 static hu_mtext_t     w_consoletext;  //jds console message widget
 
@@ -461,8 +466,7 @@ static void HU_Stop(void)
 // Passed nothing, returns nothing
 //
 void HU_Start(void)
-{
-  int   i;
+{ int   i;
   const char* s; /* cph - const */
   static dboolean console_initialized = false;
 
@@ -669,6 +673,16 @@ void HU_Start(void)
   HUlib_initTextLine
   (
     &w_monsec,
+    0, 0,
+    hu_font2,
+    HU_FONTSTART,
+    CR_GRAY,
+    VPT_NONE
+  );
+
+  HUlib_initTextLine
+  (
+    &w_hudfps,
     0, 0,
     hu_font2,
     HU_FONTSTART,
@@ -946,6 +960,7 @@ void HU_Start(void)
   while (*s)
     HUlib_addCharToTextLine(&w_hudadd, *(s++));
 
+
   for(i = 0; i < NUMTRACES; i++)
   {
     HUlib_initTextLine(
@@ -1084,8 +1099,10 @@ void HU_widget_build_weapon(void);
 void HU_widget_draw_weapon(void);
 void HU_widget_build_keys(void);
 void HU_widget_draw_keys(void);
+void HU_widget_build_fps(void);
 void HU_widget_build_monsec(void);
 void HU_widget_draw_monsec(void);
+void HU_widget_draw_fps(void);
 void HU_widget_build_health(void);
 void HU_widget_draw_health(void);
 void HU_widget_build_armor(void);
@@ -1144,6 +1161,7 @@ static hud_widget_t hud_name_widget[] =
   {&w_health, 0, 0, 0, HU_widget_build_health, HU_widget_draw_health, "health"},
   {&w_armor,  0, 0, 0, HU_widget_build_armor,  HU_widget_draw_armor,  "armor"},
   {&w_hudadd, 0, 0, 0, HU_widget_build_hudadd, HU_widget_draw_hudadd, "hudadd"},
+  {&w_hudfps, 0, 0, 0, HU_widget_build_fps,    HU_widget_draw_fps,    "fps"},
 
   {&w_keys_icon, 0, 0, 0, HU_widget_build_gkeys, HU_widget_draw_gkeys, "gkeys"},
 
@@ -1298,6 +1316,10 @@ void HU_MoveHud(int force)
       w_monsec.x = HU_TITLEX;
       w_monsec.y = HU_TITLEY;
       w_monsec.flags = VPT_ALIGN_LEFT_BOTTOM;
+
+      w_hudfps.x = HU_FPSX;
+      w_hudfps.y = HU_FPSY;
+      w_hudfps.flags = VPT_ALIGN_RIGHT_TOP;
 
       ohud_num = -2;
     }
@@ -2083,6 +2105,25 @@ void HU_widget_build_monsec(void)
     HUlib_addCharToTextLine(&w_monsec, *(s++));
 }
 
+void HU_widget_build_fps(void)
+{
+  extern int renderer_fps;
+  char* s;
+  char* s_start;
+
+  if (!C_CvarIsSet("showfps"))
+    return;
+
+  s = malloc(sizeof(char)*32);
+  s_start = s;
+  s[0] = '\0';
+  snprintf(s, 32, "\x1b\x32" "fps \x1b\x33%.2d ", renderer_fps);
+  HUlib_clearTextLine(&w_hudfps);
+  while (*s)
+    HUlib_addCharToTextLine(&w_hudfps, *(s++));
+  free(s_start);
+}
+
 void HU_widget_draw_monsec(void)
 {
   HUlib_drawTextLine(&w_monsec, false);
@@ -2090,13 +2131,17 @@ void HU_widget_draw_monsec(void)
 
 void HU_widget_build_hudadd(void)
 {
+  extern int renderer_fps;
   char *s;
   hud_add[0] = 0;
 
-  if (!hudadd_gamespeed && !hudadd_leveltime)
+  if (!hudadd_gamespeed && !hudadd_leveltime &&
+          !C_CvarIsSet("hudadd_showfps"))
     return;
 
-  if (hudadd_gamespeed)
+  if (C_CvarIsSet("hudadd_showfps"))
+      sprintf(hud_add,"\x1b\x32" "fps \x1b\x33%.2d ", renderer_fps);
+  else if (hudadd_gamespeed)
     sprintf(hud_add,"\x1b\x32speed \x1b\x33%.2d ", realtic_clock_rate);
   if ((hudadd_leveltime) || (demoplayback && hudadd_demotime))
   {
@@ -2121,6 +2166,13 @@ void HU_widget_draw_hudadd(void)
   if (hudadd_gamespeed || hudadd_leveltime)
   {
     HUlib_drawTextLine(&w_hudadd, false);
+  }
+}
+
+void HU_widget_draw_fps(void)
+{
+  if (C_CvarIsSet("showfps")) {
+    HUlib_drawTextLine(&w_hudfps, false);
   }
 }
 
@@ -2622,6 +2674,9 @@ void HU_Drawer(void)
     HU_widget_draw_hudadd();
   }
 
+  if (realframe)
+      HU_widget_build_fps();
+  HU_widget_draw_fps();
   //jff 3/4/98 display last to give priority
   HU_Erase(); // jff 4/24/98 Erase current lines before drawing current
               // needed when screen not fullsize

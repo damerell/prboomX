@@ -100,6 +100,8 @@ void C_CvarInit()
         C_CvarCreateOrOverwrite("allmap_always", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
         C_CvarCreateOrOverwrite("plat_skip", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
         C_CvarCreateOrOverwrite("regenerate", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
+        C_CvarCreateOrOverwrite("hudadd_showfps", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
+        C_CvarCreateOrOverwrite("showfps", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
     }
 }
 
