@@ -95,13 +95,15 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `set [variable] [value]` (set or create CVAR with given value)
 - `unset [variable]` (delete CVAR)
 
-# Default CVARs
+# Defined CVARs
 
 Changes to any CVARs in this list are saved on exit. `set` to 0 or `unset` a CVAR to remove it from your personal config. `set` a CVAR to 1 to enable it.
 
 * `allmap_always` (default: off) - Always have the Computer Area Map powerup.
 * `regenerate` (default: off) - Regenerate health when standing still similar to modern FPS games.
 * `plat_skip` (default: off) - Platform wait skipping when use key is pressed.
+* `hudadd_showfps` (default: off) - Instead of game speed, show FPS above the small status hud with kills, items and secrets.
+* `showfps` (default: off) - Show current FPS in the upper-right corner.
 
 # Reference Material
 
