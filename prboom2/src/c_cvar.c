@@ -412,8 +412,14 @@ int C_CvarGetAsInt(const char* key, cvarstatus_t* status)
     if (cvar) {
         if (cvar->type == CVAR_TYPE_INT)
             value = cvar->numValue.intVal;
-        else
+        else {
+            /* try to convert but return wrong type
+             * status to warn the user
+             */
+            if (cvar->type == CVAR_TYPE_FLOAT)
+                value = (int)cvar->numValue.floatVal;
             s = CVAR_STATUS_WRONG_TYPE;
+        }
     }
 
     if (status)
@@ -433,8 +439,11 @@ float C_CvarGetAsFloat(const char* key, cvarstatus_t* status)
     if (cvar) {
         if (cvar->type == CVAR_TYPE_FLOAT)
             value = cvar->numValue.floatVal;
-        else
+        else {
+            if (cvar->type == CVAR_TYPE_INT)
+                value = (float)cvar->numValue.intVal;
             s = CVAR_STATUS_WRONG_TYPE;
+        }
     }
 
     if (status)
@@ -451,10 +460,9 @@ char* C_CvarGetAsString(const char* key, cvarstatus_t* status)
     cvar = C_CvarFind(key, &s);
 
     if (cvar) {
-        if (cvar->type == CVAR_TYPE_STRING)
-            value = cvar->stringVal;
-        else
+        if (cvar->type != CVAR_TYPE_STRING)
             s = CVAR_STATUS_WRONG_TYPE;
+        value = cvar->stringVal;
     }
 
     if (status)
