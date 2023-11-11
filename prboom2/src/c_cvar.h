@@ -51,7 +51,6 @@ typedef enum cvarflags_e {
 void C_CvarInit();
 
 dboolean C_CvarExists(const char* key);
-cvarstatus_t C_CvarOverwriteFlags(const char* key, cvarflags_t flags);
 cvarstatus_t C_CvarSetFlags(const char* key, cvarflags_t flags);
 
 cvartype_t C_CvarGetType(const char* key, cvarstatus_t* status);
@@ -75,7 +74,7 @@ float C_CvarGetAsFloat(const char* key, cvarstatus_t* status);
 char* C_CvarGetAsString(const char* key, cvarstatus_t* status);
 
 /* type is changed if it's something else */
-cvarstatus_t C_CvarCreateOrOverwrite(const char* key, const char* value, cvarflags_t flags);
+cvarstatus_t C_CvarCreateOrUpdate(const char* key, const char* value, cvarflags_t flags);
 
 /* does NOT overwrite if exists; returns failure status */
 cvarstatus_t C_CvarCreate(const char* key, const char* value, cvarflags_t flags);

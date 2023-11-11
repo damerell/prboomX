@@ -893,7 +893,7 @@ static void C_set(char* cmd)
     key = args[0];
     svalue = C_StripSpaces(args[1]);
 
-    status = C_CvarCreateOrOverwrite(key, svalue, 0);
+    status = C_CvarCreateOrUpdate(key, svalue, 0);
 
     if (status == CVAR_STATUS_OK)
         doom_printf("Set CVAR %s=%s", key, svalue);

@@ -40,6 +40,8 @@ typedef struct cvar_s {
     dboolean is_set;
     cvartype_t type;
     cvarval_t numValue;
+    cvarval_t maxValue;
+    cvarval_t minValue;
     char* stringVal;
     struct cvar_s* next;
     struct cvar_s* prev;
@@ -231,7 +233,7 @@ static cvartype_t C_CvarInferType(const char* value, cvarval_t* converted)
     return type;
 }
 
-cvarstatus_t C_CvarCreateOrOverwrite(const char* key, const char* value, cvarflags_t flags)
+cvarstatus_t C_CvarCreateOrUpdate(const char* key, const char* value, cvarflags_t flags)
 {
     cvarstatus_t status;
     cvartype_t type;
@@ -255,42 +257,41 @@ cvarstatus_t C_CvarCreateOrOverwrite(const char* key, const char* value, cvarfla
         return CVAR_STATUS_INVALID_TYPE;
 
     if (cvar) {
-        /* exists, delete first, but keep flags */
+        /* exists, update, but keep flags */
         flags |= cvar->flags;
-        /* this is inefficient but safer */
-        C_CvarDelete(key);
+        free(cvar->stringVal);
+    } else {
+        /* create brand new cvar */
+        hash = HashString(key);
+        cvar = malloc(sizeof(cvar_t));
+        cvar->key = strdup(key);
+
+        /* register in hash map */
+        if (cvar_map[hash]) {
+            cvar_t* noden = cvar_map[hash];
+            cvar_t* nodep = NULL;
+
+            while (noden) {
+                nodep = noden;
+                noden = noden->next;
+            }
+
+            nodep->next = cvar;
+            cvar->next = NULL;
+            cvar->prev = nodep;
+        } else {
+            cvar->next = NULL;
+            cvar->prev = NULL;
+            cvar_map[hash] = cvar;
+        }
     }
 
-    /* create brand new cvar */
-    hash = HashString(key);
-    cvar = malloc(sizeof(cvar_t));
-
-    cvar->key = strdup(key);
     cvar->flags = flags;
     cvar->type = type;
     cvar->numValue = convertedValue;
     cvar->stringVal = strdup(value);
 
     cvar->is_set = C_CvarIsSetInternal(cvar);
-
-    /* register in hash map */
-    if (cvar_map[hash]) {
-        cvar_t* noden = cvar_map[hash];
-        cvar_t* nodep = NULL;
-
-        while (noden) {
-            nodep = noden;
-            noden = noden->next;
-        }
-
-        nodep->next = cvar;
-        cvar->next = NULL;
-        cvar->prev = nodep;
-    } else {
-        cvar->next = NULL;
-        cvar->prev = NULL;
-        cvar_map[hash] = cvar;
-    }
 
     return CVAR_STATUS_OK;
 }
@@ -311,7 +312,7 @@ cvarstatus_t C_CvarCreate(const char* key, const char* value, cvarflags_t flags)
         cvar->flags |= flags;
         return CVAR_STATUS_ALREADY_EXISTS;
     } else {
-        return C_CvarCreateOrOverwrite(key, value, flags);
+        return C_CvarCreateOrUpdate(key, value, flags);
     }
 }
 
@@ -393,12 +394,12 @@ dboolean C_CvarIsSet(const char* key)
 /* Set/Clear a CVAR (boolean flag), create if it does not exist */
 cvarstatus_t C_CvarSet(const char* key)
 {
-    return C_CvarCreateOrOverwrite(key, "1", 0);
+    return C_CvarCreateOrUpdate(key, "1", 0);
 }
 
 cvarstatus_t C_CvarClear(const char* key)
 {
-    return C_CvarCreateOrOverwrite(key, "0", 0);
+    return C_CvarCreateOrUpdate(key, "0", 0);
 }
 
 int C_CvarGetAsInt(const char* key, cvarstatus_t* status)
@@ -501,7 +502,7 @@ cvarstatus_t C_CvarSetFlags(const char* key, cvarflags_t flags)
     return s;
 }
 
-cvarstatus_t C_CvarOverwriteFlags(const char* key, cvarflags_t flags)
+static cvarstatus_t C_CvarOverwriteFlags(const char* key, cvarflags_t flags)
 {
     cvarstatus_t s;
     cvar_t* cvar;
