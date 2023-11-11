@@ -260,18 +260,25 @@ cvarstatus_t C_CvarCreateOrUpdate(const char* key, const char* value, cvarflags_
         flags |= cvar->flags;
 
         /* set modified flag */
-        if (type == CVAR_TYPE_INT) {
-            cvar->modified = (cvar->numValue.intVal != convertedValue.intVal);
-        } else if (type == CVAR_TYPE_FLOAT) {
-            cvar->modified = (cvar->numValue.floatVal != convertedValue.floatVal);
-        } else {
-            cvar->modified = (strcasecmp(value, cvar->stringVal) != 0);
+        if (!cvar->modified) {
+            if (type == CVAR_TYPE_INT) {
+                cvar->modified = (cvar->numValue.intVal != convertedValue.intVal);
+            } else if (type == CVAR_TYPE_FLOAT) {
+                cvar->modified = (cvar->numValue.floatVal != convertedValue.floatVal);
+            } else {
+                cvar->modified = (strcasecmp(value, cvar->stringVal) != 0);
+            }
         }
 
         free(cvar->stringVal);
     } else {
         /* create brand new cvar */
         hash = HashString(key);
+        /* Note: add memset(cvar, 0, sizeof(cvar_t)
+         * here if any future fields are not 
+         * initialized here. Right now every field
+         * is set to something so this isn't necessary
+         */
         cvar = malloc(sizeof(cvar_t));
         cvar->key = strdup(key);
         cvar->modified = false;
