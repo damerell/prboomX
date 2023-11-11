@@ -879,13 +879,8 @@ static void C_freeze(char* cmd)
 static void C_set(char* cmd)
 {
     char* args[2];
-    float fvalue;
-    int ivalue;
     char* key = NULL;
     char* svalue = NULL;
-    char* endptr = NULL;
-    char* endarg = NULL;
-    cvartype_t type = CVAR_TYPE_STRING;
     cvarstatus_t status;
 
     int num_args = C_ParseArgs(cmd, args, 2);
@@ -898,24 +893,7 @@ static void C_set(char* cmd)
     key = args[0];
     svalue = C_StripSpaces(args[1]);
 
-    endarg = svalue + strlen(svalue);
-
-    /* need to infer variable type */
-    ivalue = strtol(svalue, &endptr, 0);
-
-    if (endarg == endptr) {
-        type = CVAR_TYPE_INT;
-    } else {
-        fvalue = strtof(svalue, &endptr);
-
-        if (endarg == endptr) {
-            /* it's a float */
-            type = CVAR_TYPE_FLOAT;
-        }
-    }
-
-    /* it's a string */
-    status = C_CvarCreateOrOverwrite(key, svalue, type, 0);
+    status = C_CvarCreateOrOverwrite(key, svalue, 0);
 
     if (status == CVAR_STATUS_OK)
         doom_printf("Set CVAR %s=%s", key, svalue);

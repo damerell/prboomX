@@ -28,17 +28,19 @@
 #include <math.h>
 #include "c_cmd.h"
 
+typedef union cvarval_s {
+    int intVal;
+    float floatVal;
+} cvarval_t;
+
 typedef struct cvar_s {
     char* key;
     unsigned int flags;
     /* fast access path for "evalutes true" */
     dboolean is_set;
     cvartype_t type;
-    union {
-        int intVal;
-        float floatVal;
-        char* stringVal;
-    } value;
+    cvarval_t numValue;
+    char* stringVal;
     struct cvar_s* next;
     struct cvar_s* prev;
 } cvar_t;
@@ -73,8 +75,8 @@ const char* cvarstatus_error_strings[] =
     "Invalid CVAR type",
     "Invalid CVAR value",
     "Wrong CVAR type supplied",
-    "CVAR already exists",
     "CVAR not found",
+    "CVAR already exists",
     NULL
 };
 
@@ -98,12 +100,12 @@ void C_CvarInit()
 
     if (!initialized) {
         initialized = true;
-        C_CvarCreate("allmap_always", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
-        C_CvarCreate("plat_skip", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
-        C_CvarCreate("regenerate", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
-        C_CvarCreate("hudadd_showfps", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
-        C_CvarCreate("showfps", "0", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
-        C_CvarCreate("r_drawplayersprites", "1", CVAR_TYPE_INT, CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("allmap_always", "0", CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("plat_skip", "0", CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("regenerate", "0", CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("hudadd_showfps", "0", CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("showfps", "0", CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("r_drawplayersprites", "1", CVAR_FLAG_ARCHIVE);
     }
 }
 
@@ -170,13 +172,13 @@ static dboolean C_CvarIsSetInternal(cvar_t* cvar)
     assert(cvar);
     switch(cvar->type) {
         case CVAR_TYPE_INT:
-            return cvar->value.intVal != 0;
+            return cvar->numValue.intVal != 0;
             break;
         case CVAR_TYPE_FLOAT:
-            return cvar->value.floatVal != 0;
+            return cvar->numValue.floatVal != 0;
             break;
         case CVAR_TYPE_STRING:
-            return strlen(cvar->value.stringVal) > 0;
+            return strlen(cvar->stringVal) > 0;
             break;
         case CVAR_TYPE_MAX:
         default:
@@ -193,9 +195,47 @@ dboolean C_CvarExists(const char* key)
     return status == CVAR_STATUS_OK;
 }
 
-cvarstatus_t C_CvarCreateOrOverwrite(const char* key, const char* value, cvartype_t type, cvarflags_t flags)
+static cvartype_t C_CvarInferType(const char* value, cvarval_t* converted)
+{
+    float fvalue;
+    int ivalue;
+    char* endptr = NULL;
+    char* endarg = NULL;
+
+    /* value must be at least one char to be valid */
+    if (!value || !*value)
+        return CVAR_TYPE_INVALID;
+
+    cvartype_t type = CVAR_TYPE_STRING;
+
+    endarg = value + strlen(value);
+
+    ivalue = strtol(value, &endptr, 0);
+
+    if (endarg == endptr) {
+        type = CVAR_TYPE_INT;
+        if (converted)
+            converted->intVal = ivalue;
+    } else {
+        fvalue = strtof(value, &endptr);
+
+        if (endarg == endptr) {
+            /* it's a float */
+            type = CVAR_TYPE_FLOAT;
+            if (converted)
+                converted->floatVal = fvalue;
+        }
+    }
+
+    /* if neither, it's a string */
+    return type;
+}
+
+cvarstatus_t C_CvarCreateOrOverwrite(const char* key, const char* value, cvarflags_t flags)
 {
     cvarstatus_t status;
+    cvartype_t type;
+    cvarval_t convertedValue;
     cvar_t* cvar;
     uint8_t hash;
     char c;
@@ -210,6 +250,7 @@ cvarstatus_t C_CvarCreateOrOverwrite(const char* key, const char* value, cvartyp
     if (status == CVAR_STATUS_INVALID_KEY)
         return CVAR_STATUS_INVALID_KEY;
 
+    type = C_CvarInferType(value, &convertedValue);
     if (!C_CvarTypeIsValid(type))
         return CVAR_STATUS_INVALID_TYPE;
 
@@ -227,21 +268,8 @@ cvarstatus_t C_CvarCreateOrOverwrite(const char* key, const char* value, cvartyp
     cvar->key = strdup(key);
     cvar->flags = flags;
     cvar->type = type;
-
-    switch (type) {
-        case CVAR_TYPE_INT:
-            cvar->value.intVal = atoi(value);
-            break;
-        case CVAR_TYPE_FLOAT:
-            cvar->value.floatVal = atof(value);
-            break;
-        case CVAR_TYPE_STRING:
-            cvar->value.stringVal = strdup(value);
-            break;
-        case CVAR_TYPE_MAX:
-        default:
-            break;
-    }
+    cvar->numValue = convertedValue;
+    cvar->stringVal = strdup(value);
 
     cvar->is_set = C_CvarIsSetInternal(cvar);
 
@@ -267,7 +295,7 @@ cvarstatus_t C_CvarCreateOrOverwrite(const char* key, const char* value, cvartyp
     return CVAR_STATUS_OK;
 }
 
-cvarstatus_t C_CvarCreate(const char* key, const char* value, cvartype_t type, cvarflags_t flags)
+cvarstatus_t C_CvarCreate(const char* key, const char* value, cvarflags_t flags)
 {
     cvarstatus_t status;
     cvar_t* cvar;
@@ -279,10 +307,12 @@ cvarstatus_t C_CvarCreate(const char* key, const char* value, cvartype_t type, c
 
     cvar = C_CvarFind(key, &status);
 
-    if (cvar)
+    if (cvar) {
+        cvar->flags |= flags;
         return CVAR_STATUS_ALREADY_EXISTS;
-    else
-        return C_CvarCreateOrOverwrite(key, value, type, flags);
+    } else {
+        return C_CvarCreateOrOverwrite(key, value, flags);
+    }
 }
 
 cvarstatus_t C_CvarDelete(const char* key)
@@ -307,9 +337,7 @@ cvarstatus_t C_CvarDelete(const char* key)
         cvar_map[hash] = NULL;
     }
 
-    if (cvar->type == CVAR_TYPE_STRING)
-        free(cvar->value.stringVal);
-
+    free(cvar->stringVal);
     free(cvar->key);
     free(cvar);
 
@@ -328,13 +356,13 @@ void C_CvarExportToFile(FILE* f)
             if (c->flags & CVAR_FLAG_ARCHIVE) {
                 switch (c->type) {
                     case CVAR_TYPE_INT:
-                        fprintf(f, "set %s %d\n", c->key, c->value.intVal);
+                        fprintf(f, "set %s %d\n", c->key, c->numValue.intVal);
                         break;
                     case CVAR_TYPE_FLOAT:
-                        fprintf(f, "set %s %f\n", c->key, c->value.floatVal);
+                        fprintf(f, "set %s %f\n", c->key, c->numValue.floatVal);
                         break;
                     case CVAR_TYPE_STRING:
-                        fprintf(f, "set %s %s\n", c->key, c->value.stringVal);
+                        fprintf(f, "set %s %s\n", c->key, c->stringVal);
                         break;
                     case CVAR_TYPE_MAX:
                     default:
@@ -365,12 +393,12 @@ dboolean C_CvarIsSet(const char* key)
 /* Set/Clear a CVAR (boolean flag), create if it does not exist */
 cvarstatus_t C_CvarSet(const char* key)
 {
-    return C_CvarCreateOrOverwrite(key, "1", CVAR_TYPE_INT, 0);
+    return C_CvarCreateOrOverwrite(key, "1", 0);
 }
 
 cvarstatus_t C_CvarClear(const char* key)
 {
-    return C_CvarCreateOrOverwrite(key, "0", CVAR_TYPE_INT, 0);
+    return C_CvarCreateOrOverwrite(key, "0", 0);
 }
 
 int C_CvarGetAsInt(const char* key, cvarstatus_t* status)
@@ -383,7 +411,7 @@ int C_CvarGetAsInt(const char* key, cvarstatus_t* status)
 
     if (cvar) {
         if (cvar->type == CVAR_TYPE_INT)
-            value = cvar->value.intVal;
+            value = cvar->numValue.intVal;
         else
             s = CVAR_STATUS_WRONG_TYPE;
     }
@@ -404,7 +432,7 @@ float C_CvarGetAsFloat(const char* key, cvarstatus_t* status)
 
     if (cvar) {
         if (cvar->type == CVAR_TYPE_FLOAT)
-            value = cvar->value.floatVal;
+            value = cvar->numValue.floatVal;
         else
             s = CVAR_STATUS_WRONG_TYPE;
     }
@@ -424,7 +452,7 @@ char* C_CvarGetAsString(const char* key, cvarstatus_t* status)
 
     if (cvar) {
         if (cvar->type == CVAR_TYPE_STRING)
-            value = cvar->value.stringVal;
+            value = cvar->stringVal;
         else
             s = CVAR_STATUS_WRONG_TYPE;
     }
@@ -488,6 +516,7 @@ const char* C_CvarComplete(const char* partial)
      */
     dboolean set_cmd = false;
     dboolean unset_cmd = false;
+    cvar_t* cvar;
     static char* completion_buffer = NULL;
 
     if (!completion_buffer)
@@ -510,16 +539,17 @@ const char* C_CvarComplete(const char* partial)
     }
 
     for (i = 0; i < 256; i++) {
-        if (cvar_map[i] &&
-            strncasecmp(cvar_map[i]->key, partial, partial_len) == 0) {
-            if (set_cmd) {
-                snprintf(completion_buffer, CONSOLE_LINE_LENGTH_MAX, "set %s", cvar_map[i]->key);
-                return completion_buffer;
-            } else if (unset_cmd) {
-                snprintf(completion_buffer, CONSOLE_LINE_LENGTH_MAX, "unset %s", cvar_map[i]->key);
-                return completion_buffer;
-            } else {
-                return cvar_map[i]->key;
+        for (cvar = cvar_map[i]; cvar; cvar = cvar->next) {
+            if (cvar && strncasecmp(cvar->key, partial, partial_len) == 0) {
+                if (set_cmd) {
+                    snprintf(completion_buffer, CONSOLE_LINE_LENGTH_MAX, "set %s", cvar->key);
+                    return completion_buffer;
+                } else if (unset_cmd) {
+                    snprintf(completion_buffer, CONSOLE_LINE_LENGTH_MAX, "unset %s", cvar->key);
+                    return completion_buffer;
+                } else {
+                    return cvar->key;
+                }
             }
         }
     }
