@@ -489,7 +489,7 @@ cvartype_t C_CvarGetType(const char* key, cvarstatus_t* status)
     return type;
 }
 
-cvarstatus_t C_CvarSetFlags(const char* key, cvarflags_t flags)
+cvarstatus_t C_CvarApplyFlags(const char* key, cvarflags_t flags)
 {
     cvarstatus_t s;
     cvar_t* cvar;
