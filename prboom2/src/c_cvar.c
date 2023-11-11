@@ -38,10 +38,9 @@ typedef struct cvar_s {
     unsigned int flags;
     /* fast access path for "evalutes true" */
     dboolean is_set;
+    dboolean modified;
     cvartype_t type;
     cvarval_t numValue;
-    cvarval_t maxValue;
-    cvarval_t minValue;
     char* stringVal;
     struct cvar_s* next;
     struct cvar_s* prev;
@@ -259,12 +258,23 @@ cvarstatus_t C_CvarCreateOrUpdate(const char* key, const char* value, cvarflags_
     if (cvar) {
         /* exists, update, but keep flags */
         flags |= cvar->flags;
+
+        /* set modified flag */
+        if (type == CVAR_TYPE_INT) {
+            cvar->modified = (cvar->numValue.intVal != convertedValue.intVal);
+        } else if (type == CVAR_TYPE_FLOAT) {
+            cvar->modified = (cvar->numValue.floatVal != convertedValue.floatVal);
+        } else {
+            cvar->modified = (strcasecmp(value, cvar->stringVal) != 0);
+        }
+
         free(cvar->stringVal);
     } else {
         /* create brand new cvar */
         hash = HashString(key);
         cvar = malloc(sizeof(cvar_t));
         cvar->key = strdup(key);
+        cvar->modified = false;
 
         /* register in hash map */
         if (cvar_map[hash]) {
@@ -354,7 +364,7 @@ void C_CvarExportToFile(FILE* f)
         c = cvar_map[i];
 
         while (c) {
-            if (c->flags & CVAR_FLAG_ARCHIVE) {
+            if (c->modified && (c->flags & CVAR_FLAG_ARCHIVE)) {
                 switch (c->type) {
                     case CVAR_TYPE_INT:
                         fprintf(f, "set %s %d\n", c->key, c->numValue.intVal);
