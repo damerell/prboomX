@@ -912,6 +912,11 @@ static void C_unset(char* cmd)
         doom_printf("Deleted CVAR %s", key);
 }
 
+static void C_screenshot(char* cmd)
+{
+    G_ScreenShot();
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -945,6 +950,7 @@ command command_list[] = {
     {"freeze", C_freeze},
     {"set", C_set},
     {"unset", C_unset},
+    {"screenshot", C_screenshot},
 
     /* aliases */
     {"snd", C_sndvol},
