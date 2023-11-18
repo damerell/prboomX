@@ -31,6 +31,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 * Option to skip QuickSave/QuickLoad confirmation prompt
 * Option to fix the Blockmap bug (uses blockmap bug fix from Terry Hearst, adapted from similar PR for Woof)
 * Option to change player automap arrow to a chevron shape (easier to see direction at a distance)
+* Option to announce reaching 100% kills, items and/or secrets
 * [COMPLVL](https://doomwiki.org/wiki/COMPLVL) lump support for supported compatibility levels
 * Note-taking console command
     * Jot down quick notes while playtesting. Notes go into a dated text file in the current working directory.
@@ -463,3 +464,16 @@ Sub-bullets list accepted alternate names for weapons.
 * MOUSE6
 * MOUSE7
 * MOUSE8
+
+# Added Sound Credits
+
+* All Secrets Found (`DSSECALL`)
+    * [Win Sound Effect](https://opengameart.org/content/win-sound-effect) by [Listener](https://opengameart.org/users/listener), CC0
+    * [Sound Pack 01](https://opengameart.org/content/level-up-power-up-coin-get-13-sounds) by [wobbleboxx](https://opengameart.org/users/wobbleboxx), CC0
+* Secret Found (`DSSECRET`)
+    * [GUI Sound Effects](https://opengameart.org/content/gui-sound-effects) by [Lokif](https://opengameart.org/users/lokif), CC0
+* All Items Found (`DSITMALL`)
+    * [Intro Jingle](https://opengameart.org/content/nes-shooter-music-5-tracks-3-jingles) by [SketchyLogic](https://opengameart.org/users/sketchylogic), CC0
+* All Monsters Killed
+    * [Sound Pack 01](https://opengameart.org/content/level-up-power-up-coin-get-13-sounds) by [wobbleboxx](https://opengameart.org/users/wobbleboxx), CC0
+    * [The Ritual](https://opengameart.org/content/the-ritual) by [northivanastan](https://opengameart.org/users/northivanastan), CC0
