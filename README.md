@@ -30,6 +30,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
     * Note the order in which content is loaded matters
 * Option to skip QuickSave/QuickLoad confirmation prompt
 * Option to fix the Blockmap bug (uses blockmap bug fix from Terry Hearst, adapted from similar PR for Woof)
+* Option to allow things to move over/under other things (see [Defined CVARs](#defined-cvars) section)
 * Option to change player automap arrow to a chevron shape (easier to see direction at a distance)
 * [COMPLVL](https://doomwiki.org/wiki/COMPLVL) lump support for supported compatibility levels
 * Note-taking console command
@@ -97,7 +98,9 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 
 # Defined CVARs
 
-Changes to any CVARs in this list are saved on exit. `set` to 0 or `unset` a CVAR to remove it from your personal config. `set` a CVAR to 1 to enable it.
+Changes to any CVARs in this list are saved on exit. In the console, `set` to 0 or `unset` a CVAR to remove it from your personal config. `set` a CVAR to 1 to enable it.
+
+Example: `set overunder 1`
 
 * `allmap_always` (default: off) - Always have the Computer Area Map powerup.
 * `regenerate` (default: off) - Regenerate health when standing still similar to modern FPS games.
@@ -105,6 +108,7 @@ Changes to any CVARs in this list are saved on exit. `set` to 0 or `unset` a CVA
 * `hudadd_showfps` (default: off) - Instead of game speed, show FPS above the small status hud with kills, items and secrets.
 * `showfps` (default: off) - Show current FPS in the upper-right corner.
 * `r_drawplayersprites` (default: on) - Same meaning as the same-named [GZDoom CVAR](https://zdoom.org/wiki/CVARs:Display#r_drawplayersprites)
+* `overunder` (default: off) - Allow things to move over/under other things (adapted from [Crispy Doom](https://github.com/fabiangreffrath/crispy-doom) and [Nugget Doom](https://github.com/MrAlaux/Nugget-Doom))
 
 # Reference Material
 

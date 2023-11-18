@@ -575,6 +575,14 @@ static dboolean PIT_CheckThing(mobj_t *thing) // killough 3/26/98: make static
       // A flying skull is smacking something.
       // Determine damage amount, and the skull comes to a dead stop.
 
+      // [Adapted from crispy doom] check if attacking skull flies over/under thing
+      if (C_CvarIsSet("overunder")) {
+        if (tmthing->z > thing->z + thing->height)
+        { return true; } // over
+        else if (tmthing->z + tmthing->height < thing->z)
+        { return true; } // under
+      }
+
       int damage = ((P_Random(pr_skullfly)%8)+1)*tmthing->info->damage;
 
       P_DamageMobj (thing, tmthing, tmthing, damage);
@@ -652,6 +660,22 @@ static dboolean PIT_CheckThing(mobj_t *thing) // killough 3/26/98: make static
   P_TouchSpecialThing(thing, tmthing); // can remove thing
       return !solid;
     }
+
+  // [Adapted from Nugget Doom] Allow things to move over/under solid things
+  if (C_CvarIsSet("overunder") && (thing->flags & MF_SOLID)) {
+    if (tmthing->z >= thing->z + thing->height) { // Over
+      tmfloorz = MAX(thing->z + thing->height, tmfloorz);
+      thing->ceilingz = MIN(tmthing->z, thing->ceilingz);
+
+      return true;
+    }
+    else if (tmthing->z + tmthing->height <= thing->z) { // Under
+      tmceilingz = MIN(thing->z, tmceilingz);
+      thing->floorz = MAX(tmthing->z + tmthing->height, thing->floorz);
+
+      return true;
+    }
+  }
 
   // RjY
   // comperr_hangsolid, an attempt to handle blocking hanging bodies
