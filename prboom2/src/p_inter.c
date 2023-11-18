@@ -43,6 +43,7 @@
 #include "lprintf.h"
 #include "c_cvar.h"
 #include "hu_stuff.h"
+#include "i_sound.h"
 
 #include "p_inter.h"
 #include "p_enemy.h"
