@@ -42,6 +42,8 @@
 #include "p_tick.h"
 #include "lprintf.h"
 #include "c_cvar.h"
+#include "hu_stuff.h"
+#include "i_sound.h"
 
 #include "p_inter.h"
 #include "p_enemy.h"
@@ -632,8 +634,22 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
       I_Error ("P_SpecialThing: Unknown gettable thing");
     }
 
-  if (special->flags & MF_COUNTITEM)
+  if (special->flags & MF_COUNTITEM) {
     player->itemcount++;
+    if (hudadd_announce_100p_items) {
+      unsigned int i;
+      unsigned int playeritems = 0;
+      for (i = 0; i<MAXPLAYERS; i++) {
+          if (playeringame[i]) {
+              playeritems += players[i].itemcount;
+          }
+      }
+      if (playeritems == totalitems) {
+          int sfx_id = (I_GetSfxLumpNum(&S_sfx[sfx_itmall]) < 0 ? sfx_itmbk : sfx_itmall);
+          SetCustomMessage(consoleplayer, STSTR_ALLITEMSFOUND, 0, 2 * TICRATE, CR_BLUE2, sfx_id);
+      }
+    }
+  }
   P_RemoveMobj (special);
   player->bonuscount += BONUSADD;
 
@@ -804,6 +820,21 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
 
   if (target->tics < 1)
     target->tics = 1;
+
+  // check kill count vs. map totals
+  if (hudadd_announce_100p_kills) {
+      unsigned int player;
+      unsigned int playerkills = 0;
+      for (player = 0; player<MAXPLAYERS; player++) {
+          if (playeringame[player]) {
+              playerkills += (players[player].killcount - players[player].resurectedkillcount);
+          }
+      }
+      if (playerkills == totalkills) {
+          int sfx_id = (I_GetSfxLumpNum(&S_sfx[sfx_kilall]) < 0 ? sfx_itmbk : sfx_kilall);
+          SetCustomMessage(consoleplayer, STSTR_ALLMONSTERSKILLED, 0, 2 * TICRATE, CR_RED, sfx_id);
+      }
+  }
 
   // In Chex Quest, monsters don't drop items.
   if (gamemission == chex)

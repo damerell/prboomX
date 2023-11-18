@@ -1058,6 +1058,12 @@ default_t defaults[] =
    def_int,ss_stat},
   {"hudadd_crosshair_lock_target", {&hudadd_crosshair_lock_target},  {0},0,1,
    def_bool,ss_stat},
+  {"hudadd_announce_100p_secrets", {&hudadd_announce_100p_secrets},  {0},0,1,
+   def_bool,ss_stat},
+  {"hudadd_announce_100p_items", {&hudadd_announce_100p_items},  {0},0,1,
+   def_bool,ss_stat},
+  {"hudadd_announce_100p_kills", {&hudadd_announce_100p_kills},  {0},0,1,
+   def_bool,ss_stat},
 
   //e6y
   {"PrboomX mouse settings",{NULL},{0},UL,UL,def_none,ss_none},
