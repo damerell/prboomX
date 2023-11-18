@@ -478,6 +478,6 @@ Sub-bullets list accepted alternate names for weapons.
     * [GUI Sound Effects](https://opengameart.org/content/gui-sound-effects) by [Lokif](https://opengameart.org/users/lokif), CC0
 * All Items Found (`DSITMALL`)
     * [Intro Jingle](https://opengameart.org/content/nes-shooter-music-5-tracks-3-jingles) by [SketchyLogic](https://opengameart.org/users/sketchylogic), CC0
-* All Monsters Killed
+* All Monsters Killed (`DSKILALL`)
     * [Sound Pack 01](https://opengameart.org/content/level-up-power-up-coin-get-13-sounds) by [wobbleboxx](https://opengameart.org/users/wobbleboxx), CC0
     * [The Ritual](https://opengameart.org/content/the-ritual) by [northivanastan](https://opengameart.org/users/northivanastan), CC0
