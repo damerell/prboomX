@@ -2373,9 +2373,7 @@ void P_PlayerInSpecialSector (player_t* player)
         // Tally player in secret sector, clear secret special
         player->secretcount++;
         sector->special = 0;
-        //e6y
-        if (hudadd_secretarea)
-        {
+        if (hudadd_announce_100p_secrets) {
             unsigned int i;
             unsigned int playersecrets = 0;
             for (i = 0; i<MAXPLAYERS; i++) {
@@ -2387,10 +2385,14 @@ void P_PlayerInSpecialSector (player_t* player)
             if (playersecrets == totalsecret) {
                 int sfx_id = (I_GetSfxLumpNum(&S_sfx[sfx_secall]) < 0 ? sfx_itmbk : sfx_secall);
                 SetCustomMessage(player - players, STSTR_ALLSECRETFOUND, 0, 2 * TICRATE, CR_GREEN, sfx_id);
-            } else { 
-                int sfx_id = (I_GetSfxLumpNum(&S_sfx[sfx_secret]) < 0 ? sfx_itmbk : sfx_secret);
-                SetCustomMessage(player - players, STSTR_SECRETFOUND, 0, 2 * TICRATE, CR_GOLD, sfx_id);
+                break;
             }
+        }
+
+        //e6y
+        if (hudadd_secretarea) {
+            int sfx_id = (I_GetSfxLumpNum(&S_sfx[sfx_secret]) < 0 ? sfx_itmbk : sfx_secret);
+            SetCustomMessage(player - players, STSTR_SECRETFOUND, 0, 2 * TICRATE, CR_GOLD, sfx_id);
         }
 
         break;
@@ -2439,13 +2441,13 @@ void P_PlayerInSpecialSector (player_t* player)
     }
     if (sector->special&SECRET_MASK)
     {
-      player->secretcount++;
-      sector->special &= ~SECRET_MASK;
-      if (sector->special<32) // if all extended bits clear,
-        sector->special=0;    // sector is not special anymore
-      //e6y
-        if (hudadd_secretarea)
-        {
+        dboolean allsecrets = false;
+        player->secretcount++;
+        sector->special &= ~SECRET_MASK;
+        if (sector->special<32) // if all extended bits clear,
+            sector->special=0;    // sector is not special anymore
+
+        if (hudadd_announce_100p_secrets) {
             unsigned int i;
             unsigned int playersecrets = 0;
             for (i = 0; i<MAXPLAYERS; i++) {
@@ -2457,11 +2459,16 @@ void P_PlayerInSpecialSector (player_t* player)
             if (playersecrets == totalsecret) {
                 int sfx_id = (I_GetSfxLumpNum(&S_sfx[sfx_secall]) < 0 ? sfx_itmbk : sfx_secall);
                 SetCustomMessage(player - players, STSTR_ALLSECRETFOUND, 0, 2 * TICRATE, CR_GREEN, sfx_id);
-            } else { 
-                int sfx_id = (I_GetSfxLumpNum(&S_sfx[sfx_secret]) < 0 ? sfx_itmbk : sfx_secret);
-                SetCustomMessage(player - players, STSTR_SECRETFOUND, 0, 2 * TICRATE, CR_GOLD, sfx_id);
+                allsecrets = true;
             }
         }
+
+        //e6y
+        if (hudadd_secretarea && !allsecrets) {
+            int sfx_id = (I_GetSfxLumpNum(&S_sfx[sfx_secret]) < 0 ? sfx_itmbk : sfx_secret);
+            SetCustomMessage(player - players, STSTR_SECRETFOUND, 0, 2 * TICRATE, CR_GOLD, sfx_id);
+        }
+
     }
 
     // phares 3/19/98:

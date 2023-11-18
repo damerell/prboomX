@@ -635,7 +635,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
 
   if (special->flags & MF_COUNTITEM) {
     player->itemcount++;
-    {
+    if (hudadd_announce_100p_items) {
       unsigned int i;
       unsigned int playeritems = 0;
       for (i = 0; i<MAXPLAYERS; i++) {
@@ -821,7 +821,7 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
     target->tics = 1;
 
   // check kill count vs. map totals
-  {
+  if (hudadd_announce_100p_kills) {
       unsigned int player;
       unsigned int playerkills = 0;
       for (player = 0; player<MAXPLAYERS; player++) {
