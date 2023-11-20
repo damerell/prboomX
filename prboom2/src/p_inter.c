@@ -822,7 +822,7 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
     target->tics = 1;
 
   // check kill count vs. map totals
-  if (hudadd_announce_100p_kills) {
+  if (hudadd_announce_100p_kills && (target->flags & MF_COUNTKILL) && !(target->flags & MF_RESSURECTED)) {
       unsigned int player;
       unsigned int playerkills = 0;
       for (player = 0; player<MAXPLAYERS; player++) {
