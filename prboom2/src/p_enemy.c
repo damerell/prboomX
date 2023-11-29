@@ -51,6 +51,7 @@
 #include "hu_stuff.h"
 #include "lprintf.h"
 #include "e6y.h"//e6y
+#include "c_cvar.h"
 
 static mobj_t *current_actor;
 
@@ -151,7 +152,14 @@ static dboolean P_CheckMeleeRange(mobj_t *actor)
      (compatibility_level == doom_12_compatibility ?
       MELEERANGE :
       MELEERANGE - 20*FRACUNIT + pl->info->radius)) &&
-    P_CheckSight(actor, actor->target);
+    P_CheckSight(actor, actor->target) &&
+    /* melee height check */
+    (!C_CvarIsSet("overunder") ||
+     (
+      pl->z <= actor->z + actor->height &&
+      actor->z <= pl->z + pl->height
+     )
+    );
 }
 
 //
