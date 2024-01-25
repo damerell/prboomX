@@ -2553,3 +2553,20 @@ void AM_GetCrosshairPosition(fixed_t* x, fixed_t* y)
     *x = (m_x + m_w/2) << FRACTOMAPBITS;
     *y = (m_y + m_h/2) << FRACTOMAPBITS;
 }
+
+void AM_SetCenterPosition(fixed_t* x, fixed_t* y)
+{
+    if (!x || !y) return;
+
+    /* disable follow mode for jumps */
+    automapmode &= ~am_follow;
+
+    fixed_t new_x = MAX(min_x, MIN(max_x, (*x >> FRACTOMAPBITS)));
+    fixed_t new_y = MAX(min_y, MIN(max_y, (*y >> FRACTOMAPBITS)));
+
+    m_x = new_x - m_w/2;
+    m_y = new_y - m_h/2;
+
+    m_x2 = m_x + m_w;
+    m_y2 = m_y + m_h;
+}

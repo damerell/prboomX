@@ -41,6 +41,7 @@
 #include "i_system.h"
 #include "m_menu.h"
 #include "m_misc.h"
+#include "p_spec.h"
 #include "am_map.h"
 #include "c_cvar.h"
 
@@ -57,6 +58,8 @@ static char console_message[HU_MSGWIDTH];
 
 static int KeyNameToKeyCode(const char* name);
 static int MouseNameToMouseCode(const char* name);
+
+static mobj_t* FindNextMobj(fixed_t* x, fixed_t* y, mobj_t* startmobj, int flags);
 
 /* Parses arguments out from a string using spaces as separators.
  * Returns the number of arguments successfully parsed.
@@ -917,6 +920,153 @@ static void C_screenshot(char* cmd)
     G_ScreenShot();
 }
 
+static void C_automapfindsecret(char* cmd)
+{
+    static int current_secret_sector = 0;
+    int fullsecretcount = 0;
+    int i;
+    int initial;
+    fixed_t x;
+    fixed_t y;
+
+    if (!(automapmode & am_active)) {
+        doom_printf("Must be in automap mode to use this command.");
+        return;
+    }
+
+    for (i=0 ; i<MAXPLAYERS ; i++) {
+        if (playeringame[i]) {
+            fullsecretcount += players[i].secretcount;
+        }
+    }
+
+    if (fullsecretcount == totalsecret) {
+        doom_printf("All secrets already found.");
+        return;
+    }
+
+    i = ((current_secret_sector + 1) % numsectors);
+    initial = i;
+    do {
+        if (P_IsSecret(&sectors[i])) {
+            x = sectors[i].lines[0]->v1->x;
+            y = sectors[i].lines[0]->v1->y;
+            current_secret_sector = i;
+            AM_SetCenterPosition(&x, &y);
+            break;
+        }
+        i = ((i+1) % numsectors);
+    } while (i != initial);
+}
+
+static mobj_t* FindNextMobj(fixed_t* x, fixed_t* y, mobj_t* startmobj, int flags)
+{
+    thinker_t *currentthinker = (thinker_t*) startmobj;
+    dboolean restarted = false;
+
+    if (!x || !y) return NULL;
+
+    currentthinker = P_NextThinker(currentthinker,th_all);
+
+    /* if we're at the very end, start over once before we begin */
+    if (startmobj && !currentthinker)
+        currentthinker = P_NextThinker(NULL,th_all);
+
+    while (currentthinker != NULL) {
+        if ((currentthinker->function == P_MobjThinker) &&
+                (((mobj_t *) currentthinker)->flags & flags) &&
+                (flags & MF_COUNTITEM || ((flags & MF_COUNTKILL) &&
+                                          ((mobj_t*) currentthinker)->health > 0))) {
+            *x = ((mobj_t*) currentthinker)->x;
+            *y = ((mobj_t*) currentthinker)->y;
+            return ((mobj_t*) currentthinker);
+        }
+
+        if (restarted && startmobj && (mobj_t*)currentthinker == startmobj) {
+            /* we started over and didn't find one, give up */
+            currentthinker = NULL;
+            break;
+        }
+
+        currentthinker = P_NextThinker(currentthinker,th_all);
+        if (currentthinker == NULL && startmobj && !restarted) {
+            restarted = true;
+            currentthinker = P_NextThinker(NULL,th_all);
+        }
+    }
+
+    return (mobj_t*) currentthinker;
+}
+
+static void C_automapfinditem(char* cmd)
+{
+    static thinker_t* canary = NULL;
+    static mobj_t* prev_item = NULL;
+    static int playeritems_prev = 0;
+    thinker_t* first = NULL;
+    fixed_t x;
+    fixed_t y;
+    int playeritems = 0;
+    int i;
+
+    for (i = 0; i<MAXPLAYERS; i++) {
+        if (playeringame[i]) {
+            playeritems += players[i].itemcount;
+        }
+    }
+
+    if (playeritems == totalitems) {
+        doom_printf("All items already found.");
+        return;
+    }
+
+    if (playeritems != playeritems_prev) {
+        playeritems_prev = playeritems;
+        canary = NULL;
+    }
+
+    /* if anything changed about the thinkers,
+     * start over
+     */
+    first = P_NextThinker(NULL,th_all);
+    if (canary != first) {
+        canary = first;
+        prev_item = NULL;
+    }
+
+    prev_item = FindNextMobj(&x, &y, prev_item, MF_COUNTITEM);
+    if (prev_item) {
+        AM_SetCenterPosition(&x, &y);
+    } else {
+        doom_printf("No remaining items found.");
+    }
+}
+
+static void C_automapfindmonster(char* cmd)
+{
+    static thinker_t* canary = NULL;
+    static mobj_t* prev_monster = NULL;
+    thinker_t* first = NULL;
+    fixed_t x;
+    fixed_t y;
+    int i;
+
+    /* if anything changed about the thinkers,
+     * start over
+     */
+    first = P_NextThinker(NULL,th_all);
+    if (canary != first) {
+        canary = first;
+        prev_monster = NULL;
+    }
+
+    prev_monster = FindNextMobj(&x, &y, prev_monster, MF_COUNTKILL);
+    if (prev_monster)
+        AM_SetCenterPosition(&x, &y);
+    else
+        doom_printf("No remaining live monsters found.");
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -951,6 +1101,9 @@ command command_list[] = {
     {"set", C_set},
     {"unset", C_unset},
     {"screenshot", C_screenshot},
+    {"am_findsecret", C_automapfindsecret},
+    {"am_finditem", C_automapfinditem},
+    {"am_findmonster", C_automapfindmonster},
 
     /* aliases */
     {"snd", C_sndvol},

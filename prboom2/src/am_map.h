@@ -90,6 +90,8 @@ void AM_SetResolution(void);
 
 void AM_GetCrosshairPosition(fixed_t* x, fixed_t* y);
 
+void AM_SetCenterPosition(fixed_t* x, fixed_t* y);
+
 typedef struct
 {
  fixed_t x,y;
