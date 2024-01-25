@@ -101,6 +101,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `am_finditem` (in automap, jump the cursor to be on top of the next uncollected item)
 - `am_findmonster` (in automap, jump the cursor to be on top of the next alive monster)
     - Credit for these `am_find*` concepts to similar cheats in [dsda-doom](https://github.com/kraflab/dsda-doom)
+- `am_findkey` (in automap, jump the cursor to be on top of the next key)
 
 # Defined CVARs
 

@@ -59,7 +59,9 @@ static char console_message[HU_MSGWIDTH];
 static int KeyNameToKeyCode(const char* name);
 static int MouseNameToMouseCode(const char* name);
 
-static mobj_t* FindNextMobj(fixed_t* x, fixed_t* y, mobj_t* startmobj, int flags);
+static mobj_t* FindNextMobj(fixed_t* x, fixed_t* y, mobj_t* startmobj, int flags, dboolean find_key);
+static dboolean IsMobjKey(mobj_t* mo);
+static dboolean IsMobjInThinkerList(mobj_t* mo);
 
 /* Parses arguments out from a string using spaces as separators.
  * Returns the number of arguments successfully parsed.
@@ -959,7 +961,29 @@ static void C_automapfindsecret(char* cmd)
     } while (i != initial);
 }
 
-static mobj_t* FindNextMobj(fixed_t* x, fixed_t* y, mobj_t* startmobj, int flags)
+static dboolean IsMobjKey(mobj_t* mo)
+{
+    if (!mo) return false;
+
+    return (mo->sprite == SPR_BKEY ||
+            mo->sprite == SPR_RKEY ||
+            mo->sprite == SPR_YKEY ||
+            mo->sprite == SPR_BSKU ||
+            mo->sprite == SPR_RSKU ||
+            mo->sprite == SPR_YSKU);
+}
+
+static dboolean IsMobjInThinkerList(mobj_t* mo)
+{
+    thinker_t* th = NULL;
+    while ((th = P_NextThinker(th,th_misc)) != NULL) {
+        if ((mobj_t*)th == mo)
+            return true;
+    }
+    return false;
+}
+
+static mobj_t* FindNextMobj(fixed_t* x, fixed_t* y, mobj_t* startmobj, int flags, dboolean find_key)
 {
     thinker_t *currentthinker = (thinker_t*) startmobj;
     dboolean restarted = false;
@@ -974,9 +998,14 @@ static mobj_t* FindNextMobj(fixed_t* x, fixed_t* y, mobj_t* startmobj, int flags
 
     while (currentthinker != NULL) {
         if ((currentthinker->function == P_MobjThinker) &&
-                (((mobj_t *) currentthinker)->flags & flags) &&
-                (flags & MF_COUNTITEM || ((flags & MF_COUNTKILL) &&
-                                          ((mobj_t*) currentthinker)->health > 0))) {
+                ((((mobj_t *) currentthinker)->flags & flags) == flags)
+                &&
+                (
+                 flags & MF_COUNTITEM ||
+                 ((flags & MF_COUNTKILL) && ((mobj_t*) currentthinker)->health > 0) ||
+                 (find_key && IsMobjKey((mobj_t*)currentthinker))
+                )
+           ) {
             *x = ((mobj_t*) currentthinker)->x;
             *y = ((mobj_t*) currentthinker)->y;
             return ((mobj_t*) currentthinker);
@@ -1034,7 +1063,7 @@ static void C_automapfinditem(char* cmd)
         prev_item = NULL;
     }
 
-    prev_item = FindNextMobj(&x, &y, prev_item, MF_COUNTITEM);
+    prev_item = FindNextMobj(&x, &y, prev_item, MF_COUNTITEM, false);
     if (prev_item) {
         AM_SetCenterPosition(&x, &y);
     } else {
@@ -1046,9 +1075,11 @@ static void C_automapfindmonster(char* cmd)
 {
     static thinker_t* canary = NULL;
     static mobj_t* prev_monster = NULL;
+    static int playerkills_prev = 0;
     thinker_t* first = NULL;
     fixed_t x;
     fixed_t y;
+    int playerkills = 0;
     int i;
 
     /* if anything changed about the thinkers,
@@ -1060,11 +1091,52 @@ static void C_automapfindmonster(char* cmd)
         prev_monster = NULL;
     }
 
-    prev_monster = FindNextMobj(&x, &y, prev_monster, MF_COUNTKILL);
+    for (i = 0; i<MAXPLAYERS; i++) {
+        if (playeringame[i]) {
+            playerkills += players[i].killcount;
+        }
+    }
+
+    if (playerkills != playerkills_prev) {
+        playerkills_prev = playerkills;
+        canary = NULL;
+    }
+
+    prev_monster = FindNextMobj(&x, &y, prev_monster, MF_COUNTKILL, false);
     if (prev_monster)
         AM_SetCenterPosition(&x, &y);
     else
         doom_printf("No remaining live monsters found.");
+}
+
+static void C_automapfindkey(char* cmd)
+{
+    static thinker_t* canary = NULL;
+    static mobj_t* prev_key = NULL;
+    thinker_t* first = NULL;
+    fixed_t x;
+    fixed_t y;
+    int i;
+
+    /* if anything changed about the thinkers,
+     * start over
+     */
+    first = P_NextThinker(NULL,th_all);
+    if (canary != first) {
+        canary = first;
+        prev_key = NULL;
+    }
+
+    /* we will need to check the complete thinker list */
+    if (prev_key && !IsMobjInThinkerList(prev_key)) {
+        prev_key = NULL;
+    }
+
+    prev_key = FindNextMobj(&x, &y, prev_key, 0, true);
+    if (prev_key)
+        AM_SetCenterPosition(&x, &y);
+    else
+        doom_printf("No remaining keys found.");
 }
 
 command command_list[] = {
@@ -1104,6 +1176,7 @@ command command_list[] = {
     {"am_findsecret", C_automapfindsecret},
     {"am_finditem", C_automapfinditem},
     {"am_findmonster", C_automapfindmonster},
+    {"am_findkey", C_automapfindkey},
 
     /* aliases */
     {"snd", C_sndvol},
