@@ -88,6 +88,7 @@
 #include "statdump.h"
 #include "SDL.h"
 #include "c_cvar.h"
+#include "i_sound.h"
 
 #include "m_io.h"
 
@@ -5056,4 +5057,31 @@ static void G_TimeWarpTicker()
         else
             doom_printf("Warning: Timewarp is causing lag on this map.");
     }
+}
+
+dboolean G_Check100pAchieved()
+{
+    unsigned int i;
+    unsigned int playersecrets = 0;
+    unsigned int playerkills = 0;
+    unsigned int playeritems = 0;
+
+    if (!C_CvarIsSet("announce_100p_max"))
+        return false;
+
+    for (i = 0; i<MAXPLAYERS; i++) {
+        if (playeringame[i]) {
+            playeritems += players[i].itemcount;
+            playerkills += (players[i].killcount - players[i].resurectedkillcount);
+            playersecrets += players[i].secretcount;
+        }
+    }
+
+    if (playeritems == totalitems && playersecrets == totalsecret && playerkills == totalkills) {
+        int sfx_id = (I_GetSfxLumpNum(&S_sfx[sfx_maxall]) < 0 ? sfx_itmbk : sfx_maxall);
+        SetCustomMessage(consoleplayer, STSTR_ALL100P, 0, 4 * TICRATE, CR_BLACK, sfx_id);
+        return true;
+    }
+
+    return false;
 }

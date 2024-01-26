@@ -86,6 +86,9 @@ void G_ChangedPlayerColour(int pn, int cl); // CPhipps - On-the-fly player colou
 void G_MakeSpecialEvent(buttoncode_t bc, ...); /* cph - new event stuff */
 int G_ValidateMapName(const char *mapname, int *pEpi, int *pMap);
 
+// jds - achievement tracking
+dboolean G_Check100pAchieved();
+
 // jds - time warping
 void G_TimeWarpForward();
 void G_TimeWarpBackward();

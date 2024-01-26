@@ -82,6 +82,7 @@ set(SOUNDS
     sounds/dssecall.wav
     sounds/dsitmall.wav
     sounds/dskilall.wav
+    sounds/dsmaxall.wav
 )
 
 set(GRAPHICS

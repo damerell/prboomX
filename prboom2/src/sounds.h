@@ -301,6 +301,7 @@ typedef enum {
   sfx_secall,
   sfx_itmall,
   sfx_kilall,
+  sfx_maxall,
   sfx_gibdth,
   // Everything from here to 500 is reserved
 

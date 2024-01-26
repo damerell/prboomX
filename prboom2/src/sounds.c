@@ -250,6 +250,7 @@ sfxinfo_t S_sfx[] = {
   { "secall", false, 60, 0, -1, -1, 0 },
   { "itmall", false, 60, 0, -1, -1, 0 },
   { "kilall", false, 60, 0, -1, -1, 0 },
+  { "maxall", false, 60, 0, -1, -1, 0 },
   { "gibdth", false, 60, 0, -1, -1, 0 },
   // Everything from here up to 500 is reserved for future use.
 

@@ -61,6 +61,7 @@
 #include "hu_stuff.h"
 #include "lprintf.h"
 #include "e6y.h"//e6y
+#include "c_cvar.h"
 
 //
 //      source animation definition
@@ -2373,7 +2374,7 @@ void P_PlayerInSpecialSector (player_t* player)
         // Tally player in secret sector, clear secret special
         player->secretcount++;
         sector->special = 0;
-        if (hudadd_announce_100p_secrets) {
+        if (hudadd_announce_100p_secrets || C_CvarIsSet("announce_100p_max")) {
             unsigned int i;
             unsigned int playersecrets = 0;
             for (i = 0; i<MAXPLAYERS; i++) {
@@ -2383,9 +2384,13 @@ void P_PlayerInSpecialSector (player_t* player)
             }
 
             if (playersecrets == totalsecret) {
-                int sfx_id = (I_GetSfxLumpNum(&S_sfx[sfx_secall]) < 0 ? sfx_itmbk : sfx_secall);
-                SetCustomMessage(player - players, STSTR_ALLSECRETFOUND, 0, 2 * TICRATE, CR_GREEN, sfx_id);
-                break;
+                if (G_Check100pAchieved()) {
+                    break;
+                } else if (hudadd_announce_100p_secrets) {
+                    int sfx_id = (I_GetSfxLumpNum(&S_sfx[sfx_secall]) < 0 ? sfx_itmbk : sfx_secall);
+                    SetCustomMessage(player - players, STSTR_ALLSECRETFOUND, 0, 2 * TICRATE, CR_GREEN, sfx_id);
+                    break;
+                }
             }
         }
 

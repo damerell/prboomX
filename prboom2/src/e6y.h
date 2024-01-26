@@ -51,6 +51,7 @@
 #define STSTR_ALLSECRETFOUND    "All secrets found!"
 #define STSTR_ALLMONSTERSKILLED "All monsters killed!"
 #define STSTR_ALLITEMSFOUND     "All items found!"
+#define STSTR_ALL100P           "100\% MAX Achieved!"
 
 #define S_CANT_GL_ARB_MULTITEXTURE 0x10000000
 #define S_CANT_GL_ARB_MULTISAMPLEFACTOR  0x20000000

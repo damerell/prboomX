@@ -116,6 +116,7 @@ Example: `set overunder 1`
 * `showfps` (default: off) - Show current FPS in the upper-right corner.
 * `r_drawplayersprites` (default: on) - Same meaning as the same-named [GZDoom CVAR](https://zdoom.org/wiki/CVARs:Display#r_drawplayersprites)
 * `overunder` (default: off) - Allow things to move over/under other things (adapted from [Crispy Doom](https://github.com/fabiangreffrath/crispy-doom) and [Nugget Doom](https://github.com/MrAlaux/Nugget-Doom))
+* `announce_100p_max` (default: off) - Announce when 100% kills, items, and secrets has been achieved.
 
 # Reference Material
 
@@ -487,3 +488,5 @@ Sub-bullets list accepted alternate names for weapons.
 * All Monsters Killed (`DSKILALL`)
     * [Sound Pack 01](https://opengameart.org/content/level-up-power-up-coin-get-13-sounds) by [wobbleboxx](https://opengameart.org/users/wobbleboxx), CC0
     * [The Ritual](https://opengameart.org/content/the-ritual) by [northivanastan](https://opengameart.org/users/northivanastan), CC0
+* Max 100% Announcement (`DSMAXALL`)
+    * [Cure7](https://opengameart.org/content/cure-magic) by [Someoneman](https://opengameart.org/users/someoneman), CC0

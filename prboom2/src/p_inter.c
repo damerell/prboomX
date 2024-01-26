@@ -44,6 +44,7 @@
 #include "c_cvar.h"
 #include "hu_stuff.h"
 #include "i_sound.h"
+#include "g_game.h"
 
 #include "p_inter.h"
 #include "p_enemy.h"
@@ -636,7 +637,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
 
   if (special->flags & MF_COUNTITEM) {
     player->itemcount++;
-    if (hudadd_announce_100p_items) {
+    if (hudadd_announce_100p_items || C_CvarIsSet("announce_100p_max")) {
       unsigned int i;
       unsigned int playeritems = 0;
       for (i = 0; i<MAXPLAYERS; i++) {
@@ -644,7 +645,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
               playeritems += players[i].itemcount;
           }
       }
-      if (playeritems == totalitems) {
+      if (playeritems == totalitems && !G_Check100pAchieved() && hudadd_announce_100p_items) {
           int sfx_id = (I_GetSfxLumpNum(&S_sfx[sfx_itmall]) < 0 ? sfx_itmbk : sfx_itmall);
           SetCustomMessage(consoleplayer, STSTR_ALLITEMSFOUND, 0, 2 * TICRATE, CR_BLUE2, sfx_id);
       }
@@ -822,7 +823,9 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
     target->tics = 1;
 
   // check kill count vs. map totals
-  if (hudadd_announce_100p_kills && (target->flags & MF_COUNTKILL) && !(target->flags & MF_RESSURECTED)) {
+  if ((hudadd_announce_100p_kills || C_CvarIsSet("announce_100p_max")) &&
+          (target->flags & MF_COUNTKILL) && !(target->flags & MF_RESSURECTED))
+  {
       unsigned int player;
       unsigned int playerkills = 0;
       for (player = 0; player<MAXPLAYERS; player++) {
@@ -830,7 +833,7 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
               playerkills += (players[player].killcount - players[player].resurectedkillcount);
           }
       }
-      if (playerkills == totalkills) {
+      if (playerkills == totalkills && !G_Check100pAchieved() && hudadd_announce_100p_kills) {
           int sfx_id = (I_GetSfxLumpNum(&S_sfx[sfx_kilall]) < 0 ? sfx_itmbk : sfx_kilall);
           SetCustomMessage(consoleplayer, STSTR_ALLMONSTERSKILLED, 0, 2 * TICRATE, CR_RED, sfx_id);
       }
