@@ -839,6 +839,9 @@ static void C_internal_summon(char* cmd, dboolean friendly, dboolean am_pos)
         /* don't count summoned objects toward kills */
         newmobj->flags |= MF_RESSURECTED;
 
+        /* don't count summoned objects toward items */
+        newmobj->flags &= ~MF_COUNTITEM;
+
         if (friendly)
             newmobj->flags |= MF_FRIEND;
 
