@@ -367,16 +367,17 @@ dboolean enable_time_warping;
 /* jds: time warp parameters */
 #define TIMEWARP_ANCHOR_TICK_LIMIT (175)
 #define TIMEWARP_TICK_LIMIT (7*TICRATE)
+/* NOTE: limited to <=9999 (4 digits) unless savefile format is changed */
 #define TIMEWARP_SLOTS (64)
 /* extra time (in ticks) applied post-warp before the timeline is lost */
 #define TIMEWARP_WARP_TIME_BONUS (-TICRATE)
 /* time in ticks when we are considered "near" the warp
  * start point */
 #define TIMEWARP_NEAR_WARP_START (TICRATE>>1)
-static int  timewarp_position = -1;
-static int  timewarp_ticks = TIMEWARP_TICK_LIMIT;
-static int  timewarp_future_limit = -1;
-static int  timewarp_past_limit = -1;
+static int32_t timewarp_position = -1;
+static int32_t timewarp_ticks = TIMEWARP_TICK_LIMIT;
+static int32_t timewarp_future_limit = -1;
+static int32_t timewarp_past_limit = -1;
 static byte *timewarp_array[TIMEWARP_SLOTS] = { 0 };
 static void G_TimeWarpSetNextAnchorPoint();
 static void G_TimeWarpLoadAnchorPoint(int position);
@@ -5057,6 +5058,110 @@ static void G_TimeWarpTicker()
         else
             doom_printf("Warning: Timewarp is causing lag on this map.");
     }
+}
+
+dboolean G_TimeWarpSaveTimelineAsFile(const char* filename)
+{
+    dboolean success = false;
+    FILE *f = M_fopen(filename,"w");
+    if (f) {
+        int i;
+        fwrite(&savegamesize, sizeof(int64_t), 1, f);
+        fwrite(&timewarp_position, sizeof(int32_t), 1, f);
+        fwrite(&timewarp_future_limit, sizeof(int32_t), 1, f);
+        fwrite(&timewarp_past_limit, sizeof(int32_t), 1, f);
+        for (i = 0; i < TIMEWARP_SLOTS; i++) {
+            if (timewarp_array[i]) {
+                fprintf(f, "SLOT%04d", i);
+                fwrite(timewarp_array[i], sizeof(byte), savegamesize, f);
+            } else {
+                fprintf(f, "NULL%04d", i);
+            }
+        }
+        fclose(f);
+        lprintf(LO_INFO, "Timewarp: Timeline written to file: %s\n", filename);
+        success = true;
+    } else {
+        lprintf(LO_WARN, "Timewarp: Could not write to file: %s\n", filename);
+    }
+
+    return success;
+}
+
+dboolean G_TimeWarpLoadTimelineAsFile(const char* filename)
+{
+    dboolean success = true;
+    FILE *f = M_fopen(filename,"r");
+    if (f) {
+        int i = 0;
+        int rc = 0;
+
+        G_TimeWarpReset();
+
+        rc += fread(&savegamesize, sizeof(int64_t), 1, f);
+        rc += fread(&timewarp_position, sizeof(int32_t), 1, f);
+        rc += fread(&timewarp_future_limit, sizeof(int32_t), 1, f);
+        rc += fread(&timewarp_past_limit, sizeof(int32_t), 1, f);
+
+        if (rc == 4) {
+            for (i = 0; i < TIMEWARP_SLOTS; i++) {
+                char marker[5] = {0};
+                char slotnum[5] = {0};
+                int slot = -1;
+
+                fread(marker, sizeof(char), 4, f);
+                fread(slotnum, sizeof(char), 4, f);
+                slot = atoi(slotnum);
+
+                if (slot == i) {
+                    if (strncmp(marker, "SLOT", 4) == 0) {
+                        timewarp_array[i] = malloc(savegamesize);
+                        if (savegamesize != fread(timewarp_array[i], sizeof(byte), savegamesize, f)) {
+                            lprintf(LO_WARN, "Timewarp: Timeline slot %d did not contain a valid timewarp in file: %s\n", i, filename);
+                            break;
+                        }
+                    } else if (strncmp(marker, "NULL", 4) == 0) {
+                        timewarp_array[i] = NULL;
+                    } else {
+                        lprintf(LO_WARN, "Timewarp: Timeline slot %d did not contain a valid marker in file: %s\n", i, filename);
+                        success = false;
+                        break;
+                    }
+                } else {
+                    lprintf(LO_WARN, "Timewarp: Timeline slot %d missing or not read from file (%d seen): %s\n", i, slot, filename);
+                    success = false;
+                    break;
+                }
+            }
+        } else {
+            lprintf(LO_WARN, "Timewarp: Timeline position/future/past limits did not read correctly from file: %s\n", filename);
+            success = false;
+        }
+        fclose(f);
+        if (success) {
+            G_TimeWarpBackward();
+            lprintf(LO_INFO, "Timewarp: Timeline read from file: %s\n", filename);
+        } else {
+            lprintf(LO_INFO, "Timewarp: Error reading timeline from file: %s\n", filename);
+        }
+    } else {
+        lprintf(LO_WARN, "Timewarp: Could not read from file: %s\n", filename);
+        success = false;
+    }
+
+    if (!success)
+        G_TimeWarpReset();
+
+    return success;
+}
+
+char* G_TimeWarpGenerateFilename()
+{
+    const char* timewarp_filename = "timewarp.twp";
+    int filenamelen = strlen(basesavegame) + strlen(timewarp_filename) + 2;
+    char* filename = malloc(sizeof(char)*(filenamelen));
+    snprintf(filename, filenamelen, "%s/%s", basesavegame, timewarp_filename);
+    return filename;
 }
 
 dboolean G_Check100pAchieved()

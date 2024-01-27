@@ -1142,6 +1142,20 @@ static void C_automapfindkey(char* cmd)
         doom_printf("No remaining keys found.");
 }
 
+static void C_timewarptimelinesave(char* cmd)
+{
+    char* filename = G_TimeWarpGenerateFilename();
+    doom_printf("%s",G_TimeWarpSaveTimelineAsFile(filename) ? "Timeline saved" : "Timeline failed to save");
+    free(filename);
+}
+
+static void C_timewarptimelineload(char* cmd)
+{
+    char* filename = G_TimeWarpGenerateFilename();
+    doom_printf("%s",G_TimeWarpLoadTimelineAsFile(filename) ? "Timeline loaded" : "Timeline failed to load");
+    free(filename);
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -1180,6 +1194,8 @@ command command_list[] = {
     {"am_finditem", C_automapfinditem},
     {"am_findmonster", C_automapfindmonster},
     {"am_findkey", C_automapfindkey},
+    {"timewarp_timeline_save", C_timewarptimelinesave},
+    {"timewarp_timeline_load", C_timewarptimelineload},
 
     /* aliases */
     {"snd", C_sndvol},
