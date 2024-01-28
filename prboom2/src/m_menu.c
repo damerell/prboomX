@@ -245,8 +245,6 @@ void M_FinishHelp(int choice);            // killough 10/98
 void M_LoadSelect(int choice);
 void M_SaveSelect(int choice);
 void M_ReadSaveStrings(void);
-void M_QuickSave(void);
-void M_QuickLoad(void);
 
 void M_DrawMainMenu(void);
 void M_DrawReadThis1(void);
@@ -998,7 +996,7 @@ void M_DrawSave(void)
 //
 static void M_DoSave(int slot)
 {
-  G_SaveGame (slot,savegamestrings[slot]);
+  G_SaveGame (slot,savegamestrings[slot], false);
   M_ClearMenus ();
 
   // PICK QUICKSAVE SLOT YET?

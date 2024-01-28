@@ -350,7 +350,7 @@ static dboolean *joybuttons = &joyarray[1];    // allow [-1]
 
 // Game events info
 static buttoncode_t special_event; // Event triggered by local player, to send
-static byte  savegameslot;         // Slot to load if gameaction == ga_loadgame
+byte  savegameslot;         // Slot to load if gameaction == ga_loadgame
 char         savedescription[SAVEDESCLEN];  // Description to save in savegame if gameaction == ga_savegame
 
 //jff 3/24/98 define defaultskill here
@@ -2396,15 +2396,17 @@ void G_DoLoadGame(void)
 // Description is a 24 byte text string
 //
 
-void G_SaveGame(int slot, char *description)
+void G_SaveGame(int slot, char *description, dboolean immediate)
 {
   strcpy(savedescription, description);
-  if (demoplayback) {
+  if (demoplayback || immediate) {
     /* cph - We're doing a user-initiated save game while a demo is
      * running so, go outside normal mechanisms
      */
     savegameslot = slot;
     G_DoSaveGame(true);
+    if (immediate)
+        return;
   }
   // CPhipps - store info in special_event
   special_event = BT_SPECIAL | (BTS_SAVEGAME & BT_SPECIALMASK) |

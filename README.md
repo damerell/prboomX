@@ -102,6 +102,13 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `am_findmonster` (in automap, jump the cursor to be on top of the next alive monster)
     - Credit for these `am_find*` concepts to similar cheats in [dsda-doom](https://github.com/kraflab/dsda-doom)
 - `am_findkey` (in automap, jump the cursor to be on top of the next key)
+- `savegame [slot]` (save game to given slot number)
+- `loadgame [slot]` (load game from given slot number)
+- `quicksave`
+- `quickload`
+- `timewarp_timeline_save` (save timewarp timeline to file)
+- `timewarp_timeline_load` (load timewarp timeline from file)
+
 
 # Defined CVARs
 
