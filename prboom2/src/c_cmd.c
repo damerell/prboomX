@@ -1143,16 +1143,12 @@ static void C_automapfindkey(char* cmd)
 
 static void C_timewarptimelinesave(char* cmd)
 {
-    char* filename = G_TimeWarpGenerateFilename();
-    doom_printf("%s",G_TimeWarpSaveTimelineAsFile(filename) ? "Timeline saved" : "Timeline failed to save");
-    free(filename);
+    doom_printf("%s",G_TimeWarpSaveTimelineAsFile(G_TimeWarpGenerateFilename()) ? "Timeline saved" : "Timeline failed to save");
 }
 
 static void C_timewarptimelineload(char* cmd)
 {
-    char* filename = G_TimeWarpGenerateFilename();
-    doom_printf("%s",G_TimeWarpLoadTimelineAsFile(filename) ? "Timeline loaded" : "Timeline failed to load");
-    free(filename);
+    doom_printf("%s",G_TimeWarpLoadTimelineAsFile(G_TimeWarpGenerateFilename(), true) ? "Timeline loaded" : "Timeline failed to load");
 }
 
 static void C_savegame(char* cmd)

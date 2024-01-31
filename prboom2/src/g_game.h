@@ -93,9 +93,8 @@ dboolean G_Check100pAchieved();
 void G_TimeWarpForward();
 void G_TimeWarpBackward();
 dboolean G_TimeWarpSaveTimelineAsFile(const char* filename);
-dboolean G_TimeWarpLoadTimelineAsFile(const char* filename);
-/* user must free after use */
-char* G_TimeWarpGenerateFilename();
+dboolean G_TimeWarpLoadTimelineAsFile(const char* filename, dboolean jump_to_tail);
+const char* G_TimeWarpGenerateFilename();
 
 //e6y
 extern dboolean democontinue;

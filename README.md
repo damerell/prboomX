@@ -45,6 +45,8 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
     * Press '[' (default) to travel back in time
     * Press ']' (default) to travel forward in time
     * Stay too long in the past, and your old future will no longer be reachable.
+    * Timelines can be saved to or loaded from a file
+    * Timelines autoload when present and matching the loaded WAD content
     * Be warned! Time travel can be quite disorienting...
 * Bind keys to console commands
     * Console command: `bind [key] [command]`

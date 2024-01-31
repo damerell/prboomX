@@ -5092,10 +5092,16 @@ dboolean G_TimeWarpSaveTimelineAsFile(const char* filename)
     return success;
 }
 
-dboolean G_TimeWarpLoadTimelineAsFile(const char* filename)
+dboolean G_TimeWarpLoadTimelineAsFile(const char* filename, dboolean jump_to_tail)
 {
     dboolean success = true;
-    FILE *f = M_fopen(filename,"r");
+    FILE *f;
+
+    /* only load timewarp if enabled */
+    if (!G_CheckTimeWarpingIsOK(jump_to_tail))
+        return false;
+
+    f = M_fopen(filename,"r");
     if (f) {
         int i = 0;
         int rc = 0;
@@ -5164,7 +5170,8 @@ dboolean G_TimeWarpLoadTimelineAsFile(const char* filename)
         }
         fclose(f);
         if (success) {
-            G_TimeWarpBackward();
+            if (jump_to_tail)
+                G_TimeWarpBackward();
             lprintf(LO_INFO, "Timewarp: Timeline read from file: %s\n", filename);
         } else {
             lprintf(LO_INFO, "Timewarp: Error reading timeline from file: %s\n", filename);
@@ -5181,11 +5188,13 @@ dboolean G_TimeWarpLoadTimelineAsFile(const char* filename)
     return success;
 }
 
-char* G_TimeWarpGenerateFilename()
+const char* G_TimeWarpGenerateFilename()
 {
+    static char* filename = 0;
     const char* timewarp_filename = "timewarp.twp";
     int filenamelen = strlen(basesavegame) + strlen(timewarp_filename) + 2;
-    char* filename = malloc(sizeof(char)*(filenamelen));
+    free(filename);
+    filename = malloc(sizeof(char)*(filenamelen));
     snprintf(filename, filenamelen, "%s/%s", basesavegame, timewarp_filename);
     return filename;
 }
