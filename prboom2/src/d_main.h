@@ -79,6 +79,7 @@ void AddIWAD(const char *iwad);
 const char *BaseName(const char *filename);
 
 void D_AdjustSaveLocation();
+const unsigned char* D_CalculateLoadedWADContentMD5();
 
 /* cph - MBF-like wad/deh/bex autoload code */
 /* proff 2001/7/1 - added prboom.wad as last entry so it's always loaded and

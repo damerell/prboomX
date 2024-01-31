@@ -172,23 +172,19 @@ const char *const standard_iwads[]=
 const int nstandard_iwads = sizeof standard_iwads/sizeof*standard_iwads;
 
 char* savegame_wadlist = NULL;
+unsigned char wadlist_digest[16];
 
-void D_AdjustSaveLocation()
+const unsigned char* D_CalculateLoadedWADContentMD5()
 {
-    static char* base_folder = 0;
-
-    if (!base_folder) {
-        base_folder = strdup(basesavegame);
-    }
-
-    if (organize_saves) {
-        struct MD5Context wads_md5 = {0};
+    static dboolean initialized = false;
+    if (!initialized) {
+        struct MD5Context wads_md5;
+        memset(&wads_md5, 0, sizeof(struct MD5Context));
         free(savegame_wadlist);
         savegame_wadlist = malloc(sizeof(char));
         int wadlen = 0;
         savegame_wadlist[0] = '\0';
         MD5Init(&wads_md5);
-        unsigned char digest[16];
         for (int j = 0; j < numwadfiles; j++) {
             /* ignore GWA files */
             if (stricmp(strrchr(wadfiles[j].name,'.'), ".gwa")) {
@@ -205,10 +201,24 @@ void D_AdjustSaveLocation()
                 free(wad);
             }
         }
-        MD5Final(digest, &wads_md5);
+        MD5Final(wadlist_digest, &wads_md5);
+        initialized = true;
+    }
+    return wadlist_digest;
+}
 
+void D_AdjustSaveLocation()
+{
+    static char* base_folder = 0;
+
+    if (!base_folder) {
+        base_folder = strdup(basesavegame);
+    }
+
+    if (organize_saves) {
+        D_CalculateLoadedWADContentMD5();
         /* append the digest to the base save game folder */
-        char* newsavedir = (char*) malloc(strlen(basesavegame) + sizeof(digest) + 2);
+        char* newsavedir = (char*) malloc(strlen(basesavegame) + sizeof(wadlist_digest) + 2);
         strcpy(newsavedir, basesavegame);
         if (!HasTrailingSlash(newsavedir)) {
             strcat(newsavedir, "/");
@@ -217,7 +227,7 @@ void D_AdjustSaveLocation()
         int wrptr = strlen(newsavedir);
         char b[3];
         for (int i = 0; i < 16; i++) {
-            snprintf(b, sizeof(b), "%02X",digest[i]);
+            snprintf(b, sizeof(b), "%02X",wadlist_digest[i]);
             strcat(newsavedir, b);
         }
 

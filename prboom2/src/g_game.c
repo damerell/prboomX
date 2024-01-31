@@ -5068,6 +5068,8 @@ dboolean G_TimeWarpSaveTimelineAsFile(const char* filename)
     FILE *f = M_fopen(filename,"w");
     if (f) {
         int i;
+        const unsigned char* digest = D_CalculateLoadedWADContentMD5();
+        fwrite(digest, sizeof(unsigned char), 16, f);
         fwrite(&savegamesize, sizeof(int64_t), 1, f);
         fwrite(&timewarp_position, sizeof(int32_t), 1, f);
         fwrite(&timewarp_future_limit, sizeof(int32_t), 1, f);
@@ -5097,7 +5099,28 @@ dboolean G_TimeWarpLoadTimelineAsFile(const char* filename)
     if (f) {
         int i = 0;
         int rc = 0;
+        const unsigned char* reference_digest = D_CalculateLoadedWADContentMD5();
+        unsigned char timeline_digest[16];
 
+        rc = fread(&timeline_digest, sizeof(unsigned char), 16, f);
+
+        if (rc != 16) {
+            lprintf(LO_WARN, "Timewarp: No valid timewarp in file: %s\n", filename);
+            /* early return and DO NOT wipe out current timeline */
+            fclose(f);
+            return false;
+        }
+
+        for (i = 0; i < 16; i++) {
+            if (reference_digest[i] != timeline_digest[i]) {
+                lprintf(LO_WARN, "Timewarp: Timeline did not match loaded wads in file: %s\n", filename);
+                /* early return and DO NOT wipe out current timeline */
+                fclose(f);
+                return false;
+            }
+        }
+
+        rc = 0;
         G_TimeWarpReset();
 
         rc += fread(&savegamesize, sizeof(int64_t), 1, f);
@@ -5148,7 +5171,8 @@ dboolean G_TimeWarpLoadTimelineAsFile(const char* filename)
         }
     } else {
         lprintf(LO_WARN, "Timewarp: Could not read from file: %s\n", filename);
-        success = false;
+        /* return here and do NOT wipe out timeline */
+        return false;
     }
 
     if (!success)
