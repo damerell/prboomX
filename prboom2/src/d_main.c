@@ -2414,7 +2414,7 @@ static void D_DoomMainSetup(void)
   /* if a timeline is available and valid,
    * attempt to load it
    */
-  if (!netgame && !demorecording && !demoplayback)
+  if (!netgame && !demorecording && !demoplayback && autoload_timeline)
       G_TimeWarpLoadTimelineAsFile(G_TimeWarpGenerateFilename(), false);
 }
 

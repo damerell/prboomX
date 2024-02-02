@@ -3340,7 +3340,8 @@ setup_menu_t gen_settings_prboomx[] = { // prboomX General Settings
   {"Player map arrow appearance",     S_CHOICE       ,m_null,G_X,G_Y+4*8, {"map_player_arrow_appearance"}, 0, 0, NULL, map_player_arrow_appearance_list},
   {"Skip QuickSave/Load confirmation" ,S_YESNO       ,m_null,G_X,G_Y+5*8, {"skip_quicksaveload_confirmation"}},
   {"Enable Time Warping"              ,S_YESNO       ,m_null,G_X,G_Y+6*8, {"enable_time_warping"}},
-  {"Fix Blockmap bug"                 ,S_YESNO       ,m_null,G_X,G_Y+7*8, {"comp_fix_blockmap"}},
+  {"Autoload Time Warp Timelines"     ,S_YESNO       ,m_null,G_X,G_Y+7*8, {"autoload_timeline"}},
+  {"Fix Blockmap bug"                 ,S_YESNO       ,m_null,G_X,G_Y+8*8, {"comp_fix_blockmap"}},
 
   {"<- PREV",S_SKIP|S_PREV, m_null,KB_PREV, KB_Y+20*8, {gen_settings1}},
   {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {gen_settings2}},

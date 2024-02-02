@@ -363,6 +363,7 @@ mobj_t **bodyque = 0;                   // phares 8/10/98
 dboolean organize_saves;
 dboolean skip_quicksaveload_confirmation;
 dboolean enable_time_warping;
+dboolean autoload_timeline;
 
 /* jds: time warp parameters */
 #define TIMEWARP_ANCHOR_TICK_LIMIT (175)
