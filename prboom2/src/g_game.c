@@ -364,6 +364,7 @@ dboolean organize_saves;
 dboolean skip_quicksaveload_confirmation;
 dboolean enable_time_warping;
 dboolean autoload_timeline;
+dboolean autosave_timeline_on_exit;
 
 /* jds: time warp parameters */
 #define TIMEWARP_ANCHOR_TICK_LIMIT (175)
@@ -5066,7 +5067,13 @@ static void G_TimeWarpTicker()
 dboolean G_TimeWarpSaveTimelineAsFile(const char* filename)
 {
     dboolean success = false;
-    FILE *f = M_fopen(filename,"w");
+    FILE *f;
+
+    /* only save timewarp if enabled and allowed */
+    if (!G_CheckTimeWarpingIsOK(false))
+        return false;
+
+    f = M_fopen(filename,"w");
     if (f) {
         int i;
         const unsigned char* digest = D_CalculateLoadedWADContentMD5();
@@ -5198,6 +5205,12 @@ const char* G_TimeWarpGenerateFilename()
     filename = malloc(sizeof(char)*(filenamelen));
     snprintf(filename, filenamelen, "%s/%s", basesavegame, timewarp_filename);
     return filename;
+}
+
+void G_AutoSaveTimeWarpTimelineOnExit()
+{
+  if (autosave_timeline_on_exit)
+      G_TimeWarpSaveTimelineAsFile(G_TimeWarpGenerateFilename());
 }
 
 dboolean G_Check100pAchieved()

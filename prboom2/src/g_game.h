@@ -95,6 +95,7 @@ void G_TimeWarpBackward();
 dboolean G_TimeWarpSaveTimelineAsFile(const char* filename);
 dboolean G_TimeWarpLoadTimelineAsFile(const char* filename, dboolean jump_to_tail);
 const char* G_TimeWarpGenerateFilename();
+void G_AutoSaveTimeWarpTimelineOnExit();
 
 //e6y
 extern dboolean democontinue;
@@ -236,6 +237,7 @@ extern dboolean organize_saves;
 extern dboolean skip_quicksaveload_confirmation;
 extern dboolean enable_time_warping;
 extern dboolean autoload_timeline;
+extern dboolean autosave_timeline_on_exit;
 
 // killough 5/2/98: moved from d_deh.c:
 // Par times (new item with BOOM) - from g_game.c
