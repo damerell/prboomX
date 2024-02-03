@@ -4926,6 +4926,12 @@ static dboolean G_CheckTimeWarpingIsOK(dboolean print)
         return false;
     }
 
+    if (gamestate != GS_LEVEL) {
+        if (print)
+            doom_printf("Time warping not available while not playing.");
+        return false;
+    }
+
     return true;
 }
 
