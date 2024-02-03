@@ -47,7 +47,6 @@
 
 #include <time.h>
 
-extern char *basesavegame;
 extern void M_QuitResponse(int ch);
 extern const char * const ActorNames[];
 
@@ -1142,6 +1141,66 @@ static void C_automapfindkey(char* cmd)
         doom_printf("No remaining keys found.");
 }
 
+static void C_timewarptimelinesave(char* cmd)
+{
+    doom_printf("%s",G_TimeWarpSaveTimelineAsFile(G_TimeWarpGenerateFilename()) ? "Timeline saved" : "Timeline failed to save");
+}
+
+static void C_timewarptimelineload(char* cmd)
+{
+    doom_printf("%s",G_TimeWarpLoadTimelineAsFile(G_TimeWarpGenerateFilename(), true) ? "Timeline loaded" : "Timeline failed to load");
+}
+
+static void C_savegame(char* cmd)
+{
+    int slot;
+    char* parsed_slot[1];
+
+    if (C_ParseArgs(cmd, parsed_slot, 1) != 1) {
+        doom_printf("Usage: savegame [slot number]");
+        return;
+    }
+
+    slot = atoi(parsed_slot[0]);
+
+    if (slot < 0) {
+        doom_printf("Usage: savegame [slot number]");
+        return;
+    }
+
+    G_SaveGame(slot, "console save", true);
+}
+
+static void C_loadgame(char* cmd)
+{
+    int slot;
+    char* parsed_slot[1];
+
+    if (C_ParseArgs(cmd, parsed_slot, 1) != 1) {
+        doom_printf("Usage: loadgame [slot number]");
+        return;
+    }
+
+    slot = atoi(parsed_slot[0]);
+
+    if (slot < 0) {
+        doom_printf("Usage: loadgame [slot number]");
+        return;
+    }
+
+    G_LoadGame(slot, false);
+}
+
+static void C_quickload(char* cmd)
+{
+    M_QuickLoad();
+}
+
+static void C_quicksave(char* cmd)
+{
+    M_QuickSave();
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -1180,6 +1239,12 @@ command command_list[] = {
     {"am_finditem", C_automapfinditem},
     {"am_findmonster", C_automapfindmonster},
     {"am_findkey", C_automapfindkey},
+    {"timewarp_timeline_save", C_timewarptimelinesave},
+    {"timewarp_timeline_load", C_timewarptimelineload},
+    {"savegame", C_savegame},
+    {"loadgame", C_loadgame},
+    {"quicksave", C_quicksave},
+    {"quickload", C_quickload},
 
     /* aliases */
     {"snd", C_sndvol},

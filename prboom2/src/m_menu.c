@@ -245,8 +245,6 @@ void M_FinishHelp(int choice);            // killough 10/98
 void M_LoadSelect(int choice);
 void M_SaveSelect(int choice);
 void M_ReadSaveStrings(void);
-void M_QuickSave(void);
-void M_QuickLoad(void);
 
 void M_DrawMainMenu(void);
 void M_DrawReadThis1(void);
@@ -998,7 +996,7 @@ void M_DrawSave(void)
 //
 static void M_DoSave(int slot)
 {
-  G_SaveGame (slot,savegamestrings[slot]);
+  G_SaveGame (slot,savegamestrings[slot], false);
   M_ClearMenus ();
 
   // PICK QUICKSAVE SLOT YET?
@@ -3342,7 +3340,9 @@ setup_menu_t gen_settings_prboomx[] = { // prboomX General Settings
   {"Player map arrow appearance",     S_CHOICE       ,m_null,G_X,G_Y+4*8, {"map_player_arrow_appearance"}, 0, 0, NULL, map_player_arrow_appearance_list},
   {"Skip QuickSave/Load confirmation" ,S_YESNO       ,m_null,G_X,G_Y+5*8, {"skip_quicksaveload_confirmation"}},
   {"Enable Time Warping"              ,S_YESNO       ,m_null,G_X,G_Y+6*8, {"enable_time_warping"}},
-  {"Fix Blockmap bug"                 ,S_YESNO       ,m_null,G_X,G_Y+7*8, {"comp_fix_blockmap"}},
+  {"Autoload Time Warp Timelines"     ,S_YESNO       ,m_null,G_X,G_Y+7*8, {"autoload_timeline"}},
+  {"Autosave Timeline upon Quit"      ,S_YESNO       ,m_null,G_X,G_Y+8*8, {"autosave_timeline_on_exit"}},
+  {"Fix Blockmap bug"                 ,S_YESNO       ,m_null,G_X,G_Y+9*8, {"comp_fix_blockmap"}},
 
   {"<- PREV",S_SKIP|S_PREV, m_null,KB_PREV, KB_Y+20*8, {gen_settings1}},
   {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {gen_settings2}},

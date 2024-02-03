@@ -54,7 +54,7 @@ void G_DeferedPlayDemo(const char *demo); // CPhipps - const
 void G_LoadGame(int slot, dboolean is_command); // killough 5/15/98
 void G_ForcedLoadGame(void);           // killough 5/15/98: forced loadgames
 void G_DoLoadGame(void);
-void G_SaveGame(int slot, char *description); // Called by M_Responder.
+void G_SaveGame(int slot, char *description, dboolean immediate); // Called by M_Responder.
 void G_BeginRecording(void);
 // CPhipps - const on these string params
 void G_RecordDemo(const char *name);          // Only called by startup code.
@@ -92,6 +92,10 @@ dboolean G_Check100pAchieved();
 // jds - time warping
 void G_TimeWarpForward();
 void G_TimeWarpBackward();
+dboolean G_TimeWarpSaveTimelineAsFile(const char* filename);
+dboolean G_TimeWarpLoadTimelineAsFile(const char* filename, dboolean jump_to_tail);
+const char* G_TimeWarpGenerateFilename();
+void G_AutoSaveTimeWarpTimelineOnExit();
 
 //e6y
 extern dboolean democontinue;
@@ -232,6 +236,8 @@ extern int  bodyquesize;       // killough 2/8/98: adustable corpse limit
 extern dboolean organize_saves;
 extern dboolean skip_quicksaveload_confirmation;
 extern dboolean enable_time_warping;
+extern dboolean autoload_timeline;
+extern dboolean autosave_timeline_on_exit;
 
 // killough 5/2/98: moved from d_deh.c:
 // Par times (new item with BOOM) - from g_game.c

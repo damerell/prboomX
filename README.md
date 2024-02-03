@@ -45,6 +45,9 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
     * Press '[' (default) to travel back in time
     * Press ']' (default) to travel forward in time
     * Stay too long in the past, and your old future will no longer be reachable.
+    * Timelines can be saved to or loaded from a file
+    * Timelines autoload when present and matching the loaded WAD content
+    * Timeline can be autosaved on exit
     * Be warned! Time travel can be quite disorienting...
 * Bind keys to console commands
     * Console command: `bind [key] [command]`
@@ -102,6 +105,13 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `am_findmonster` (in automap, jump the cursor to be on top of the next alive monster)
     - Credit for these `am_find*` concepts to similar cheats in [dsda-doom](https://github.com/kraflab/dsda-doom)
 - `am_findkey` (in automap, jump the cursor to be on top of the next key)
+- `savegame [slot]` (save game to given slot number)
+- `loadgame [slot]` (load game from given slot number)
+- `quicksave`
+- `quickload`
+- `timewarp_timeline_save` (save timewarp timeline to file)
+- `timewarp_timeline_load` (load timewarp timeline from file)
+
 
 # Defined CVARs
 
