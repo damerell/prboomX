@@ -4926,6 +4926,12 @@ static dboolean G_CheckTimeWarpingIsOK(dboolean print)
         return false;
     }
 
+    if (gamestate == GS_DEMOSCREEN) {
+        if (print)
+            doom_printf("Time warping not available during title screen or demos.");
+        return false;
+    }
+
     return true;
 }
 

@@ -1814,7 +1814,7 @@ void C_LoadSettings()
     C_CvarInit();
 
     /* skip running user console commands when not allowed */
-    if (netgame || demorecording || demoplayback) {
+    if (netgame || demorecording || demoplayback || gameaction == ga_playdemo) {
         return;
     }
 
