@@ -462,7 +462,8 @@ static void I_Quit (void)
   if (demorecording)
     G_CheckDemoStatus();
   M_SaveDefaults ();
-  C_SaveSettings();
+  if (!netgame && !demorecording && !demoplayback && !gameaction == ga_playdemo)
+      C_SaveSettings();
   I_DemoExShutdown();
 }
 

@@ -892,20 +892,37 @@ static void C_set(char* cmd)
 
     int num_args = C_ParseArgs(cmd, args, 2);
 
-    if (num_args < 2) {
-        doom_printf("Usage: set <variable> <value>");
+    if (num_args < 1) {
+        doom_printf("Usage: set <variable> [value]");
         return;
     }
 
     key = args[0];
-    svalue = C_StripSpaces(args[1]);
-
-    status = C_CvarCreateOrUpdate(key, svalue, 0);
-
-    if (status == CVAR_STATUS_OK)
-        doom_printf("Set CVAR %s=%s", key, svalue);
-    else
-        doom_printf("Error setting CVAR %s: %s", key, C_CvarErrorToString(status));
+    if (num_args == 2) {
+        svalue = C_StripSpaces(args[1]);
+        status = C_CvarCreateOrUpdate(key, svalue, 0);
+        if (status == CVAR_STATUS_OK)
+            doom_printf("Set CVAR %s=%s", key, svalue);
+        else
+            doom_printf("Error setting CVAR %s: %s", key, C_CvarErrorToString(status));
+    } else if (C_CvarExists(key)) {
+        switch (C_CvarGetType(key, NULL)) {
+            case CVAR_TYPE_INT:
+                doom_printf("CVAR %s=%d", key, C_CvarGetAsInt(key, NULL));
+                break;
+            case CVAR_TYPE_FLOAT:
+                doom_printf("CVAR %s=%f", key, C_CvarGetAsFloat(key, NULL));
+                break;
+            case CVAR_TYPE_STRING:
+                doom_printf("CVAR %s=%s", key, C_CvarGetAsString(key, NULL));
+                break;
+            default:
+                doom_printf("CVAR %s has unknown type", key);
+                break;
+        }
+    } else {
+        doom_printf("No CVAR named %s", key);
+    }
 }
 
 static void C_unset(char* cmd)
