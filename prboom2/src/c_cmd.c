@@ -62,6 +62,61 @@ static mobj_t* FindNextMobj(fixed_t* x, fixed_t* y, mobj_t* startmobj, int flags
 static dboolean IsMobjKey(mobj_t* mo);
 static dboolean IsMobjInThinkerList(mobj_t* mo);
 
+typedef struct tick_event_t {
+    int ticks_left;
+    void (*callback)(void);
+    struct tick_event_t* next;
+} tick_event_t;
+
+tick_event_t* tick_head;
+
+void C_Ticker()
+{
+    tick_event_t* t = tick_head;
+    tick_event_t* tprev = NULL;
+
+    while (t) {
+        t->ticks_left--;
+        if (t->ticks_left <= 0) {
+            tick_event_t* tp = NULL;
+            if (t->callback)
+                t->callback();
+            if (tprev) {
+                tprev->next = t->next;
+            } else {
+                tick_head = t->next;
+            }
+            tp = t;
+            t = t->next;
+            free(tp);
+        } else {
+            tprev = t;
+            t = t->next;
+        }
+    }
+}
+
+static void C_schedule(int ticks_from_now, void (*callback)(void))
+{
+    tick_event_t* t;
+    tick_event_t* tend = tick_head;
+
+    t = malloc(sizeof(tick_event_t));
+    if (!t) return;
+
+    t->ticks_left = MAX(1, ticks_from_now);
+    t->callback = callback;
+    t->next = NULL;
+
+    while (tend && tend->next)
+        tend = tend->next;
+
+    if (tend)
+        tend->next = t;
+    else
+        tick_head = t;
+}
+
 /* Parses arguments out from a string using spaces as separators.
  * Returns the number of arguments successfully parsed.
  *
@@ -488,7 +543,7 @@ static void C_give(char* cmd)
 }
 
 extern hu_textline_t  w_title;
-static void C_note(char* cmd)
+static void C_note_internal(char* cmd, dboolean printmsg)
 {
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
@@ -537,14 +592,20 @@ static void C_note(char* cmd)
             fprintf(f, "%s", cmd);
             fprintf(f, "\n\n");
             fclose(f);
-            doom_printf("Note written to %s", notefile);
+            if (printmsg)
+                doom_printf("Note written to %s", notefile);
         } else {
+            /* print error even if printmsg not set */
             doom_printf("Couldn't open note file %s", notefile);
         }
     }
     free(notefile);
 }
 
+static void C_note(char* cmd)
+{
+    C_note_internal(cmd, true);
+}
 
 static void C_mdk(char* cmd)
 {
@@ -1218,6 +1279,15 @@ static void C_quicksave(char* cmd)
     M_QuickSave();
 }
 
+static void C_noteshot(char* cmd)
+{
+    C_note_internal(cmd, false);
+    C_schedule(1, C_screenshot);
+    C_schedule(2, C_mapfollow);
+    C_schedule(4, C_screenshot);
+    C_schedule(5, C_mapfollow);
+}
+
 command command_list[] = {
     {"noclip", C_noclip},
     {"noclip2", C_noclip2},
@@ -1237,6 +1307,7 @@ command command_list[] = {
     {"warp", C_map},
     {"give", C_give},
     {"note", C_note},
+    {"noteshot", C_noteshot},
     {"mdk", C_mdk},
     {"bind", C_bind},
     {"unbind", C_unbind},

@@ -89,6 +89,7 @@
 #include "SDL.h"
 #include "c_cvar.h"
 #include "i_sound.h"
+#include "c_cmd.h"
 
 #include "m_io.h"
 
@@ -1321,6 +1322,7 @@ void G_Ticker (void)
       ST_Ticker ();
       HU_Ticker ();
       G_TimeWarpTicker();
+      C_Ticker();
       break;
 
     case GS_INTERMISSION:

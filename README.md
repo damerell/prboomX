@@ -38,6 +38,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
     * Jot down quick notes while playtesting. Notes go into a dated text file in the current working directory.
     * Each note lists the time, all loaded WAD files, player position, and an optional user-supplied message on the console.
     * Example: `note demon is stuck in the wall here`.
+    * **NEW**: `noteshot` will include screenshots of the screen and automap. Useful if you will post your feedback to forum threads, discord channels, etc.
 * Time Warp: Travel forward and backwards in time while playing.
     * Time travel even if you died or made it to a new level.
     * Enable Time Warp in the PrBoomX options screen
@@ -82,6 +83,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `kill <class>` (see also [Actor Names](https://github.com/JadingTsunami/prboomX#actor-names))
 - `give <thing>`
 - `note <message>` (write notes to a dated text file, useful for quick notes while playtesting)
+- `noteshot <message>` (same as above, and take screenshots with and without the automap)
 - `mdk`
 - `plat_skip` (when enabled, press the "use" key to trigger a lift you're standing in to raise immediately)
 - `bind [key] [command]` (bind any [key](https://github.com/JadingTsunami/prboomX#bindable-special-key-names) to any one or more console commands)

@@ -40,6 +40,7 @@ dboolean C_UnregisterBind(int keycode, evtype_t type);
 void C_SaveSettings();
 void C_LoadSettings();
 const char* C_CommandComplete(const char* partial);
+void C_Ticker();
 
 typedef struct _command {
     const char* name;
