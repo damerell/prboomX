@@ -64,7 +64,7 @@ static dboolean IsMobjInThinkerList(mobj_t* mo);
 
 typedef struct tick_event_t {
     int ticks_left;
-    void (*callback)(void);
+    void (*callback)(char*);
     struct tick_event_t* next;
 } tick_event_t;
 
@@ -80,7 +80,7 @@ void C_Ticker()
         if (t->ticks_left <= 0) {
             tick_event_t* tp = NULL;
             if (t->callback)
-                t->callback();
+                t->callback(NULL);
             if (tprev) {
                 tprev->next = t->next;
             } else {
@@ -96,7 +96,7 @@ void C_Ticker()
     }
 }
 
-static void C_schedule(int ticks_from_now, void (*callback)(void))
+static void C_schedule(int ticks_from_now, void (*callback)(char*))
 {
     tick_event_t* t;
     tick_event_t* tend = tick_head;
@@ -543,7 +543,7 @@ static void C_give(char* cmd)
 }
 
 extern hu_textline_t  w_title;
-static void C_note_internal(char* cmd, dboolean printmsg)
+static void C_note(char* cmd)
 {
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
@@ -592,19 +592,13 @@ static void C_note_internal(char* cmd, dboolean printmsg)
             fprintf(f, "%s", cmd);
             fprintf(f, "\n\n");
             fclose(f);
-            if (printmsg)
-                doom_printf("Note written to %s", notefile);
+            doom_printf("Note written to %s", notefile);
         } else {
             /* print error even if printmsg not set */
             doom_printf("Couldn't open note file %s", notefile);
         }
     }
     free(notefile);
-}
-
-static void C_note(char* cmd)
-{
-    C_note_internal(cmd, true);
 }
 
 static void C_mdk(char* cmd)
@@ -1281,11 +1275,11 @@ static void C_quicksave(char* cmd)
 
 static void C_noteshot(char* cmd)
 {
-    C_note_internal(cmd, false);
     C_schedule(1, C_screenshot);
     C_schedule(2, C_mapfollow);
     C_schedule(4, C_screenshot);
     C_schedule(5, C_mapfollow);
+    C_note(cmd);
 }
 
 command command_list[] = {
