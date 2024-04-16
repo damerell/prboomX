@@ -1024,11 +1024,17 @@ static void C_automapfindsecret(char* cmd)
     i = ((current_secret_sector + 1) % numsectors);
     initial = i;
     do {
-        if (P_IsSecret(&sectors[i])) {
-            x = sectors[i].lines[0]->v1->x;
-            y = sectors[i].lines[0]->v1->y;
+        if (&sectors[i] && P_IsSecret(&sectors[i])) {
+            if(sectors[i].lines &&
+                sectors[i].lines[0] &&
+                sectors[i].lines[0]->v1) {
+                x = sectors[i].lines[0]->v1->x;
+                y = sectors[i].lines[0]->v1->y;
+                AM_SetCenterPosition(&x, &y);
+            } else {
+                doom_printf("Warning: Next secret is unreachable.");
+            }
             current_secret_sector = i;
-            AM_SetCenterPosition(&x, &y);
             break;
         }
         i = ((i+1) % numsectors);
