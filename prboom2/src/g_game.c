@@ -363,6 +363,7 @@ mobj_t **bodyque = 0;                   // phares 8/10/98
 
 dboolean organize_saves;
 dboolean skip_quicksaveload_confirmation;
+dboolean no_save_message;
 dboolean enable_time_warping;
 dboolean autoload_timeline;
 dboolean autosave_timeline_on_exit;
@@ -2610,9 +2611,12 @@ static void G_DoSaveGame (dboolean menu)
       }
   }
 
-  doom_printf( "%s", M_WriteFile(name, savebuffer, save_p - savebuffer)
-         ? s_GGSAVED /* Ty - externalised */
-         : "Game save failed!"); // CPhipps - not externalised
+  if (M_WriteFile(name, savebuffer, save_p - savebuffer)) {
+      if (!no_save_message)
+          doom_printf( "%s", s_GGSAVED);
+  } else {
+          doom_printf( "%s", "Game save failed!"); // CPhipps - not externalised
+  }
 
   /* Print some information about the save game */
   if (gamemode == commercial)

@@ -235,6 +235,7 @@ extern int  bodyquesize;       // killough 2/8/98: adustable corpse limit
 
 extern dboolean organize_saves;
 extern dboolean skip_quicksaveload_confirmation;
+extern dboolean no_save_message;
 extern dboolean enable_time_warping;
 extern dboolean autoload_timeline;
 extern dboolean autosave_timeline_on_exit;

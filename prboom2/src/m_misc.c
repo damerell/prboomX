@@ -333,6 +333,7 @@ default_t defaults[] =
    def_int,ss_stat},
   {"boom_autoswitch", {(int*)&boom_autoswitch}, {1}, 0, 1, def_bool, ss_none},
   {"skip_quicksaveload_confirmation", {(int*)&skip_quicksaveload_confirmation}, {0},0,1,def_bool,ss_auto},
+  {"no_save_message", {(int*)&no_save_message}, {0},0,1,def_bool,ss_auto},
   {"enable_time_warping", {(int*)&enable_time_warping}, {0},0,1,def_bool,ss_auto},
   {"autoload_timeline", {(int*)&autoload_timeline}, {0},0,1,def_bool,ss_auto},
   {"autosave_timeline_on_exit", {(int*)&autosave_timeline_on_exit}, {0},0,1,def_bool,ss_auto},
