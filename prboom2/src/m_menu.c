@@ -3339,7 +3339,7 @@ setup_menu_t gen_settings_prboomx[] = { // prboomX General Settings
   {"Enhanced allmap power up"         ,S_YESNO       ,m_null,G_X,G_Y+3*8, {"map_enhanced_allmap"}},
   {"Player map arrow appearance",     S_CHOICE       ,m_null,G_X,G_Y+4*8, {"map_player_arrow_appearance"}, 0, 0, NULL, map_player_arrow_appearance_list},
   {"Skip QuickSave/Load confirmation" ,S_YESNO       ,m_null,G_X,G_Y+5*8, {"skip_quicksaveload_confirmation"}},
-  {"No Save confirmation message"     ,S_YESNO       ,m_null,G_X,G_Y+6*8, {"no_save_message"}},
+  {"Skip Save confirmation message"   ,S_YESNO       ,m_null,G_X,G_Y+6*8, {"no_save_message"}},
   {"Enable Time Warping"              ,S_YESNO       ,m_null,G_X,G_Y+7*8, {"enable_time_warping"}},
   {"Autoload Time Warp Timelines"     ,S_YESNO       ,m_null,G_X,G_Y+8*8, {"autoload_timeline"}},
   {"Autosave Timeline upon Quit"      ,S_YESNO       ,m_null,G_X,G_Y+9*8, {"autosave_timeline_on_exit"}},

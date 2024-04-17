@@ -29,6 +29,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 * Option to organize save games based on loaded content (WAD, DEH, etc.)
     * Note the order in which content is loaded matters
 * Option to skip QuickSave/QuickLoad confirmation prompt
+* Option to skip save confirmation message
 * Option to fix the Blockmap bug (uses blockmap bug fix from Terry Hearst, adapted from similar PR for Woof)
 * Option to allow things to move over/under other things (see [Defined CVARs](#defined-cvars) section)
 * Option to change player automap arrow to a chevron shape (easier to see direction at a distance)
