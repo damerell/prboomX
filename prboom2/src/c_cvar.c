@@ -109,6 +109,7 @@ void C_CvarInit()
         C_CvarCreate("r_drawplayersprites", "1", CVAR_FLAG_ARCHIVE);
         C_CvarCreate("overunder", "0", CVAR_FLAG_ARCHIVE);
         C_CvarCreate("announce_100p_max", "0", CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("weapon_bob_only", "0", CVAR_FLAG_ARCHIVE);
     }
 }
 

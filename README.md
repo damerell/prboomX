@@ -130,6 +130,7 @@ Example: `set overunder 1`
 * `r_drawplayersprites` (default: on) - Same meaning as the same-named [GZDoom CVAR](https://zdoom.org/wiki/CVARs:Display#r_drawplayersprites)
 * `overunder` (default: off) - Allow things to move over/under other things (adapted from [Crispy Doom](https://github.com/fabiangreffrath/crispy-doom) and [Nugget Doom](https://github.com/MrAlaux/Nugget-Doom))
 * `announce_100p_max` (default: off) - Announce when 100% kills, items, and secrets has been achieved.
+* `weapon_bob_only` (default: off) - Only bob player's weapon, not the player's view.
 
 # Reference Material
 
