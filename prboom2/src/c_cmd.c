@@ -1279,12 +1279,30 @@ static void C_quicksave(char* cmd)
     M_QuickSave();
 }
 
+static void NoteShotStateSaveRestore()
+{
+    extern dboolean singletics;
+    static dboolean saved_singletics = false;
+    static dboolean state_saved = false;
+
+    if (state_saved) {
+        singletics = saved_singletics;
+        state_saved = false;
+    } else {
+        saved_singletics = singletics;
+        singletics = true;
+        state_saved = true;
+    }
+}
+
 static void C_noteshot(char* cmd)
 {
-    C_schedule(1, C_screenshot);
-    C_schedule(2, C_mapfollow);
+    C_schedule(1, NoteShotStateSaveRestore);
     C_schedule(4, C_screenshot);
     C_schedule(5, C_mapfollow);
+    C_schedule(7, C_screenshot);
+    C_schedule(9, C_mapfollow);
+    C_schedule(10, NoteShotStateSaveRestore);
     C_note(cmd);
 }
 
