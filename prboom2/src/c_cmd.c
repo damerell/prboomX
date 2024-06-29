@@ -1282,22 +1282,27 @@ static void C_quicksave(char* cmd)
 static void NoteShotStateSaveRestore()
 {
     extern dboolean singletics;
+    extern int showMessages;
     static dboolean saved_singletics = false;
+    static int saved_showMessages = false;
     static dboolean state_saved = false;
 
     if (state_saved) {
         singletics = saved_singletics;
+        showMessages = saved_showMessages;
         state_saved = false;
     } else {
         saved_singletics = singletics;
+        saved_showMessages = showMessages;
         singletics = true;
+        showMessages = false;
         state_saved = true;
     }
 }
 
 static void C_noteshot(char* cmd)
 {
-    C_schedule(1, NoteShotStateSaveRestore);
+    NoteShotStateSaveRestore();
     C_schedule(4, C_screenshot);
     C_schedule(5, C_mapfollow);
     C_schedule(7, C_screenshot);
