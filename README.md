@@ -67,6 +67,8 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
     * Tag finder: Pressing "X" while in nofollow highlights the sector or line under the crosshair and shows the activating line/sector if any.
         * This lets you figure out what switches do or uncover how to open secrets if you are stuck.
         * Tag finder requires either having the Computer Area Map powerup _or_ be cheating with `iddt`.
+        * (Credit to naps for the idea) Highlights enemies that need to be killed for the sector action to take effect (if any)
+            * Warning: Does not work with DeHackEd use of `A_KeenDie` (yet?)
 
 ![Tag finder demo](prboom2/doc/magic_sector.gif)
 

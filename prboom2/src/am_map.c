@@ -58,6 +58,7 @@
 #include "r_demo.h"
 #include "m_misc.h"
 #include "m_bbox.h"
+#include "p_tick.h"
 
 extern dboolean gamekeydown[];
 
@@ -1455,18 +1456,45 @@ static void AM_drawLineCharacter
   }
 }
 
+INLINE static void AM_GetMobjPosition(mobj_t *mo, mpoint_t *p, angle_t *angle)
+{
+  if (!paused && movement_smooth)
+  {
+    p->x = mo->PrevX + FixedMul(tic_vars.frac, mo->x - mo->PrevX);
+    p->y = mo->PrevY + FixedMul(tic_vars.frac, mo->y - mo->PrevY);
+    if (mo->player)
+      *angle = mo->player->prev_viewangle + FixedMul(tic_vars.frac, R_SmoothPlaying_Get(mo->player) - mo->player->prev_viewangle);
+    else
+      *angle = mo->angle;
+  }
+  else
+  {
+    p->x = mo->x;
+    p->y = mo->y;
+    *angle = mo->angle;
+  }
 
+  p->x = p->x >> FRACTOMAPBITS;
+  p->y = p->y >> FRACTOMAPBITS;
+}
 
 static void AM_drawWalls(void)
 {
   int i;
   static mline_t l;
   int amd = -1;
+  dboolean* bossaction_drawn = NULL;
 
     static int magic_sector_color_pos = MAGIC_SECTOR_COLOR_TAGGED_MIN;
     static int magic_line_color_pos = MAGIC_LINE_COLOR_MIN;
     /* draw on first iteration */
     static int magic_refresh = MAGIC_REFRESH_MAX-1;
+
+  if (gamemapinfo && gamemapinfo->numbossactions > 0) {
+      bossaction_drawn = malloc(gamemapinfo->numbossactions*(sizeof(dboolean)));
+      memset(bossaction_drawn, 0, gamemapinfo->numbossactions*(sizeof(dboolean)));
+  }
+
     
     if( magic_sector || magic_tag ) {
         magic_refresh++;
@@ -1705,7 +1733,6 @@ static void AM_drawWalls(void)
 
       /* now, handle the magic sector */
       if( magic_sector || magic_tag ) {
-        
           if( (lines[i].frontsector && ((magic_sector && lines[i].frontsector->iSectorID == magic_sector->iSectorID) || ((magic_tag > 0) && lines[i].frontsector->tag == magic_tag) ))
                                        ||
              (lines[i].backsector && ((magic_sector && lines[i].backsector->iSectorID == magic_sector->iSectorID) || ((magic_tag > 0) && lines[i].backsector->tag == magic_tag) ))
@@ -1718,6 +1745,7 @@ static void AM_drawWalls(void)
                 AM_drawLineCharacter(cross_mark, NUMCROSSMARKLINES,
                     128<<MAPBITS, 0, 229, l.a.x, l.a.y );
             }
+
           }
           
           if( lines[i].tag > 0 && (lines[i].tag == magic_tag || (magic_sector && (lines[i].tag == magic_sector->tag) ) ) ) {
@@ -1729,32 +1757,92 @@ static void AM_drawWalls(void)
                 AM_drawLineCharacter(cross_mark, NUMCROSSMARKLINES,
                     128<<MAPBITS, 0, 251, l.a.x, l.a.y );
             }
+          }
 
+          /* now check for bossdeath/bossaction tag matches */
+          if (magic_sector) {
+              if (gamemapinfo && gamemapinfo->numbossactions > 0) {
+                  thinker_t *th;
+                  int i;
+                  mobjtype_t type;
+                  int tag;
+
+                  for (i = 0; i < gamemapinfo->numbossactions; i++ ) {
+                      if (bossaction_drawn[i]) continue;
+                      tag = gamemapinfo->bossactions[i].tag;
+                      if (tag != magic_sector->tag) continue;
+
+                      bossaction_drawn[i] = true;
+                      type = gamemapinfo->bossactions[i].type;
+
+                      for (th = thinkercap.next ; th != &thinkercap ; th=th->next) {
+                          if (th->function == P_MobjThinker) {
+                              mobj_t *mo2 = (mobj_t *) th;
+                              if (mo2->type == type && mo2->health > 0) {
+                                  mpoint_t p = {0};
+                                  angle_t angle = {0};
+                                  AM_GetMobjPosition(mo2, &p, &angle);
+                                  AM_drawLineCharacter(cross_mark, NUMCROSSMARKLINES, 32<<MAPBITS, 0, magic_line_color_pos, p.x, p.y);
+                              }
+                          }
+                      }
+                  }
+              } else if(magic_sector->tag == 666 || magic_sector->tag == 667) {
+                  thinker_t *th;
+                  if (gamemode == commercial) {
+                      if (gamemap == 7) {
+                          for (th = thinkercap.next ; th != &thinkercap ; th=th->next) {
+                              if (th->function == P_MobjThinker) {
+                                  mobj_t *mo2 = (mobj_t *) th;
+                                  if (mo2->type == ((magic_sector->tag == 666) ? MT_FATSO : MT_BABY) && mo2->health > 0) {
+                                      mpoint_t p = {0};
+                                      angle_t angle = {0};
+                                      AM_GetMobjPosition(mo2, &p, &angle);
+                                      AM_drawLineCharacter(cross_mark, NUMCROSSMARKLINES, 32<<MAPBITS, 0, magic_line_color_pos, p.x, p.y);
+                                  }
+                              }
+                          }
+                      } else if(magic_sector->tag == 666) {
+                          /* WARNING: does not catch DeHacked KeenDie usages */
+                          for (th = thinkercap.next ; th != &thinkercap ; th=th->next) {
+                              if (th->function == P_MobjThinker) {
+                                  mobj_t *mo2 = (mobj_t *) th;
+                                  if (mo2->type == MT_KEEN && mo2->health > 0) {
+                                      mpoint_t p = {0};
+                                      angle_t angle = {0};
+                                      AM_GetMobjPosition(mo2, &p, &angle);
+                                      AM_drawLineCharacter(cross_mark, NUMCROSSMARKLINES, 32<<MAPBITS, 0, magic_line_color_pos, p.x, p.y);
+                                  }
+                              }
+                          }
+                      }
+                  } else if(magic_sector->tag == 666) {
+                      mobjtype_t type = -1;
+                      if (gameepisode == 1 && gamemap == 8)
+                          type = MT_BRUISER;
+                      else if(gameepisode == 4 && gamemap == 6)
+                          type = MT_CYBORG;
+                      else if(gameepisode == 4 && gamemap == 8)
+                          type = MT_SPIDER;
+                      if (type > 0) {
+                          for (th = thinkercap.next ; th != &thinkercap ; th=th->next) {
+                              if (th->function == P_MobjThinker) {
+                                  mobj_t *mo2 = (mobj_t *) th;
+                                  if (mo2->type == type && mo2->health > 0) {
+                                      mpoint_t p = {0};
+                                      angle_t angle = {0};
+                                      AM_GetMobjPosition(mo2, &p, &angle);
+                                      AM_drawLineCharacter(cross_mark, NUMCROSSMARKLINES, 32<<MAPBITS, 0, magic_line_color_pos, p.x, p.y);
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
           }
       }
   }
-}
-
-INLINE static void AM_GetMobjPosition(mobj_t *mo, mpoint_t *p, angle_t *angle)
-{
-  if (!paused && movement_smooth)
-  {
-    p->x = mo->PrevX + FixedMul(tic_vars.frac, mo->x - mo->PrevX);
-    p->y = mo->PrevY + FixedMul(tic_vars.frac, mo->y - mo->PrevY);
-    if (mo->player)
-      *angle = mo->player->prev_viewangle + FixedMul(tic_vars.frac, R_SmoothPlaying_Get(mo->player) - mo->player->prev_viewangle);
-    else
-      *angle = mo->angle;
-  }
-  else
-  {
-    p->x = mo->x;
-    p->y = mo->y;
-    *angle = mo->angle;
-  }
-
-  p->x = p->x >> FRACTOMAPBITS;
-  p->y = p->y >> FRACTOMAPBITS;
+  free(bossaction_drawn);
 }
 
 //
