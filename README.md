@@ -69,6 +69,8 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
         * Tag finder requires either having the Computer Area Map powerup _or_ be cheating with `iddt`.
         * (Credit to naps for the idea) Highlights enemies that need to be killed for the sector action to take effect (if any)
             * Warning: Does not work with DeHackEd use of `A_KeenDie` (yet?)
+* (Credit to [dsda-doom](https://github.com/kraflab/dsda-doom/)): Fix cl11+ bug that slows down maps with large monster counts.
+    * [See here for details](https://github.com/kraflab/dsda-doom/commit/dc29f0ce801f6ff910ae3fc3e6b1210ac79e87cf)
 
 ![Tag finder demo](prboom2/doc/magic_sector.gif)
 
