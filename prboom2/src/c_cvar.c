@@ -110,6 +110,8 @@ void C_CvarInit()
         C_CvarCreate("overunder", "0", CVAR_FLAG_ARCHIVE);
         C_CvarCreate("announce_100p_max", "0", CVAR_FLAG_ARCHIVE);
         C_CvarCreate("weapon_bob_only", "0", CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("autofire_rocketlauncher", "0", CVAR_FLAG_ARCHIVE);
+        C_CvarCreate("autofire_bfg", "0", CVAR_FLAG_ARCHIVE);
     }
 }
 

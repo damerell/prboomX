@@ -135,6 +135,8 @@ Example: `set overunder 1`
 * `overunder` (default: off) - Allow things to move over/under other things (adapted from [Crispy Doom](https://github.com/fabiangreffrath/crispy-doom) and [Nugget Doom](https://github.com/MrAlaux/Nugget-Doom))
 * `announce_100p_max` (default: off) - Announce when 100% kills, items, and secrets has been achieved.
 * `weapon_bob_only` (default: off) - Only bob player's weapon, not the player's view.
+* `autofire_rocketlauncher` (default: off) - When switching to the Rocket Launcher, continue firing if the fire button is held down
+* `autofire_bfg` (default: off) - When switching to the BFG9000, continue firing if the fire button is held down
 
 # Reference Material
 
