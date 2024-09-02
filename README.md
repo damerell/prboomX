@@ -102,6 +102,7 @@ Install [PrBoom-Plus](https://github.com/coelckers/prboom-plus) and place the bi
 - `set [variable] [value]` (set or create CVAR with given value)
 - `unset [variable]` (delete CVAR)
 - `screenshot` (take a screenshot, intended for compound keybinds)
+- `cleanshot` (take a "clean" screenshot with no player sprites or messages and fullsize HUD)
 - `summon <class>` (summon [class](https://github.com/JadingTsunami/prboomX#actor-names) enemy/thing/etc. to player's aim point position)
 - `summonfriend <class>` (summon [class](https://github.com/JadingTsunami/prboomX#actor-names) friendly enemy/thing/etc. to player's aim point position)
 - `am_summonfriend <class>` (summon [class](https://github.com/JadingTsunami/prboomX#actor-names) friendly enemy/thing/etc. to automap crosshair position)

@@ -1279,36 +1279,64 @@ static void C_quicksave(char* cmd)
     M_QuickSave();
 }
 
-static void NoteShotStateSaveRestore()
+static void CleanScreenshotStateSaveRestore()
 {
     extern dboolean singletics;
+    extern int hud_displayed;
     extern int showMessages;
+    extern int screenblocks;
+
     static dboolean saved_singletics = false;
     static int saved_showMessages = false;
     static dboolean state_saved = false;
+    static dboolean saved_psprites = true;
+    static dboolean saved_hud = true;
+    static int saved_screenblocks = 8;
 
     if (state_saved) {
         singletics = saved_singletics;
         showMessages = saved_showMessages;
         state_saved = false;
+        hud_displayed = saved_hud;
+        if (saved_psprites)
+            C_CvarSet("r_drawplayersprites");
+        screenblocks = saved_screenblocks;
+        R_SetViewSize(screenblocks);
     } else {
         saved_singletics = singletics;
         saved_showMessages = showMessages;
+        saved_psprites = C_CvarIsSet("r_drawplayersprites");
+        saved_hud = hud_displayed;
+        saved_screenblocks = screenblocks;
+
         singletics = true;
         showMessages = false;
+        C_CvarClear("r_drawplayersprites");
+        hud_displayed = false;
+        screenblocks = 11;
+        R_SetViewSize(screenblocks);
+
         state_saved = true;
     }
 }
 
 static void C_noteshot(char* cmd)
 {
-    NoteShotStateSaveRestore();
+    CleanScreenshotStateSaveRestore();
     C_schedule(4, C_screenshot);
     C_schedule(5, C_mapfollow);
     C_schedule(7, C_screenshot);
     C_schedule(9, C_mapfollow);
-    C_schedule(10, NoteShotStateSaveRestore);
+    C_schedule(10, CleanScreenshotStateSaveRestore);
     C_note(cmd);
+}
+
+static void C_cleanshot(char* cmd)
+{
+    CleanScreenshotStateSaveRestore();
+    C_schedule(4, C_screenshot);
+    C_schedule(8, CleanScreenshotStateSaveRestore);
+    C_ConsolePrintf("Clean screenshot taken.");
 }
 
 command command_list[] = {
@@ -1346,6 +1374,7 @@ command command_list[] = {
     {"set", C_set},
     {"unset", C_unset},
     {"screenshot", C_screenshot},
+    {"cleanshot", C_cleanshot},
     {"am_findsecret", C_automapfindsecret},
     {"am_finditem", C_automapfinditem},
     {"am_findmonster", C_automapfindmonster},
