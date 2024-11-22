@@ -457,13 +457,13 @@ void I_SafeExit(int rc)
 
 static void I_Quit (void)
 {
+  if (!netgame && !demorecording && !demoplayback && gameaction != ga_playdemo)
+      C_SaveSettings();
   if (!demorecording)
     I_EndDoom();
   if (demorecording)
     G_CheckDemoStatus();
   M_SaveDefaults ();
-  if (!netgame && !demorecording && !demoplayback && gameaction != ga_playdemo)
-      C_SaveSettings();
   I_DemoExShutdown();
 }
 

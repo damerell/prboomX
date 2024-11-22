@@ -1855,16 +1855,16 @@ dboolean C_ExecuteBind(int keycode, evtype_t evtype)
     keybind_t* kb = keybind_head;
     dboolean executed = false;
 
-    if (netgame) {
-        doom_printf("Binds not allowed during net play.");
-        return false;
-    } else if (demorecording || demoplayback) {
-        doom_printf("Binds not allowed during demos.");
-        return false;
-    }
-
     while (kb) {
         if (kb->keycode == keycode && kb->type == evtype) {
+            if (netgame) {
+                doom_printf("Binds not allowed during net play.");
+                return false;
+            } else if (demorecording || demoplayback) {
+                doom_printf("Binds not allowed during demos.");
+                return false;
+            }
+
             C_ConsoleCommand(kb->cmd);
             executed = true;
         }
@@ -1912,6 +1912,11 @@ static char* C_GetConsoleSettingsFile()
 #define CONSOLE_CONFIG_LINE_MAX (256)
 void C_SaveSettings()
 {
+    /* do nothing if console is disallowed */
+    if (netgame || demorecording || demoplayback || gameaction == ga_playdemo) {
+        return;
+    }
+
     keybind_t* kb = keybind_head;
     FILE* bindfile = M_fopen (C_GetConsoleSettingsFile(), "w");
 
@@ -1955,6 +1960,7 @@ void C_LoadSettings()
 
     /* skip running user console commands when not allowed */
     if (netgame || demorecording || demoplayback || gameaction == ga_playdemo) {
+        free(linebuffer);
         return;
     }
 
