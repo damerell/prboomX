@@ -1855,16 +1855,12 @@ dboolean C_ExecuteBind(int keycode, evtype_t evtype)
     keybind_t* kb = keybind_head;
     dboolean executed = false;
 
+    if (netgame || demorecording || demoplayback) {
+        return false;
+    }
+
     while (kb) {
         if (kb->keycode == keycode && kb->type == evtype) {
-            if (netgame) {
-                doom_printf("Binds not allowed during net play.");
-                return false;
-            } else if (demorecording || demoplayback) {
-                doom_printf("Binds not allowed during demos.");
-                return false;
-            }
-
             C_ConsoleCommand(kb->cmd);
             executed = true;
         }
