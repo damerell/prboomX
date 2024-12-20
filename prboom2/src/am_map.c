@@ -1705,29 +1705,32 @@ static void AM_drawWalls(void)
     } // now draw the lines only visible because the player has computermap
     else if (plr->powers[pw_allmap]) // computermap visible lines
     {
-        if
-        (
-          mapcolor_flat
-          ||
-          !lines[i].backsector
-          ||
-          lines[i].backsector->floorheight
-          != lines[i].frontsector->floorheight
-          ||
-          lines[i].backsector->ceilingheight
-          != lines[i].frontsector->ceilingheight
-        ) {
-            if (mapcolor_asec &&
+        if (!(lines[i].flags & ML_DONTDRAW) || (map_enhanced_allmap && plr->powers[pw_allmap]))
+        {
+            if
                 (
-                  (lines[i].frontsector && P_IsSecret(lines[i].frontsector)) ||
-                  (lines[i].backsector && P_IsSecret(lines[i].backsector))
-                 )
-                )
-            {
-                AM_drawMline(&l, mapcolor_asec); // line bounding secret sector
-            } else {
-                AM_drawMline(&l, mapcolor_unsn);
-            }
+                 mapcolor_flat
+                 ||
+                 !lines[i].backsector
+                 ||
+                 lines[i].backsector->floorheight
+                 != lines[i].frontsector->floorheight
+                 ||
+                 lines[i].backsector->ceilingheight
+                 != lines[i].frontsector->ceilingheight
+                ) {
+                    if (mapcolor_asec &&
+                            (
+                             (lines[i].frontsector && P_IsSecret(lines[i].frontsector)) ||
+                             (lines[i].backsector && P_IsSecret(lines[i].backsector))
+                            )
+                       )
+                    {
+                        AM_drawMline(&l, mapcolor_asec); // line bounding secret sector
+                    } else {
+                        AM_drawMline(&l, mapcolor_unsn);
+                    }
+                }
         }
       }
 
