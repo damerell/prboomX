@@ -44,13 +44,6 @@ jobs:
             extra_options: "-DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++",
             package_name: "linux_clang"
           }
-        - {
-            name: "macOS Clang (Latest)",
-            os: macos-latest,
-            build_type: "Release",
-            extra_options: "",
-            package_name: "macos-latest"
-          }
 
     steps:
     - uses: actions/checkout@v1
