@@ -5208,10 +5208,18 @@ dboolean G_TimeWarpLoadTimelineAsFile(const char* filename, dboolean jump_to_tai
     return success;
 }
 
-const char* G_TimeWarpGenerateFilename()
+const char* G_TimeWarpGenerateFilename(dboolean create_folder)
 {
     static char* filename = 0;
     const char* timewarp_filename = "timewarp.twp";
+
+    if (create_folder) {
+        if (M_access(basesavegame, W_OK) != 0) {
+            if (-1 == M_mkdir(basesavegame)) {
+                lprintf(LO_WARN, "Timewarp: Could not create folder: %s\n", basesavegame);
+            }
+        }
+    }
     int filenamelen = strlen(basesavegame) + strlen(timewarp_filename) + 2;
     free(filename);
     filename = malloc(sizeof(char)*(filenamelen));
@@ -5222,7 +5230,7 @@ const char* G_TimeWarpGenerateFilename()
 void G_AutoSaveTimeWarpTimelineOnExit()
 {
   if (autosave_timeline_on_exit)
-      G_TimeWarpSaveTimelineAsFile(G_TimeWarpGenerateFilename());
+      G_TimeWarpSaveTimelineAsFile(G_TimeWarpGenerateFilename(true));
 }
 
 dboolean G_Check100pAchieved()
