@@ -3208,6 +3208,7 @@ static int HU_count_health_bars(void) {
 	divisor = 100;
 	break;
     }
+    if (divisor <= 0) divisor = 100;
     // We can't just do "(numerator * HUD_MAX_BARS) / (divisor * 100)" here
     // it would integer overflow with 16-bit ints and max health > 320
     result = numerator / (divisor * (100 / HUD_MAX_BARS));
@@ -3232,6 +3233,7 @@ static int HU_count_armor_bars(void) {
 	divisor = 1;
 	break;
     }
+    if (divisor <= 0) divisor = 1;
     result = numerator / (divisor * (100 / HUD_MAX_BARS));
     return (result > HUD_MAX_BARS) ? HUD_MAX_BARS : result;
 }
